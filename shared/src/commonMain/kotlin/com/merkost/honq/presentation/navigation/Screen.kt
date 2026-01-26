@@ -10,7 +10,8 @@ sealed class Screen(val route: String) {
     }
     data object Practice : Screen("practice")
     data object MockTest : Screen("mocktest")
-    data object Results : Screen("results/{score}/{total}") {
-        fun createRoute(score: Int, total: Int) = "results/$score/$total"
+    data object Results : Screen("results/{score}/{total}/{hasIncorrect}") {
+        fun createRoute(score: Int, total: Int, hasIncorrect: Boolean) = "results/$score/$total/$hasIncorrect"
     }
+    data object ReviewIncorrect : Screen("review_incorrect")
 }

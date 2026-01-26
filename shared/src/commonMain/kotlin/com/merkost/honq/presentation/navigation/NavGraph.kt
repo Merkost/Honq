@@ -32,6 +32,7 @@ import com.merkost.honq.presentation.screens.home.HomeScreen
 import com.merkost.honq.presentation.screens.mocktest.MockTestScreen
 import com.merkost.honq.presentation.screens.practice.PracticeScreen
 import com.merkost.honq.presentation.screens.results.ResultsScreen
+import com.merkost.honq.presentation.screens.review.ReviewIncorrectScreen
 import com.merkost.honq.presentation.theme.HonqColors
 import com.merkost.honq.presentation.theme.HonqMotion
 
@@ -163,8 +164,8 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         composable(Screen.MockTest.route) {
             MockTestScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { score, total ->
-                    navController.navigate(Screen.Results.createRoute(score, total)) {
+                onNavigateToResults = { score, total, hasIncorrect ->
+                    navController.navigate(Screen.Results.createRoute(score, total, hasIncorrect)) {
                         popUpTo(Screen.MockTest.route) { inclusive = true }
                     }
                 }
@@ -175,7 +176,8 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             route = Screen.Results.route,
             arguments = listOf(
                 navArgument("score") { type = NavType.IntType },
-                navArgument("total") { type = NavType.IntType }
+                navArgument("total") { type = NavType.IntType },
+                navArgument("hasIncorrect") { type = NavType.BoolType }
             ),
             enterTransition = {
                 scaleIn(
@@ -187,11 +189,13 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 fadeOut(animationSpec = tween(TRANSITION_DURATION))
             }
         ) { backStackEntry ->
-            val score = backStackEntry.savedStateHandle.get<Int>("score") ?: 0
-            val total = backStackEntry.savedStateHandle.get<Int>("total") ?: 0
+            val score = backStackEntry.arguments?.getInt("score") ?: 0
+            val total = backStackEntry.arguments?.getInt("total") ?: 0
+            val hasIncorrect = backStackEntry.arguments?.getBoolean("hasIncorrect") ?: false
             ResultsScreen(
                 score = score,
                 total = total,
+                hasIncorrect = hasIncorrect,
                 onNavigateHome = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
@@ -201,7 +205,16 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                     navController.navigate(Screen.MockTest.route) {
                         popUpTo(Screen.Home.route)
                     }
+                },
+                onReviewIncorrect = {
+                    navController.navigate(Screen.ReviewIncorrect.route)
                 }
+            )
+        }
+
+        composable(Screen.ReviewIncorrect.route) {
+            ReviewIncorrectScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

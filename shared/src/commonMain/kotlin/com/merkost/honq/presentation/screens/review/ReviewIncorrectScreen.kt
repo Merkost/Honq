@@ -1,4 +1,4 @@
-package com.merkost.honq.presentation.screens.mocktest
+package com.merkost.honq.presentation.screens.review
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -27,38 +27,37 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import com.merkost.honq.domain.model.Question
+import com.merkost.honq.domain.model.IncorrectAnswer
 import com.merkost.honq.presentation.components.base.AnimatedFavoriteButton
-import com.merkost.honq.presentation.components.base.BottomActionBar
+import com.merkost.honq.presentation.components.base.BottomActionBarVertical
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.HonqButtonVariant
 import com.merkost.honq.presentation.components.base.HonqProgressBar
 import com.merkost.honq.presentation.components.base.HonqScaffold
+import com.merkost.honq.presentation.components.question.ExplanationCard
 import com.merkost.honq.presentation.components.question.QuestionCard
+import com.merkost.honq.presentation.theme.HonqColors
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
-import com.merkost.honq.presentation.theme.HonqTheme
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
-fun MockTestScreen(
-    onNavigateBack: () -> Unit,
-    onNavigateToResults: (score: Int, total: Int, hasIncorrect: Boolean) -> Unit
+fun ReviewIncorrectScreen(
+    onNavigateBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val container = koinInject<MockTestContainer> { parametersOf(scope) }
+    val container = koinInject<ReviewIncorrectContainer> { parametersOf(scope) }
 
     val state by container.store.subscribe { action ->
         when (action) {
-            MockTestAction.NavigateBack -> onNavigateBack()
-            is MockTestAction.NavigateToResults -> onNavigateToResults(action.score, action.total, action.hasIncorrect)
+            ReviewIncorrectAction.NavigateBack -> onNavigateBack()
         }
     }
 
-    MockTestContent(
+    ReviewIncorrectContent(
         state = state,
         onIntent = container.store::intent,
         onNavigateBack = onNavigateBack
@@ -66,23 +65,21 @@ fun MockTestScreen(
 }
 
 @Composable
-private fun MockTestContent(
-    state: MockTestState,
-    onIntent: (MockTestIntent) -> Unit,
+private fun ReviewIncorrectContent(
+    state: ReviewIncorrectState,
+    onIntent: (ReviewIncorrectIntent) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    val colors = HonqTheme.colors
-
     HonqScaffold(
-        title = "Mock Test",
+        title = "Review Incorrect",
         onNavigateBack = onNavigateBack,
         actions = {
-            val question = state.session.currentQuestion
-            if (question != null) {
-                val isFavorite = state.favoriteQuestionIds.contains(question.id)
+            val currentAnswer = state.currentAnswer
+            if (currentAnswer != null) {
+                val isFavorite = state.favoriteQuestionIds.contains(currentAnswer.question.id)
                 AnimatedFavoriteButton(
                     isFavorite = isFavorite,
-                    onClick = { onIntent(MockTestIntent.ToggleFavorite(question.id)) }
+                    onClick = { onIntent(ReviewIncorrectIntent.ToggleFavorite(currentAnswer.question.id)) }
                 )
             }
         }
@@ -96,17 +93,20 @@ private fun MockTestContent(
                 state.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = colors.loadingIndicator
+                        color = HonqColors.Amber
                     )
                 }
                 state.error != null -> {
                     Text(
                         text = state.error,
-                        color = colors.incorrect,
+                        color = HonqColors.Incorrect,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                state.session.currentQuestion != null -> {
+                state.incorrectAnswers.isEmpty() -> {
+                    EmptyState(modifier = Modifier.align(Alignment.Center))
+                }
+                state.currentAnswer != null -> {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Column(
                             modifier = Modifier
@@ -114,32 +114,27 @@ private fun MockTestContent(
                                 .verticalScroll(rememberScrollState())
                                 .padding(HonqSizing.screenPadding)
                         ) {
-                            TestHeader(state)
-                            Spacer(modifier = Modifier.height(HonqSpacing.md))
-                            HonqProgressBar(progress = state.session.progress)
+                            ReviewHeader(state)
+                            Spacer(modifier = Modifier.height(HonqSpacing.sm))
+                            HonqProgressBar(progress = state.progress)
                             Spacer(modifier = Modifier.height(HonqSpacing.lg))
 
                             AnimatedContent(
-                                targetState = MockTestQuestionSnapshot(
-                                    question = state.session.currentQuestion,
-                                    selectedAnswer = state.selectedAnswer,
-                                    questionIndex = state.session.currentIndex,
-                                    navigationDirection = state.navigationDirection
+                                targetState = ReviewSnapshot(
+                                    incorrectAnswer = state.currentAnswer!!,
+                                    questionIndex = state.currentIndex
                                 ),
                                 transitionSpec = {
-                                    val isForward = targetState.navigationDirection == NavigationDirection.Forward
-                                    val enterOffset = if (isForward) 1 else -1
-                                    val exitOffset = if (isForward) -1 else 1
-
+                                    val direction = if (targetState.questionIndex > initialState.questionIndex) 1 else -1
                                     (slideInHorizontally(
                                         animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
-                                        initialOffsetX = { fullWidth -> fullWidth * enterOffset }
+                                        initialOffsetX = { fullWidth -> fullWidth * direction }
                                     ) + fadeIn(
                                         animationSpec = tween(HonqMotion.durationMedium)
                                     )).togetherWith(
                                         slideOutHorizontally(
                                             animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
-                                            targetOffsetX = { fullWidth -> fullWidth * exitOffset }
+                                            targetOffsetX = { fullWidth -> -fullWidth * direction }
                                         ) + fadeOut(
                                             animationSpec = tween(HonqMotion.durationShort)
                                         )
@@ -147,41 +142,29 @@ private fun MockTestContent(
                                 },
                                 contentKey = { it.questionIndex }
                             ) { snapshot ->
-                                snapshot.question?.let {
+                                Column {
                                     QuestionCard(
-                                        question = it,
-                                        selectedAnswer = snapshot.selectedAnswer,
-                                        answerRevealed = false,
-                                        onAnswerSelected = { index -> onIntent(MockTestIntent.AnswerSelected(index)) }
+                                        question = snapshot.incorrectAnswer.question,
+                                        selectedAnswer = snapshot.incorrectAnswer.selectedAnswerIndex,
+                                        answerRevealed = true,
+                                        onAnswerSelected = { }
+                                    )
+                                    Spacer(modifier = Modifier.height(HonqSpacing.lg))
+                                    ExplanationCard(
+                                        explanation = snapshot.incorrectAnswer.question.explanation,
+                                        isCorrect = false
                                     )
                                 }
                             }
                         }
 
-                        BottomActionBar {
-                            if (state.session.currentIndex > 0) {
-                                HonqButton(
-                                    text = "Previous",
-                                    onClick = { onIntent(MockTestIntent.PreviousQuestion) },
-                                    variant = HonqButtonVariant.Secondary,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-
-                            if (state.session.currentIndex < state.session.questions.lastIndex) {
-                                HonqButton(
-                                    text = "Next",
-                                    onClick = { onIntent(MockTestIntent.NextQuestion) },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            } else {
-                                HonqButton(
-                                    text = "Submit",
-                                    onClick = { onIntent(MockTestIntent.SubmitTest) },
-                                    loading = state.isSubmitting,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
+                        BottomActionBarVertical {
+                            NavigationButtons(
+                                state = state,
+                                onPrevious = { onIntent(ReviewIncorrectIntent.PreviousQuestion) },
+                                onNext = { onIntent(ReviewIncorrectIntent.NextQuestion) },
+                                onDone = onNavigateBack
+                            )
                         }
                     }
                 }
@@ -191,35 +174,73 @@ private fun MockTestContent(
 }
 
 @Composable
-private fun TestHeader(state: MockTestState) {
-    val colors = HonqTheme.colors
-
+private fun ReviewHeader(state: ReviewIncorrectState) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Question ${state.currentQuestionNumber}/${state.totalQuestions}",
-            color = colors.textSecondary
+            text = "Question ${state.currentQuestionNumber} of ${state.totalQuestions}",
+            color = HonqColors.TextSecondary
         )
         Text(
-            text = formatTime(state.timeRemaining.inWholeSeconds),
-            color = if (state.timeRemaining.inWholeMinutes < 5) colors.incorrect else colors.textSecondary,
+            text = "${state.totalQuestions} incorrect",
+            color = HonqColors.Incorrect,
             fontWeight = FontWeight.Medium
         )
     }
 }
 
-private fun formatTime(totalSeconds: Long): String {
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+@Composable
+private fun NavigationButtons(
+    state: ReviewIncorrectState,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onDone: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
+    ) {
+        if (!state.isFirstQuestion) {
+            HonqButton(
+                text = "Previous",
+                onClick = onPrevious,
+                variant = HonqButtonVariant.Secondary,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        if (state.isLastQuestion) {
+            HonqButton(
+                text = "Done",
+                onClick = onDone,
+                modifier = Modifier.weight(1f)
+            )
+        } else {
+            HonqButton(
+                text = "Next",
+                onClick = onNext,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "No incorrect answers to review",
+            color = HonqColors.TextSecondary
+        )
+    }
 }
 
 @Immutable
-private data class MockTestQuestionSnapshot(
-    val question: Question?,
-    val selectedAnswer: Int?,
-    val questionIndex: Int,
-    val navigationDirection: NavigationDirection
+private data class ReviewSnapshot(
+    val incorrectAnswer: IncorrectAnswer,
+    val questionIndex: Int
 )

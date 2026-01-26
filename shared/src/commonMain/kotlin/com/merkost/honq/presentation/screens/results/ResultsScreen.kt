@@ -32,8 +32,10 @@ import com.merkost.honq.presentation.theme.HonqSpacing
 fun ResultsScreen(
     score: Int,
     total: Int,
+    hasIncorrect: Boolean,
     onNavigateHome: () -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onReviewIncorrect: () -> Unit
 ) {
     val passed = score >= (total * 0.9).toInt()
     val percentage = ((score.toFloat() / total) * 100).toInt()
@@ -53,7 +55,12 @@ fun ResultsScreen(
             Spacer(modifier = Modifier.height(HonqSpacing.lg))
             ScoreCard(score, total, percentage, passed)
             Spacer(modifier = Modifier.height(HonqSpacing.xxl))
-            ActionButtons(onNavigateHome, onRetry)
+            ActionButtons(
+                hasIncorrect = hasIncorrect,
+                onNavigateHome = onNavigateHome,
+                onRetry = onRetry,
+                onReviewIncorrect = onReviewIncorrect
+            )
         }
     }
 }
@@ -121,21 +128,30 @@ private fun ScoreCard(score: Int, total: Int, percentage: Int, passed: Boolean) 
 
 @Composable
 private fun ActionButtons(
+    hasIncorrect: Boolean,
     onNavigateHome: () -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onReviewIncorrect: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
     ) {
+        if (hasIncorrect) {
+            HonqButton(
+                text = "Review Incorrect Answers",
+                onClick = onReviewIncorrect
+            )
+        }
         HonqButton(
             text = "Try Again",
-            onClick = onRetry
+            onClick = onRetry,
+            variant = if (hasIncorrect) HonqButtonVariant.Secondary else HonqButtonVariant.Primary
         )
         HonqButton(
             text = "Back to Home",
             onClick = onNavigateHome,
-            variant = HonqButtonVariant.Secondary
+            variant = HonqButtonVariant.Text
         )
     }
 }

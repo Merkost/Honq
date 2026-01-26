@@ -11,9 +11,12 @@ import com.merkost.honq.domain.usecase.GetStatesUseCase
 import com.merkost.honq.domain.usecase.ObserveSelectedStateUseCase
 import com.merkost.honq.domain.usecase.ObserveSelectedQuestionSetUseCase
 import com.merkost.honq.domain.usecase.GetUserProgressUseCase
+import com.merkost.honq.domain.usecase.HasIncorrectAnswersUseCase
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionsUseCase
+import com.merkost.honq.domain.usecase.ObserveIncorrectAnswersUseCase
 import com.merkost.honq.domain.usecase.RecordAnswerUseCase
+import com.merkost.honq.domain.usecase.SaveIncorrectAnswersUseCase
 import com.merkost.honq.domain.usecase.SaveMockTestResultUseCase
 import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
 import com.merkost.honq.domain.usecase.SetSelectedStateUseCase
@@ -41,4 +44,7 @@ val domainModule = module {
     factory { ObserveFavoriteQuestionsUseCase(get()) }
     factory { ObserveFavoriteQuestionIdsUseCase(get()) }
     factory { ToggleFavoriteQuestionUseCase(get()) }
+    factory { SaveIncorrectAnswersUseCase(get()) }
+    factory { ObserveIncorrectAnswersUseCase(get()) }
+    factory { HasIncorrectAnswersUseCase(get()) }
 }

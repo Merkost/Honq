@@ -11,12 +11,14 @@ import com.merkost.honq.data.local.datasource.QuestionLocalDataSource
 import com.merkost.honq.data.remote.api.QuestionApi
 import com.merkost.honq.data.remote.api.SupabaseConfig
 import com.merkost.honq.data.repository.FavoritesRepositoryImpl
+import com.merkost.honq.data.repository.InMemoryReviewRepository
 import com.merkost.honq.data.repository.ProgressRepositoryImpl
 import com.merkost.honq.data.repository.QuestionRepositoryImpl
 import com.merkost.honq.domain.repository.FavoritesRepository
 import com.merkost.honq.domain.repository.ProgressRepository
 import com.merkost.honq.domain.repository.QuestionRepository
 import com.merkost.honq.domain.repository.QuestionSetSelectionRepository
+import com.merkost.honq.domain.repository.ReviewRepository
 import com.merkost.honq.domain.repository.StateSelectionRepository
 import io.github.jan.supabase.SupabaseClient
 import org.koin.dsl.module
@@ -52,4 +54,5 @@ val dataModule = module {
     }
     single<ProgressRepository> { ProgressRepositoryImpl(get(), get(), get()) }
     single<FavoritesRepository> { FavoritesRepositoryImpl(get(), get()) }
+    single<ReviewRepository> { InMemoryReviewRepository() }
 }

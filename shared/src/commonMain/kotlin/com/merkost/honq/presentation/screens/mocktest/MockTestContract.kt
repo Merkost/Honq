@@ -38,5 +38,5 @@ sealed interface MockTestIntent : MVIIntent {
 
 sealed interface MockTestAction : MVIAction {
     data object NavigateBack : MockTestAction
-    data class NavigateToResults(val score: Int, val total: Int) : MockTestAction
+    data class NavigateToResults(val score: Int, val total: Int, val hasIncorrect: Boolean) : MockTestAction
 }

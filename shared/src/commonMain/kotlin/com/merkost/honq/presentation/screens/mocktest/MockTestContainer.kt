@@ -4,10 +4,12 @@ import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
+import com.merkost.honq.domain.model.IncorrectAnswer
 import com.merkost.honq.domain.model.MockTestResult
 import com.merkost.honq.domain.model.QuizSession
 import com.merkost.honq.domain.usecase.GetMockTestQuestionsUseCase
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
+import com.merkost.honq.domain.usecase.SaveIncorrectAnswersUseCase
 import com.merkost.honq.domain.usecase.SaveMockTestResultUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +28,7 @@ private val clock = SystemClock
 class MockTestContainer(
     private val getMockTestQuestions: GetMockTestQuestionsUseCase,
     private val saveMockTestResult: SaveMockTestResultUseCase,
+    private val saveIncorrectAnswers: SaveIncorrectAnswersUseCase,
     private val observeFavoriteQuestionIds: ObserveFavoriteQuestionIdsUseCase,
     private val toggleFavoriteQuestion: ToggleFavoriteQuestionUseCase,
     private val analytics: Analytics,
@@ -136,6 +139,20 @@ class MockTestContainer(
                 session.answers[question.id] == question.correctIndex
             }
 
+            val incorrectAnswers = session.questions
+                .filter { question ->
+                    val userAnswer = session.answers[question.id]
+                    userAnswer != null && userAnswer != question.correctIndex
+                }
+                .map { question ->
+                    IncorrectAnswer(
+                        question = question,
+                        selectedAnswerIndex = session.answers[question.id]!!
+                    )
+                }
+
+            saveIncorrectAnswers(incorrectAnswers)
+
             val startTime = session.startTime ?: now
             val timeTaken = now - startTime
             val totalQuestions = session.questions.size
@@ -160,7 +177,7 @@ class MockTestContainer(
                 )
             )
 
-            action(MockTestAction.NavigateToResults(correctCount, totalQuestions))
+            action(MockTestAction.NavigateToResults(correctCount, totalQuestions, incorrectAnswers.isNotEmpty()))
         }
     }
 
