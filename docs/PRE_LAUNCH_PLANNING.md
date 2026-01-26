@@ -194,60 +194,76 @@
 
 ## Part 4: Pricing Strategy
 
-### 4.1 Recommended Model: Freemium with Premium
+### 4.1 Recommended Model: Paid App ($4.99 AUD)
 
-#### Free Tier
+**All features included. No ads. No in-app purchases. No subscriptions.**
+
+#### What's Included (Everything)
+- All 364 official NSW DKT questions
 - Unlimited practice mode
-- 1 free mock test per day
-- Basic progress tracking
-- Question explanations
-- Favorites (up to 20)
-
-#### Premium (One-Time Purchase: $9.99 AUD)
 - Unlimited mock tests
 - Detailed statistics dashboard
-- Spaced repetition learning
+- Category filtering and practice
+- Search functionality
 - Unlimited favorites
-- Category filtering
-- Study reminders
+- Review incorrect answers
+- Progress tracking
+- Offline mode
 - Ad-free experience
-- Priority support
 
-### 4.2 Alternative Pricing Models
+### 4.2 Why Paid-Only?
 
-#### Option A: Subscription
-- $3.99/month or $19.99/year
-- **Pros**: Recurring revenue, higher LTV
-- **Cons**: Users may resist for test prep (one-time need)
+| Benefit | Explanation |
+|---------|-------------|
+| **Simplicity** | No conversion funnels, no paywalls, no feature gating |
+| **Higher quality users** | Paying users are more committed to studying |
+| **Better reviews** | No "it's asking for money" complaints |
+| **Ethical feel** | No dark patterns, no upsells, no FOMO tactics |
+| **Cleaner UX** | No ads, no premium prompts |
+| **Predictable revenue** | Every download = revenue |
 
-#### Option B: Completely Free (Ad-Supported)
-- Interstitial ads between questions
-- Banner ads on home screen
-- **Pros**: Maximum downloads
-- **Cons**: Poor UX, low revenue per user (~$0.50-2.00)
+### 4.3 Price Point Analysis
 
-#### Option C: Paid App ($4.99)
-- No free tier, all features included
-- **Pros**: Simple, filters serious users
-- **Cons**: Much lower download volume
+| Price | Pros | Cons |
+|-------|------|------|
+| $2.99 | Impulse buy, high volume | Too cheap, low revenue |
+| **$4.99** | **Sweet spot, professional feel** | **Balanced** |
+| $6.99 | Matches competitor | Slightly high barrier |
+| $9.99 | Premium positioning | May deter downloads |
 
-### 4.3 Recommended: Freemium (One-Time)
-**Reasoning:**
-1. Users only need the app for 2-4 weeks (test prep)
-2. Subscription feels unfair for short-term need
-3. One-time purchase converts well for study apps
-4. $9.99 is an impulse purchase for anxious test-takers
-5. Free tier drives reviews and word-of-mouth
+**Chosen: $4.99 AUD** - Under the psychological $5 threshold, signals quality.
 
 ### 4.4 Competitor Pricing (Australia)
-| App | Price | Model |
-|-----|-------|-------|
-| DriveTest NSW | Free | Ad-supported |
-| DKT NSW Test | $6.99 | One-time |
-| Driving Theory Test AU | $4.99 | One-time |
-| L's Test NSW | Free | Freemium + ads |
 
-**Strategy**: Position at premium price ($9.99) with superior quality and features.
+| App | Price | Model | Quality |
+|-----|-------|-------|---------|
+| DriveTest NSW | Free | Ad-supported | Basic |
+| DKT NSW Test | $6.99 | Paid | Good |
+| Easy DKT | Free | Freemium + ads | Poor |
+| L's Test NSW | Free + IAP | Freemium | Average |
+| **Honq** | **$4.99** | **Paid** | **Premium** |
+
+**Positioning**: Better quality than free alternatives, better price than paid competitor.
+
+### 4.5 Revenue Projections
+
+| Scenario | Monthly Downloads | Monthly Revenue | Annual Revenue |
+|----------|-------------------|-----------------|----------------|
+| Conservative | 1,000 | $3,490* | $41,880 |
+| Moderate | 2,500 | $8,725 | $104,700 |
+| Optimistic | 5,000 | $17,450 | $209,400 |
+
+*After 30% store fee ($4.99 × 0.70 = $3.49 net)*
+
+### 4.6 Marketing Message for Paid App
+
+**Key phrases to use:**
+- "One price. All features. No surprises."
+- "Less than a coffee. More valuable than a driving lesson."
+- "No ads. No subscriptions. Just results."
+- "Invest $5 now, avoid $50 retake fees later."
+
+See [PAID_RELEASE_PLAN.md](./PAID_RELEASE_PLAN.md) for detailed release strategy.
 
 ---
 
