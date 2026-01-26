@@ -4,6 +4,13 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinAndroid)
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_11)
+    }
 }
 
 android {
@@ -23,7 +30,7 @@ android {
         }
     }
     buildTypes {
-        getByName("release") {
+        release {
             isMinifyEnabled = false
         }
     }
@@ -35,7 +42,10 @@ android {
 
 dependencies {
     implementation(projects.shared)
+    implementation(libs.koin.android)
+    implementation(libs.bundles.koin)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.uiToolingPreview)
+    implementation(libs.androidx.core.ktx)
     debugImplementation(libs.compose.uiTooling)
 }
