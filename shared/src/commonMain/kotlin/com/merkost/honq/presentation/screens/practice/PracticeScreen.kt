@@ -1,5 +1,13 @@
 package com.merkost.honq.presentation.screens.practice
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.runtime.Immutable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,13 +27,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import com.merkost.honq.domain.model.Question
 import com.merkost.honq.presentation.components.base.AnimatedAppear
+import com.merkost.honq.presentation.components.base.AnimatedFavoriteButton
 import com.merkost.honq.presentation.components.base.BottomActionBarVertical
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.components.question.ExplanationCard
 import com.merkost.honq.presentation.components.question.QuestionCard
 import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import org.koin.compose.koinInject
@@ -60,7 +71,17 @@ private fun PracticeContent(
 ) {
     HonqScaffold(
         title = "Practice",
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        actions = {
+            val question = state.currentQuestion
+            if (question != null) {
+                val isFavorite = state.favoriteQuestionIds.contains(question.id)
+                AnimatedFavoriteButton(
+                    isFavorite = isFavorite,
+                    onClick = { onIntent(PracticeIntent.ToggleFavorite(question.id)) }
+                )
+            }
+        }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -91,19 +112,45 @@ private fun PracticeContent(
                         ) {
                             ScoreHeader(state)
                             Spacer(modifier = Modifier.height(HonqSpacing.lg))
-                            QuestionCard(
-                                question = state.currentQuestion,
-                                selectedAnswer = state.selectedAnswer,
-                                answerRevealed = state.answerRevealed,
-                                onAnswerSelected = { onIntent(PracticeIntent.AnswerSelected(it)) }
-                            )
-                            AnimatedAppear(visible = state.answerRevealed) {
-                                Column {
-                                    Spacer(modifier = Modifier.height(HonqSpacing.lg))
-                                    ExplanationCard(
-                                        explanation = state.currentQuestion.explanation,
-                                        isCorrect = state.selectedAnswer == state.currentQuestion.correctIndex
+
+                            AnimatedContent(
+                                targetState = QuestionSnapshot(
+                                    question = state.currentQuestion!!,
+                                    selectedAnswer = state.selectedAnswer,
+                                    answerRevealed = state.answerRevealed,
+                                    questionIndex = state.questionsAnswered
+                                ),
+                                transitionSpec = {
+                                    (slideInHorizontally(
+                                        animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
+                                        initialOffsetX = { fullWidth -> fullWidth }
+                                    ) + fadeIn(
+                                        animationSpec = tween(HonqMotion.durationMedium)
+                                    )).togetherWith(
+                                        slideOutHorizontally(
+                                            animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
+                                            targetOffsetX = { fullWidth -> -fullWidth }
+                                        ) + fadeOut(
+                                            animationSpec = tween(HonqMotion.durationShort)
+                                        )
                                     )
+                                },
+                                contentKey = { it.questionIndex }
+                            ) { snapshot ->
+                                Column {
+                                    QuestionCard(
+                                        question = snapshot.question,
+                                        selectedAnswer = snapshot.selectedAnswer,
+                                        answerRevealed = snapshot.answerRevealed,
+                                        onAnswerSelected = { onIntent(PracticeIntent.AnswerSelected(it)) }
+                                    )
+                                    if (snapshot.answerRevealed) {
+                                        Spacer(modifier = Modifier.height(HonqSpacing.lg))
+                                        ExplanationCard(
+                                            explanation = snapshot.question.explanation,
+                                            isCorrect = snapshot.selectedAnswer == snapshot.question.correctIndex
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -112,7 +159,8 @@ private fun PracticeContent(
                             BottomActionBarVertical {
                                 HonqButton(
                                     text = "Next Question",
-                                    onClick = { onIntent(PracticeIntent.NextQuestion) }
+                                    onClick = { onIntent(PracticeIntent.NextQuestion) },
+                                    loading = state.isLoadingNext
                                 )
                             }
                         }
@@ -140,3 +188,11 @@ private fun ScoreHeader(state: PracticeState) {
         )
     }
 }
+
+@Immutable
+private data class QuestionSnapshot(
+    val question: Question,
+    val selectedAnswer: Int?,
+    val answerRevealed: Boolean,
+    val questionIndex: Int
+)

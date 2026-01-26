@@ -1,11 +1,15 @@
 package com.merkost.honq.presentation.screens.mocktest
 
+import com.merkost.honq.core.analytics.Analytics
+import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.domain.model.MockTestResult
 import com.merkost.honq.domain.model.QuizSession
 import com.merkost.honq.domain.usecase.GetMockTestQuestionsUseCase
+import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
 import com.merkost.honq.domain.usecase.SaveMockTestResultUseCase
+import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import pro.respawn.flowmvi.api.Container
@@ -22,11 +26,15 @@ private val clock = SystemClock
 class MockTestContainer(
     private val getMockTestQuestions: GetMockTestQuestionsUseCase,
     private val saveMockTestResult: SaveMockTestResultUseCase,
+    private val observeFavoriteQuestionIds: ObserveFavoriteQuestionIdsUseCase,
+    private val toggleFavoriteQuestion: ToggleFavoriteQuestionUseCase,
+    private val analytics: Analytics,
     scope: CoroutineScope
 ) : Container<MockTestState, MockTestIntent, MockTestAction> {
 
     override val store = store(MockTestState(), scope) {
         init {
+            analytics.track(AnalyticsEvent.MockTestStarted)
             loadQuestions()
         }
 
@@ -34,9 +42,16 @@ class MockTestContainer(
             startTimer()
         }
 
+        whileSubscribed {
+            observeFavoriteQuestionIds().collect { favoriteIds ->
+                updateState { copy(favoriteQuestionIds = favoriteIds) }
+            }
+        }
+
         reduce { intent ->
             when (intent) {
                 is MockTestIntent.AnswerSelected -> handleAnswerSelected(intent.index)
+                is MockTestIntent.ToggleFavorite -> toggleFavorite(intent.questionId)
                 MockTestIntent.NextQuestion -> goToNextQuestion()
                 MockTestIntent.PreviousQuestion -> goToPreviousQuestion()
                 MockTestIntent.SubmitTest -> submitTest()
@@ -96,7 +111,8 @@ class MockTestContainer(
         updateState {
             copy(
                 session = session.copy(currentIndex = (session.currentIndex + 1).coerceAtMost(session.questions.lastIndex)),
-                selectedAnswer = session.answers[session.questions.getOrNull(session.currentIndex + 1)?.id]
+                selectedAnswer = session.answers[session.questions.getOrNull(session.currentIndex + 1)?.id],
+                navigationDirection = NavigationDirection.Forward
             )
         }
     }
@@ -105,7 +121,8 @@ class MockTestContainer(
         updateState {
             copy(
                 session = session.copy(currentIndex = (session.currentIndex - 1).coerceAtLeast(0)),
-                selectedAnswer = session.answers[session.questions.getOrNull(session.currentIndex - 1)?.id]
+                selectedAnswer = session.answers[session.questions.getOrNull(session.currentIndex - 1)?.id],
+                navigationDirection = NavigationDirection.Backward
             )
         }
     }
@@ -121,9 +138,12 @@ class MockTestContainer(
 
             val startTime = session.startTime ?: now
             val timeTaken = now - startTime
+            val totalQuestions = session.questions.size
+            val passPercentage = 75
+            val passed = totalQuestions > 0 && (correctCount * 100 / totalQuestions) >= passPercentage
 
             val result = MockTestResult(
-                totalQuestions = session.questions.size,
+                totalQuestions = totalQuestions,
                 correctAnswers = correctCount,
                 timeTaken = timeTaken,
                 completedAt = now
@@ -131,7 +151,30 @@ class MockTestContainer(
 
             saveMockTestResult(result)
 
-            action(MockTestAction.NavigateToResults(correctCount, session.questions.size))
+            analytics.track(
+                AnalyticsEvent.MockTestCompleted(
+                    score = correctCount,
+                    total = totalQuestions,
+                    passed = passed,
+                    timeSpentSeconds = timeTaken.inWholeSeconds
+                )
+            )
+
+            action(MockTestAction.NavigateToResults(correctCount, totalQuestions))
         }
+    }
+
+    private suspend fun PipelineContext<MockTestState, MockTestIntent, MockTestAction>.toggleFavorite(
+        questionId: String
+    ) {
+        withState {
+            val isCurrentlyFavorite = favoriteQuestionIds.contains(questionId)
+            if (isCurrentlyFavorite) {
+                analytics.track(AnalyticsEvent.FavoriteRemoved(questionId))
+            } else {
+                analytics.track(AnalyticsEvent.FavoriteAdded(questionId))
+            }
+        }
+        toggleFavoriteQuestion(questionId)
     }
 }

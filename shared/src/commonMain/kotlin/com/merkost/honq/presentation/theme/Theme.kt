@@ -3,6 +3,8 @@ package com.merkost.honq.presentation.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 
 private val DarkColorScheme = darkColorScheme(
     primary = HonqColors.Amber,
@@ -23,9 +25,22 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun HonqTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = DarkColorScheme,
-        typography = HonqTypography,
-        content = content
-    )
+    val honqColors = honqDarkColorScheme()
+
+    CompositionLocalProvider(
+        LocalHonqColors provides honqColors
+    ) {
+        MaterialTheme(
+            colorScheme = DarkColorScheme,
+            typography = HonqTypography,
+            content = content
+        )
+    }
+}
+
+object HonqTheme {
+    val colors: HonqColorScheme
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalHonqColors.current
 }

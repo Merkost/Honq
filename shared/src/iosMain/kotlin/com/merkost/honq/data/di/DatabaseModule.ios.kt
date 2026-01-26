@@ -9,5 +9,13 @@ val databaseModule = module {
     single { getRoomDatabase(getDatabaseBuilder()) }
     single { get<HonqDatabase>().questionDao() }
     single { get<HonqDatabase>().answerHistoryDao() }
+    single { get<HonqDatabase>().favoriteQuestionDao() }
     single { get<HonqDatabase>().mockTestResultDao() }
+    single { get<HonqDatabase>().stateDao() }
+    single { get<HonqDatabase>().categoryDao() }
+    single { get<HonqDatabase>().licenseTypeDao() }
+    single { get<HonqDatabase>().licenseStageDao() }
+    single { get<HonqDatabase>().assessmentTypeDao() }
+    single { get<HonqDatabase>().questionSetDao() }
+    single { get<HonqDatabase>().questionSetCategoryDao() }
 }

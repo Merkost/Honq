@@ -1,5 +1,12 @@
 package com.merkost.honq.presentation.screens.mocktest
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,21 +21,24 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import com.merkost.honq.domain.model.Question
+import com.merkost.honq.presentation.components.base.AnimatedFavoriteButton
 import com.merkost.honq.presentation.components.base.BottomActionBar
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.HonqButtonVariant
 import com.merkost.honq.presentation.components.base.HonqProgressBar
 import com.merkost.honq.presentation.components.base.HonqScaffold
-import com.merkost.honq.presentation.components.question.AnswerOption
-import com.merkost.honq.presentation.components.question.AnswerOptionState
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.components.question.QuestionCard
+import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
+import com.merkost.honq.presentation.theme.HonqTheme
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import pro.respawn.flowmvi.compose.dsl.subscribe
@@ -61,9 +71,21 @@ private fun MockTestContent(
     onIntent: (MockTestIntent) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val colors = HonqTheme.colors
+
     HonqScaffold(
         title = "Mock Test",
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        actions = {
+            val question = state.session.currentQuestion
+            if (question != null) {
+                val isFavorite = state.favoriteQuestionIds.contains(question.id)
+                AnimatedFavoriteButton(
+                    isFavorite = isFavorite,
+                    onClick = { onIntent(MockTestIntent.ToggleFavorite(question.id)) }
+                )
+            }
+        }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -74,13 +96,13 @@ private fun MockTestContent(
                 state.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = HonqColors.Amber
+                        color = colors.loadingIndicator
                     )
                 }
                 state.error != null -> {
                     Text(
                         text = state.error,
-                        color = HonqColors.Incorrect,
+                        color = colors.incorrect,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -96,7 +118,44 @@ private fun MockTestContent(
                             Spacer(modifier = Modifier.height(HonqSpacing.md))
                             HonqProgressBar(progress = state.session.progress)
                             Spacer(modifier = Modifier.height(HonqSpacing.lg))
-                            QuestionContent(state, onIntent)
+
+                            AnimatedContent(
+                                targetState = MockTestQuestionSnapshot(
+                                    question = state.session.currentQuestion,
+                                    selectedAnswer = state.selectedAnswer,
+                                    questionIndex = state.session.currentIndex,
+                                    navigationDirection = state.navigationDirection
+                                ),
+                                transitionSpec = {
+                                    val isForward = targetState.navigationDirection == NavigationDirection.Forward
+                                    val enterOffset = if (isForward) 1 else -1
+                                    val exitOffset = if (isForward) -1 else 1
+
+                                    (slideInHorizontally(
+                                        animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
+                                        initialOffsetX = { fullWidth -> fullWidth * enterOffset }
+                                    ) + fadeIn(
+                                        animationSpec = tween(HonqMotion.durationMedium)
+                                    )).togetherWith(
+                                        slideOutHorizontally(
+                                            animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
+                                            targetOffsetX = { fullWidth -> fullWidth * exitOffset }
+                                        ) + fadeOut(
+                                            animationSpec = tween(HonqMotion.durationShort)
+                                        )
+                                    )
+                                },
+                                contentKey = { it.questionIndex }
+                            ) { snapshot ->
+                                snapshot.question?.let {
+                                    QuestionCard(
+                                        question = it,
+                                        selectedAnswer = snapshot.selectedAnswer,
+                                        answerRevealed = false,
+                                        onAnswerSelected = { index -> onIntent(MockTestIntent.AnswerSelected(index)) }
+                                    )
+                                }
+                            }
                         }
 
                         BottomActionBar {
@@ -133,52 +192,21 @@ private fun MockTestContent(
 
 @Composable
 private fun TestHeader(state: MockTestState) {
+    val colors = HonqTheme.colors
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = "Question ${state.currentQuestionNumber}/${state.totalQuestions}",
-            color = HonqColors.TextSecondary
+            color = colors.textSecondary
         )
         Text(
             text = formatTime(state.timeRemaining.inWholeSeconds),
-            color = if (state.timeRemaining.inWholeMinutes < 5) HonqColors.Incorrect else HonqColors.TextSecondary,
+            color = if (state.timeRemaining.inWholeMinutes < 5) colors.incorrect else colors.textSecondary,
             fontWeight = FontWeight.Medium
         )
-    }
-}
-
-@Composable
-private fun QuestionContent(
-    state: MockTestState,
-    onIntent: (MockTestIntent) -> Unit
-) {
-    val question = state.session.currentQuestion ?: return
-
-    Text(
-        text = question.text,
-        color = HonqColors.TextPrimary,
-        fontWeight = FontWeight.Medium
-    )
-
-    Spacer(modifier = Modifier.height(HonqSpacing.lg))
-
-    Column(verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)) {
-        question.options.forEachIndexed { index, option ->
-            val optionState = if (state.selectedAnswer == index) {
-                AnswerOptionState.Selected
-            } else {
-                AnswerOptionState.Default
-            }
-
-            AnswerOption(
-                text = option,
-                index = index,
-                state = optionState,
-                onClick = { onIntent(MockTestIntent.AnswerSelected(index)) }
-            )
-        }
     }
 }
 
@@ -187,3 +215,11 @@ private fun formatTime(totalSeconds: Long): String {
     val seconds = totalSeconds % 60
     return "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
 }
+
+@Immutable
+private data class MockTestQuestionSnapshot(
+    val question: Question?,
+    val selectedAnswer: Int?,
+    val questionIndex: Int,
+    val navigationDirection: NavigationDirection
+)

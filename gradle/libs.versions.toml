@@ -25,6 +25,9 @@ kotlinx-datetime = "0.7.1"
 coil = "3.3.0"
 supabase = "3.3.0"
 flowmvi = "3.2.1"
+buildkonfig = "0.17.1"
+datastore = "1.1.7"
+amplitude = "1.16.8"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -74,6 +77,10 @@ supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", v
 flowmvi-core = { module = "pro.respawn.flowmvi:core", version.ref = "flowmvi" }
 flowmvi-compose = { module = "pro.respawn.flowmvi:compose", version.ref = "flowmvi" }
 
+amplitude = { module = "com.amplitude:analytics-android", version.ref = "amplitude" }
+
+datastore-preferences = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
+
 [bundles]
 koin = ["koin-core", "koin-compose",]
 
@@ -87,3 +94,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 room = { id = "androidx.room", version.ref = "room" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }

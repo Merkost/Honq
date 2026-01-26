@@ -9,10 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import coil3.compose.AsyncImage
 import com.merkost.honq.domain.model.Question
-import com.merkost.honq.presentation.theme.HonqColors
 import com.merkost.honq.presentation.theme.HonqSpacing
+import com.merkost.honq.presentation.theme.HonqTheme
 
 @Composable
 fun QuestionCard(
@@ -22,18 +21,19 @@ fun QuestionCard(
     onAnswerSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colors = HonqTheme.colors
+
     Column(modifier = modifier) {
         Text(
             text = question.text,
-            color = HonqColors.TextPrimary,
+            color = colors.textPrimary,
             fontWeight = FontWeight.Medium
         )
 
         question.imageUrl?.let { url ->
             Spacer(modifier = Modifier.height(HonqSpacing.md))
-            AsyncImage(
-                model = url,
-                contentDescription = null,
+            QuestionImage(
+                url = url,
                 modifier = Modifier.fillMaxWidth()
             )
         }

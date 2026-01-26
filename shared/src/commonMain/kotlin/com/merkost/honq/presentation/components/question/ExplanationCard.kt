@@ -87,13 +87,14 @@ fun ExplanationCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(HonqSpacing.md))
-
-            Text(
-                text = explanation,
-                color = HonqColors.TextSecondary,
-                lineHeight = 22.sp
-            )
+            explanation.takeIf { it.isNotBlank() }?.let {
+                Spacer(modifier = Modifier.height(HonqSpacing.md))
+                Text(
+                    text = explanation,
+                    color = HonqColors.TextSecondary,
+                    lineHeight = 22.sp
+                )
+            }
         }
     }
 }

@@ -9,5 +9,7 @@ fun getRoomDatabase(builder: RoomDatabase.Builder<HonqDatabase>): HonqDatabase {
     return builder
         .setDriver(BundledSQLiteDriver())
         .setQueryCoroutineContext(Dispatchers.IO)
+        //TODO: remove for production
+        .fallbackToDestructiveMigration(true)
         .build()
 }

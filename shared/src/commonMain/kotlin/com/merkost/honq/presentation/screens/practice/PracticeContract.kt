@@ -13,12 +13,15 @@ data class PracticeState(
     val answerRevealed: Boolean = false,
     val questionsAnswered: Int = 0,
     val correctAnswers: Int = 0,
+    val favoriteQuestionIds: Set<String> = emptySet(),
     val isLoading: Boolean = true,
+    val isLoadingNext: Boolean = false,
     val error: String? = null
 ) : MVIState
 
 sealed interface PracticeIntent : MVIIntent {
     data class AnswerSelected(val index: Int) : PracticeIntent
+    data class ToggleFavorite(val questionId: String) : PracticeIntent
     data object NextQuestion : PracticeIntent
     data object Exit : PracticeIntent
 }

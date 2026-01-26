@@ -9,4 +9,5 @@ interface ProgressRepository {
     suspend fun saveMockTestResult(result: MockTestResult)
     fun observeUserProgress(): Flow<UserProgress>
     fun observeMockTestResults(): Flow<List<MockTestResult>>
+    suspend fun clearAllProgress()
 }

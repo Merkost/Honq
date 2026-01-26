@@ -19,4 +19,7 @@ interface MockTestResultDao {
 
     @Query("SELECT COUNT(*) FROM mock_test_results WHERE passed = 1")
     fun observePassedCount(): Flow<Int>
+
+    @Query("DELETE FROM mock_test_results")
+    suspend fun deleteAll()
 }

@@ -17,6 +17,33 @@ interface AnswerHistoryDao {
     @Query("SELECT COUNT(*) FROM answer_history WHERE wasCorrect = 1")
     fun observeCorrectCount(): Flow<Int>
 
+    @Query("SELECT COUNT(DISTINCT questionId) FROM answer_history")
+    fun observeUniqueQuestionsAnswered(): Flow<Int>
+
+    @Query("""
+        SELECT COUNT(*) FROM answer_history ah
+        INNER JOIN questions q ON ah.questionId = q.id
+        WHERE q.questionSetId = :questionSetId
+    """)
+    fun observeTotalCountByQuestionSet(questionSetId: String): Flow<Int>
+
+    @Query("""
+        SELECT COUNT(*) FROM answer_history ah
+        INNER JOIN questions q ON ah.questionId = q.id
+        WHERE ah.wasCorrect = 1 AND q.questionSetId = :questionSetId
+    """)
+    fun observeCorrectCountByQuestionSet(questionSetId: String): Flow<Int>
+
+    @Query("""
+        SELECT COUNT(DISTINCT ah.questionId) FROM answer_history ah
+        INNER JOIN questions q ON ah.questionId = q.id
+        WHERE q.questionSetId = :questionSetId
+    """)
+    fun observeUniqueQuestionsAnsweredByQuestionSet(questionSetId: String): Flow<Int>
+
     @Query("SELECT MAX(answeredAt) FROM answer_history")
     suspend fun getLastAnsweredAt(): String?
+
+    @Query("DELETE FROM answer_history")
+    suspend fun deleteAll()
 }

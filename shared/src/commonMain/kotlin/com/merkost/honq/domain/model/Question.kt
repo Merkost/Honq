@@ -7,7 +7,11 @@ data class Question(
     val options: List<String>,
     val correctIndex: Int,
     val explanation: String,
-    val category: QuestionCategory
+    val categoryId: String,
+    val categoryName: String,
+    val questionSetId: String,
+    val stateId: String = "nsw",
+    val difficulty: Difficulty = Difficulty.MEDIUM
 ) {
     val correctAnswer: String get() = options[correctIndex]
     val isValid: Boolean get() = options.size >= 2 && correctIndex in options.indices

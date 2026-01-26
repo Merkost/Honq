@@ -1,18 +1,44 @@
 package com.merkost.honq.domain.di
 
+import com.merkost.honq.domain.usecase.GetLicenseStagesUseCase
+import com.merkost.honq.domain.usecase.GetLicenseTypesUseCase
 import com.merkost.honq.domain.usecase.GetMockTestQuestionsUseCase
+import com.merkost.honq.domain.usecase.GetQuestionSetsByStateUseCase
 import com.merkost.honq.domain.usecase.GetRandomQuestionsUseCase
+import com.merkost.honq.domain.usecase.GetQuestionByIdUseCase
+import com.merkost.honq.domain.usecase.GetStateResourcesUseCase
+import com.merkost.honq.domain.usecase.GetStatesUseCase
+import com.merkost.honq.domain.usecase.ObserveSelectedStateUseCase
+import com.merkost.honq.domain.usecase.ObserveSelectedQuestionSetUseCase
 import com.merkost.honq.domain.usecase.GetUserProgressUseCase
+import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
+import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionsUseCase
 import com.merkost.honq.domain.usecase.RecordAnswerUseCase
 import com.merkost.honq.domain.usecase.SaveMockTestResultUseCase
+import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
+import com.merkost.honq.domain.usecase.SetSelectedStateUseCase
 import com.merkost.honq.domain.usecase.SyncQuestionsUseCase
+import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
 import org.koin.dsl.module
 
 val domainModule = module {
-    factory { GetRandomQuestionsUseCase(get()) }
-    factory { GetMockTestQuestionsUseCase(get()) }
+    factory { GetRandomQuestionsUseCase(get(), get()) }
+    factory { GetMockTestQuestionsUseCase(get(), get()) }
+    factory { GetQuestionByIdUseCase(get()) }
     factory { RecordAnswerUseCase(get()) }
     factory { SaveMockTestResultUseCase(get()) }
     factory { GetUserProgressUseCase(get()) }
-    factory { SyncQuestionsUseCase(get()) }
+    factory { SyncQuestionsUseCase(get(), get()) }
+    factory { GetStatesUseCase(get()) }
+    factory { GetStateResourcesUseCase(get()) }
+    factory { GetLicenseStagesUseCase(get()) }
+    factory { GetLicenseTypesUseCase(get()) }
+    factory { GetQuestionSetsByStateUseCase(get()) }
+    factory { ObserveSelectedStateUseCase(get()) }
+    factory { ObserveSelectedQuestionSetUseCase(get()) }
+    factory { SetSelectedQuestionSetUseCase(get()) }
+    factory { SetSelectedStateUseCase(get(), get(), get()) }
+    factory { ObserveFavoriteQuestionsUseCase(get()) }
+    factory { ObserveFavoriteQuestionIdsUseCase(get()) }
+    factory { ToggleFavoriteQuestionUseCase(get()) }
 }

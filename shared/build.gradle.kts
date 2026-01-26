@@ -1,4 +1,6 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -8,6 +10,18 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.buildkonfig)
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
+}
+
+fun getLocalProperty(key: String, defaultValue: String = ""): String {
+    return localProperties.getProperty(key, defaultValue)
 }
 
 kotlin {
@@ -63,6 +77,10 @@ kotlin {
 
             implementation(libs.flowmvi.core)
             implementation(libs.flowmvi.compose)
+
+            implementation(libs.amplitude)
+
+            implementation(libs.datastore.preferences)
         }
 
         androidMain.dependencies {
@@ -99,4 +117,15 @@ dependencies {
     add("kspAndroid", libs.room.compiler)
     add("kspIosArm64", libs.room.compiler)
     add("kspIosSimulatorArm64", libs.room.compiler)
+}
+
+buildkonfig {
+    packageName = "com.merkost.honq"
+
+    defaultConfigs {
+        buildConfigField(STRING, "SUPABASE_URL", getLocalProperty("supabase.url", ""))
+        buildConfigField(STRING, "SUPABASE_KEY", getLocalProperty("supabase.key", ""))
+        buildConfigField(STRING, "AMPLITUDE_API_KEY", getLocalProperty("amplitude.api.key", ""))
+        buildConfigField(STRING, "APP_VERSION", "\"1.0.0\"")
+    }
 }
