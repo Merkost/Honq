@@ -23,4 +23,8 @@ sealed class Screen(val route: String) {
         fun createRoute(score: Int, total: Int, hasIncorrect: Boolean) = "results/$score/$total/$hasIncorrect"
     }
     data object ReviewIncorrect : Screen("review_incorrect")
+    data object Search : Screen("search")
+    data object SearchQuestion : Screen("search/question/{questionId}") {
+        fun createRoute(questionId: String) = "search/question/$questionId"
+    }
 }

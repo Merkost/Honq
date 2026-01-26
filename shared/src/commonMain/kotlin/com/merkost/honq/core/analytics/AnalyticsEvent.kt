@@ -81,4 +81,14 @@ sealed class AnalyticsEvent(
         "category_practice_started",
         mapOf("category_id" to (categoryId ?: "all"))
     )
+
+    data class SearchPerformed(val query: String, val resultsCount: Int) : AnalyticsEvent(
+        "search_performed",
+        mapOf("query" to query, "results_count" to resultsCount)
+    )
+
+    data class SearchResultSelected(val questionId: String) : AnalyticsEvent(
+        "search_result_selected",
+        mapOf("question_id" to questionId)
+    )
 }

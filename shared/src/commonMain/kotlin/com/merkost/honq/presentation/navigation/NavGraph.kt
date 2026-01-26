@@ -34,6 +34,7 @@ import com.merkost.honq.presentation.screens.categories.CategorySelectionScreen
 import com.merkost.honq.presentation.screens.practice.PracticeScreen
 import com.merkost.honq.presentation.screens.results.ResultsScreen
 import com.merkost.honq.presentation.screens.review.ReviewIncorrectScreen
+import com.merkost.honq.presentation.screens.search.SearchScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
 import com.merkost.honq.presentation.theme.HonqColors
@@ -127,6 +128,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onNavigateToCategories = { navController.navigate(Screen.CategorySelection.route) },
                 onNavigateToMockTest = { navController.navigate(Screen.MockTest.route) },
                 onNavigateToFavorites = { navController.navigate(Screen.Favorites.route) },
+                onNavigateToSearch = { navController.navigate(Screen.Search.route) },
                 onNavigateToAbout = { navController.navigate(Screen.About.route) }
             )
         }
@@ -253,6 +255,28 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
 
         composable(Screen.ReviewIncorrect.route) {
             ReviewIncorrectScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Search.route) {
+            SearchScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToQuestion = { questionId ->
+                    navController.navigate(Screen.SearchQuestion.createRoute(questionId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.SearchQuestion.route,
+            arguments = listOf(
+                navArgument("questionId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val questionId = backStackEntry.arguments?.getString("questionId").orEmpty()
+            FavoriteQuestionScreen(
+                questionId = questionId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

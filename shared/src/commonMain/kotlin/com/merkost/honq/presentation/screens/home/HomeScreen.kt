@@ -31,6 +31,7 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.PictureAsPdf
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -75,6 +76,7 @@ fun HomeScreen(
     onNavigateToCategories: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
+    onNavigateToSearch: () -> Unit,
     onNavigateToAbout: () -> Unit
 ) {
     val container = koinViewModel<HomeContainer>()
@@ -91,6 +93,7 @@ fun HomeScreen(
         onNavigateToCategories = onNavigateToCategories,
         onNavigateToMockTest = onNavigateToMockTest,
         onNavigateToFavorites = onNavigateToFavorites,
+        onNavigateToSearch = onNavigateToSearch,
         onNavigateToAbout = onNavigateToAbout,
         onSelectState = { stateId -> container.intent(HomeIntent.SelectState(stateId)) },
         onSelectLicenseType = { typeId -> container.intent(HomeIntent.SelectLicenseType(typeId)) },
@@ -108,6 +111,7 @@ private fun HomeContent(
     onNavigateToCategories: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
+    onNavigateToSearch: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onSelectState: (String) -> Unit,
     onSelectLicenseType: (String) -> Unit,
@@ -120,6 +124,13 @@ private fun HomeContent(
         title = stringResource(Res.string.app_name),
         showLogo = true,
         actions = {
+            IconButton(onClick = onNavigateToSearch) {
+                Icon(
+                    imageVector = Icons.Rounded.Search,
+                    contentDescription = "Search",
+                    tint = colors.textPrimary
+                )
+            }
             IconButton(onClick = onNavigateToAbout) {
                 Icon(
                     imageVector = Icons.Outlined.Info,

@@ -87,6 +87,12 @@ class QuestionLocalDataSource(
     suspend fun getQuestionById(questionId: String): Question? =
         questionDao.getQuestionById(questionId)?.toDomain(json, getCategoryNameMap(null))
 
+    suspend fun searchQuestions(questionSetId: String, query: String): List<Question> {
+        val searchPattern = "%${query.lowercase()}%"
+        return questionDao.searchQuestions(questionSetId, searchPattern)
+            .map { it.toDomain(json, getCategoryNameMap(questionSetId)) }
+    }
+
     suspend fun insertQuestions(questions: List<QuestionEntity>) =
         questionDao.insertAll(questions)
 

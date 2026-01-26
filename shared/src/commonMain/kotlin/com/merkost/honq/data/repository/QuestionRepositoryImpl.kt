@@ -135,6 +135,19 @@ class QuestionRepositoryImpl(
             }
         }
 
+    override suspend fun searchQuestions(questionSetId: String, query: String): Result<List<Question>> =
+        withContext(dispatchers.io) {
+            try {
+                if (query.isBlank()) {
+                    return@withContext Result.Success(emptyList())
+                }
+                val questions = localDataSource.searchQuestions(questionSetId, query)
+                Result.Success(questions)
+            } catch (e: Exception) {
+                Result.Error(e)
+            }
+        }
+
     override suspend fun syncQuestions(): Result<Unit> =
         withContext(dispatchers.io) {
             try {

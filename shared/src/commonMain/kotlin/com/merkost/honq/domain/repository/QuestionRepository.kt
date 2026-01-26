@@ -15,6 +15,7 @@ interface QuestionRepository {
     suspend fun getMockTestQuestions(): Result<List<Question>>
     suspend fun getMockTestQuestions(questionSetId: String): Result<List<Question>>
     suspend fun getQuestionById(questionId: String): Result<Question?>
+    suspend fun searchQuestions(questionSetId: String, query: String): Result<List<Question>>
     suspend fun syncQuestions(): Result<Unit>
     suspend fun syncQuestions(questionSetId: String): Result<Unit>
     suspend fun getStates(): Result<List<State>>

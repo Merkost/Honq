@@ -40,6 +40,16 @@ interface QuestionDao {
     @Query("SELECT * FROM questions WHERE id = :questionId LIMIT 1")
     suspend fun getQuestionById(questionId: String): QuestionEntity?
 
+    @Query("""
+        SELECT * FROM questions
+        WHERE questionSetId = :questionSetId
+        AND isActive = 1
+        AND (LOWER(text) LIKE :query OR LOWER(explanation) LIKE :query OR LOWER(options) LIKE :query)
+        ORDER BY text ASC
+        LIMIT 50
+    """)
+    suspend fun searchQuestions(questionSetId: String, query: String): List<QuestionEntity>
+
     @Query("SELECT * FROM questions")
     fun observeAllQuestions(): Flow<List<QuestionEntity>>
 
