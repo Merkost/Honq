@@ -30,9 +30,12 @@ import com.merkost.honq.presentation.screens.favorites.FavoriteQuestionScreen
 import com.merkost.honq.presentation.screens.favorites.FavoritesScreen
 import com.merkost.honq.presentation.screens.home.HomeScreen
 import com.merkost.honq.presentation.screens.mocktest.MockTestScreen
+import com.merkost.honq.presentation.screens.categories.CategorySelectionScreen
 import com.merkost.honq.presentation.screens.practice.PracticeScreen
 import com.merkost.honq.presentation.screens.results.ResultsScreen
 import com.merkost.honq.presentation.screens.review.ReviewIncorrectScreen
+import java.net.URLDecoder
+import java.net.URLEncoder
 import com.merkost.honq.presentation.theme.HonqColors
 import com.merkost.honq.presentation.theme.HonqMotion
 
@@ -121,6 +124,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         ) {
             HomeScreen(
                 onNavigateToPractice = { navController.navigate(Screen.Practice.route) },
+                onNavigateToCategories = { navController.navigate(Screen.CategorySelection.route) },
                 onNavigateToMockTest = { navController.navigate(Screen.MockTest.route) },
                 onNavigateToFavorites = { navController.navigate(Screen.Favorites.route) },
                 onNavigateToAbout = { navController.navigate(Screen.About.route) }
@@ -157,6 +161,41 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
 
         composable(Screen.Practice.route) {
             PracticeScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.CategorySelection.route) {
+            CategorySelectionScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPractice = { categoryId, categoryName ->
+                    if (categoryId != null && categoryName != null) {
+                        navController.navigate(Screen.PracticeByCategory.createRoute(categoryId, categoryName)) {
+                            popUpTo(Screen.CategorySelection.route) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Screen.Practice.route) {
+                            popUpTo(Screen.CategorySelection.route) { inclusive = true }
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Screen.PracticeByCategory.route,
+            arguments = listOf(
+                navArgument("categoryId") { type = NavType.StringType },
+                navArgument("categoryName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val categoryId = backStackEntry.arguments?.getString("categoryId")
+            val categoryName = backStackEntry.arguments?.getString("categoryName")?.let {
+                URLDecoder.decode(it, "UTF-8")
+            }
+            PracticeScreen(
+                categoryId = categoryId,
+                categoryName = categoryName,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

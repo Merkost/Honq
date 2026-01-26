@@ -45,10 +45,12 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
 fun PracticeScreen(
+    categoryId: String? = null,
+    categoryName: String? = null,
     onNavigateBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val container = koinInject<PracticeContainer> { parametersOf(scope) }
+    val container = koinInject<PracticeContainer> { parametersOf(categoryId, categoryName, scope) }
 
     val state by container.store.subscribe { action ->
         when (action) {
@@ -69,8 +71,14 @@ private fun PracticeContent(
     onIntent: (PracticeIntent) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val title = if (state.categoryName != null) {
+        "Practice: ${state.categoryName}"
+    } else {
+        "Practice"
+    }
+
     HonqScaffold(
-        title = "Practice",
+        title = title,
         onNavigateBack = onNavigateBack,
         actions = {
             val question = state.currentQuestion

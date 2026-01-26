@@ -16,8 +16,12 @@ data class PracticeState(
     val favoriteQuestionIds: Set<String> = emptySet(),
     val isLoading: Boolean = true,
     val isLoadingNext: Boolean = false,
-    val error: String? = null
-) : MVIState
+    val error: String? = null,
+    val categoryId: String? = null,
+    val categoryName: String? = null
+) : MVIState {
+    val isFiltered: Boolean get() = categoryId != null
+}
 
 sealed interface PracticeIntent : MVIIntent {
     data class AnswerSelected(val index: Int) : PracticeIntent

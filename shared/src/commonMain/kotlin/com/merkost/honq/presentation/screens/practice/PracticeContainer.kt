@@ -17,6 +17,8 @@ import pro.respawn.flowmvi.plugins.reduce
 import pro.respawn.flowmvi.plugins.whileSubscribed
 
 class PracticeContainer(
+    private val categoryId: String?,
+    private val categoryName: String?,
     private val getRandomQuestions: GetRandomQuestionsUseCase,
     private val recordAnswer: RecordAnswerUseCase,
     private val observeFavoriteQuestionIds: ObserveFavoriteQuestionIdsUseCase,
@@ -25,9 +27,13 @@ class PracticeContainer(
     scope: CoroutineScope
 ) : Container<PracticeState, PracticeIntent, PracticeAction> {
 
-    override val store = store(PracticeState(), scope) {
+    override val store = store(PracticeState(categoryId = categoryId, categoryName = categoryName), scope) {
         init {
-            analytics.track(AnalyticsEvent.PracticeStarted)
+            if (categoryId != null) {
+                analytics.track(AnalyticsEvent.CategoryPracticeStarted(categoryId))
+            } else {
+                analytics.track(AnalyticsEvent.PracticeStarted)
+            }
             loadNextQuestion()
         }
 
@@ -82,8 +88,7 @@ class PracticeContainer(
             }
         }
 
-
-        getRandomQuestions(1)
+        getRandomQuestions(1, categoryId)
             .onSuccess { questions ->
                 updateState {
                     copy(

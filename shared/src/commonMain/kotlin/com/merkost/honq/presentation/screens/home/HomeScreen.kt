@@ -72,6 +72,7 @@ import pro.respawn.flowmvi.dsl.intent
 @Composable
 fun HomeScreen(
     onNavigateToPractice: () -> Unit,
+    onNavigateToCategories: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToAbout: () -> Unit
@@ -87,6 +88,7 @@ fun HomeScreen(
     HomeContent(
         state = state,
         onNavigateToPractice = onNavigateToPractice,
+        onNavigateToCategories = onNavigateToCategories,
         onNavigateToMockTest = onNavigateToMockTest,
         onNavigateToFavorites = onNavigateToFavorites,
         onNavigateToAbout = onNavigateToAbout,
@@ -103,6 +105,7 @@ fun HomeScreen(
 private fun HomeContent(
     state: HomeState,
     onNavigateToPractice: () -> Unit,
+    onNavigateToCategories: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToAbout: () -> Unit,
@@ -199,9 +202,15 @@ private fun HomeContent(
                                     enabled = state.isReady
                                 )
                                 HonqButton(
+                                    text = "Practice by Category",
+                                    onClick = onNavigateToCategories,
+                                    variant = HonqButtonVariant.Secondary,
+                                    enabled = state.isReady
+                                )
+                                HonqButton(
                                     text = stringResource(Res.string.home_take_mock_test),
                                     onClick = onNavigateToMockTest,
-                                    variant = HonqButtonVariant.Secondary,
+                                    variant = HonqButtonVariant.Text,
                                     enabled = state.isReady
                                 )
                             }

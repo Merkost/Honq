@@ -71,4 +71,14 @@ sealed class AnalyticsEvent(
         "external_link_opened",
         mapOf("link_type" to linkType, "state_id" to stateId)
     )
+
+    data class CategorySelected(val categoryId: String) : AnalyticsEvent(
+        "category_selected",
+        mapOf("category_id" to categoryId)
+    )
+
+    data class CategoryPracticeStarted(val categoryId: String?) : AnalyticsEvent(
+        "category_practice_started",
+        mapOf("category_id" to (categoryId ?: "all"))
+    )
 }

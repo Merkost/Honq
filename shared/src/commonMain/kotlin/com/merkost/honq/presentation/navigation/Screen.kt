@@ -1,5 +1,7 @@
 package com.merkost.honq.presentation.navigation
 
+import java.net.URLEncoder
+
 sealed class Screen(val route: String) {
     data object Onboarding : Screen("onboarding")
     data object Home : Screen("home")
@@ -9,6 +11,13 @@ sealed class Screen(val route: String) {
         fun createRoute(questionId: String) = "favorites/question/$questionId"
     }
     data object Practice : Screen("practice")
+    data object CategorySelection : Screen("categories")
+    data object PracticeByCategory : Screen("practice/{categoryId}/{categoryName}") {
+        fun createRoute(categoryId: String, categoryName: String): String {
+            val encodedName = URLEncoder.encode(categoryName, "UTF-8")
+            return "practice/$categoryId/$encodedName"
+        }
+    }
     data object MockTest : Screen("mocktest")
     data object Results : Screen("results/{score}/{total}/{hasIncorrect}") {
         fun createRoute(score: Int, total: Int, hasIncorrect: Boolean) = "results/$score/$total/$hasIncorrect"
