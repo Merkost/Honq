@@ -208,7 +208,7 @@ private fun SearchBar(
                 Box {
                     if (query.isEmpty()) {
                         Text(
-                            text = "Search questions...",
+                            text = "Search by keyword or question ID...",
                             color = colors.textMuted,
                             fontSize = 16.sp
                         )
@@ -311,12 +311,27 @@ private fun SearchResultCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(HonqSpacing.xs))
-                Text(
-                    text = question.categoryName,
-                    color = colors.textMuted,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = question.categoryName,
+                        color = colors.textMuted,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "•",
+                        color = colors.textMuted,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "#${question.id}",
+                        color = colors.textMuted.copy(alpha = 0.6f),
+                        fontSize = 11.sp
+                    )
+                }
             }
             AnimatedFavoriteButton(
                 isFavorite = isFavorite,
@@ -350,7 +365,7 @@ private fun SearchPrompt(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(HonqSpacing.xs))
         Text(
-            text = "Find questions by keywords in the question text,\nanswers, or explanations",
+            text = "Find questions by keywords, question ID,\nor answer text",
             color = colors.textMuted,
             fontSize = 14.sp,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
