@@ -46,4 +46,10 @@ interface AnswerHistoryDao {
 
     @Query("DELETE FROM answer_history")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM answer_history ORDER BY answeredAt DESC")
+    suspend fun getAllAnswerHistory(): List<AnswerHistoryEntity>
+
+    @Query("SELECT * FROM answer_history ORDER BY answeredAt DESC LIMIT :limit")
+    suspend fun getRecentAnswerHistory(limit: Int): List<AnswerHistoryEntity>
 }

@@ -9,6 +9,7 @@ import com.merkost.honq.presentation.screens.categories.CategorySelectionContain
 import com.merkost.honq.presentation.screens.practice.PracticeContainer
 import com.merkost.honq.presentation.screens.review.ReviewIncorrectContainer
 import com.merkost.honq.presentation.screens.search.SearchContainer
+import com.merkost.honq.presentation.screens.statistics.StatisticsContainer
 import kotlinx.coroutines.CoroutineScope
 import org.koin.dsl.module
 
@@ -41,4 +42,5 @@ val presentationModule = module {
     }
     factory { params -> ReviewIncorrectContainer(get(), get(), get(), get(), params.get<CoroutineScope>()) }
     factory { params -> SearchContainer(get(), get(), get(), get(), params.get<CoroutineScope>()) }
+    factory { params -> StatisticsContainer(get(), get(), params.get<CoroutineScope>()) }
 }

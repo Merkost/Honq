@@ -91,4 +91,17 @@ sealed class AnalyticsEvent(
         "search_result_selected",
         mapOf("question_id" to questionId)
     )
+
+    data class StatisticsViewed(
+        val totalPracticed: Int,
+        val accuracy: Float,
+        val mockTestsTaken: Int
+    ) : AnalyticsEvent(
+        "statistics_viewed",
+        mapOf(
+            "total_practiced" to totalPracticed,
+            "accuracy" to accuracy,
+            "mock_tests_taken" to mockTestsTaken
+        )
+    )
 }

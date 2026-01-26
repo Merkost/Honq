@@ -77,6 +77,7 @@ fun HomeScreen(
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToSearch: () -> Unit,
+    onNavigateToStatistics: () -> Unit,
     onNavigateToAbout: () -> Unit
 ) {
     val container = koinViewModel<HomeContainer>()
@@ -94,6 +95,7 @@ fun HomeScreen(
         onNavigateToMockTest = onNavigateToMockTest,
         onNavigateToFavorites = onNavigateToFavorites,
         onNavigateToSearch = onNavigateToSearch,
+        onNavigateToStatistics = onNavigateToStatistics,
         onNavigateToAbout = onNavigateToAbout,
         onSelectState = { stateId -> container.intent(HomeIntent.SelectState(stateId)) },
         onSelectLicenseType = { typeId -> container.intent(HomeIntent.SelectLicenseType(typeId)) },
@@ -112,6 +114,7 @@ private fun HomeContent(
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToSearch: () -> Unit,
+    onNavigateToStatistics: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onSelectState: (String) -> Unit,
     onSelectLicenseType: (String) -> Unit,
@@ -194,7 +197,7 @@ private fun HomeContent(
                             } else {
                                 QuestionBankCard(state)
                                 FavoritesCard(state, onNavigateToFavorites)
-                                StatsRow(state)
+                                StatsRow(state, onNavigateToStatistics)
 
                                 if (state.stateResources.isNotEmpty()) {
                                     OfficialResourcesCard(
@@ -559,7 +562,10 @@ private fun FavoritesCard(
 }
 
 @Composable
-private fun StatsRow(state: HomeState) {
+private fun StatsRow(
+    state: HomeState,
+    onNavigateToStatistics: () -> Unit
+) {
     val colors = HonqTheme.colors
     val progress = state.progress
 
@@ -567,12 +573,27 @@ private fun StatsRow(state: HomeState) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
     ) {
-        HonqCard(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(Res.string.home_accuracy),
-                color = colors.textSecondary,
-                fontSize = 12.sp
-            )
+        HonqCard(
+            modifier = Modifier.weight(1f),
+            onClick = onNavigateToStatistics
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(Res.string.home_accuracy),
+                    color = colors.textSecondary,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "Stats",
+                    color = colors.primary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
             Spacer(modifier = Modifier.height(HonqSpacing.xs))
             AnimatedContent(
                 targetState = (progress.practiceAccuracy * 100).toInt(),
@@ -594,12 +615,27 @@ private fun StatsRow(state: HomeState) {
             )
         }
 
-        HonqCard(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(Res.string.home_mock_tests),
-                color = colors.textSecondary,
-                fontSize = 12.sp
-            )
+        HonqCard(
+            modifier = Modifier.weight(1f),
+            onClick = onNavigateToStatistics
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(Res.string.home_mock_tests),
+                    color = colors.textSecondary,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "Stats",
+                    color = colors.primary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
             Spacer(modifier = Modifier.height(HonqSpacing.xs))
             AnimatedContent(
                 targetState = progress.mockTestsPassed,

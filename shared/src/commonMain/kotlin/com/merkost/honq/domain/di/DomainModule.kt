@@ -2,6 +2,7 @@ package com.merkost.honq.domain.di
 
 import com.merkost.honq.domain.usecase.GetCategoriesUseCase
 import com.merkost.honq.domain.usecase.GetLicenseStagesUseCase
+import com.merkost.honq.domain.usecase.GetStatisticsUseCase
 import com.merkost.honq.domain.usecase.SearchQuestionsUseCase
 import com.merkost.honq.domain.usecase.GetLicenseTypesUseCase
 import com.merkost.honq.domain.usecase.GetMockTestQuestionsUseCase
@@ -51,4 +52,5 @@ val domainModule = module {
     factory { HasIncorrectAnswersUseCase(get()) }
     factory { GetCategoriesUseCase(get(), get()) }
     factory { SearchQuestionsUseCase(get(), get()) }
+    factory { GetStatisticsUseCase(get()) }
 }

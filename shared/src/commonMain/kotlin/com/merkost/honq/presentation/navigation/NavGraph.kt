@@ -35,6 +35,7 @@ import com.merkost.honq.presentation.screens.practice.PracticeScreen
 import com.merkost.honq.presentation.screens.results.ResultsScreen
 import com.merkost.honq.presentation.screens.review.ReviewIncorrectScreen
 import com.merkost.honq.presentation.screens.search.SearchScreen
+import com.merkost.honq.presentation.screens.statistics.StatisticsScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
 import com.merkost.honq.presentation.theme.HonqColors
@@ -129,6 +130,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                 onNavigateToMockTest = { navController.navigate(Screen.MockTest.route) },
                 onNavigateToFavorites = { navController.navigate(Screen.Favorites.route) },
                 onNavigateToSearch = { navController.navigate(Screen.Search.route) },
+                onNavigateToStatistics = { navController.navigate(Screen.Statistics.route) },
                 onNavigateToAbout = { navController.navigate(Screen.About.route) }
             )
         }
@@ -277,6 +279,12 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             val questionId = backStackEntry.arguments?.getString("questionId").orEmpty()
             FavoriteQuestionScreen(
                 questionId = questionId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Statistics.route) {
+            StatisticsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

@@ -23,6 +23,7 @@ data class HonqColorScheme(
     val correctSurface: Color,
     val incorrect: Color,
     val incorrectSurface: Color,
+    val warning: Color,
 
     val loadingIndicator: Color,
     val progressTrack: Color,
@@ -63,6 +64,7 @@ fun honqDarkColorScheme(): HonqColorScheme {
         correctSurface = Color(0xFF1A3D2A),
         incorrect = Color(0xFFFF453A),
         incorrectSurface = Color(0xFF3D1A1A),
+        warning = Color(0xFFFF9F0A),
 
         loadingIndicator = amber,
         progressTrack = surfaceVariant,
