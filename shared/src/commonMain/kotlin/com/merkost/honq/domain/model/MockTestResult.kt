@@ -5,6 +5,7 @@ import kotlin.time.Duration
 
 data class MockTestResult(
     val id: Long = 0,
+    val questionSetId: String = "",
     val totalQuestions: Int,
     val correctAnswers: Int,
     val timeTaken: Duration,

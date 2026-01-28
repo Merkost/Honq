@@ -9,6 +9,7 @@ import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
 import com.merkost.honq.domain.usecase.RecordAnswerUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
 import kotlinx.coroutines.CoroutineScope
+import org.kimplify.cedar.logging.Cedar
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.PipelineContext
 import pro.respawn.flowmvi.dsl.store
@@ -90,6 +91,9 @@ class PracticeContainer(
 
         getRandomQuestions(1, categoryId)
             .onSuccess { questions ->
+                if (questions.isEmpty()) {
+                    Cedar.tag("Practice").w("loadNextQuestion: no questions returned for category=$categoryId")
+                }
                 updateState {
                     copy(
                         currentQuestion = questions.firstOrNull(),
@@ -103,6 +107,7 @@ class PracticeContainer(
                 }
             }
             .onError { e ->
+                Cedar.tag("Practice").e("loadNextQuestion: failed: ${e.message}", e)
                 updateState { copy(error = e.message, isLoading = false, isLoadingNext = false) }
             }
     }

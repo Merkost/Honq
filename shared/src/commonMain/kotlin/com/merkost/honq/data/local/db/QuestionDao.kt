@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.merkost.honq.data.local.entity.CategoryCount
 import com.merkost.honq.data.local.entity.QuestionEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -15,7 +16,7 @@ interface QuestionDao {
     @Query("SELECT * FROM questions WHERE questionSetId = :questionSetId AND isActive = 1 ORDER BY RANDOM() LIMIT :count")
     suspend fun getRandomQuestionsByQuestionSet(questionSetId: String, count: Int): List<QuestionEntity>
 
-    @Query("SELECT * FROM questions WHERE questionSetId = :questionSetId AND category = :categoryId AND isActive = 1 ORDER BY RANDOM() LIMIT :count")
+    @Query("SELECT * FROM questions WHERE questionSetId = :questionSetId AND categoryId = :categoryId AND isActive = 1 ORDER BY RANDOM() LIMIT :count")
     suspend fun getRandomQuestionsByQuestionSetAndCategory(
         questionSetId: String,
         categoryId: String,
@@ -34,7 +35,7 @@ interface QuestionDao {
     @Query("SELECT * FROM questions WHERE questionSetId = :questionSetId")
     suspend fun getQuestionsByQuestionSet(questionSetId: String): List<QuestionEntity>
 
-    @Query("SELECT * FROM questions WHERE category = :categoryId AND isActive = 1")
+    @Query("SELECT * FROM questions WHERE categoryId = :categoryId AND isActive = 1")
     suspend fun getQuestionsByCategory(categoryId: String): List<QuestionEntity>
 
     @Query("SELECT * FROM questions WHERE id = :questionId LIMIT 1")
@@ -82,4 +83,15 @@ interface QuestionDao {
 
     @Query("SELECT MAX(updatedAt) FROM questions WHERE questionSetId = :questionSetId")
     suspend fun getLastUpdatedAt(questionSetId: String): String?
+
+    @Query("""
+        SELECT * FROM questions
+        WHERE questionSetId = :questionSetId AND isActive = 1
+        AND id NOT IN (SELECT DISTINCT questionId FROM answer_history)
+        LIMIT :limit
+    """)
+    suspend fun getUnansweredQuestions(questionSetId: String, limit: Int): List<QuestionEntity>
+
+    @Query("SELECT categoryId, COUNT(*) AS count FROM questions WHERE questionSetId = :questionSetId AND isActive = 1 GROUP BY categoryId")
+    suspend fun getQuestionCountsByCategory(questionSetId: String): List<CategoryCount>
 }

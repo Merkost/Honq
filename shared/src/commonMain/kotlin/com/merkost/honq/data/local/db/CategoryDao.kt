@@ -30,6 +30,19 @@ interface CategoryDao {
     )
     suspend fun getCategoriesForQuestionSet(questionSetId: String): List<CategoryEntity>
 
+    @Query(
+        """
+        SELECT c.* FROM categories c
+        WHERE c.isActive = 1
+          AND c.id IN (
+              SELECT DISTINCT categoryId FROM questions
+              WHERE questionSetId = :questionSetId AND isActive = 1
+          )
+        ORDER BY c.displayOrder
+        """
+    )
+    suspend fun getCategoriesFromQuestions(questionSetId: String): List<CategoryEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(categories: List<CategoryEntity>)
 

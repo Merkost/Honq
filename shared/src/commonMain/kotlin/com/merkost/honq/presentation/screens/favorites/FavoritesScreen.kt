@@ -40,6 +40,7 @@ import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
@@ -48,8 +49,7 @@ fun FavoritesScreen(
     onNavigateBack: () -> Unit,
     onNavigateToQuestion: (String) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val container = koinInject<FavoritesContainer> { parametersOf(scope) }
+    val container = koinViewModel<FavoritesContainer>()
 
     val state by container.store.subscribe { action ->
         when (action) {
@@ -70,8 +70,6 @@ private fun FavoritesContent(
     onIntent: (FavoritesIntent) -> Unit,
     onNavigateToQuestion: (String) -> Unit
 ) {
-    val colors = HonqTheme.colors
-
     HonqScaffold(
         title = "Favorites",
         onNavigateBack = { onIntent(FavoritesIntent.NavigateBack) }
@@ -155,19 +153,28 @@ private fun FavoriteQuestionCard(
     val colors = HonqTheme.colors
 
     HonqCard(onClick = onClick) {
+        Text(
+            text = question.text,
+            color = colors.textPrimary,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(modifier = Modifier.height(HonqSpacing.sm))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm),
-            verticalAlignment = Alignment.Top
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = question.text,
-                color = colors.textPrimary,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f),
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(HonqSpacing.xs)) {
+                FavoriteMetaPill(text = "#${question.id}")
+                val categoryLabel = question.categoryName.ifBlank {
+                    question.categoryId.formatCategoryId()
+                }
+                FavoriteMetaPill(text = categoryLabel)
+                FavoriteMetaPill(text = question.stateId.uppercase())
+            }
             IconButton(onClick = onToggleFavorite) {
                 Icon(
                     imageVector = Icons.Rounded.Bookmark,
@@ -175,14 +182,6 @@ private fun FavoriteQuestionCard(
                     tint = colors.primary
                 )
             }
-        }
-        Spacer(modifier = Modifier.height(HonqSpacing.sm))
-        Row(horizontalArrangement = Arrangement.spacedBy(HonqSpacing.xs)) {
-            val categoryLabel = question.categoryName.ifBlank {
-                question.categoryId.formatCategoryId()
-            }
-            FavoriteMetaPill(text = categoryLabel)
-            FavoriteMetaPill(text = question.stateId.uppercase())
         }
     }
 }

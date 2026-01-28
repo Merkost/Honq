@@ -1,5 +1,7 @@
 package com.merkost.honq.core.util
 
+import org.kimplify.cedar.logging.Cedar
+
 sealed interface Result<out T> {
     data class Success<T>(val data: T) : Result<T>
     data class Error(val exception: Throwable) : Result<Nothing>
@@ -33,5 +35,12 @@ inline fun <T> Result<T>.getOrElse(defaultValue: () -> T): T = when (this) {
 inline fun <T> runCatching(block: () -> T): Result<T> = try {
     Result.Success(block())
 } catch (e: Throwable) {
+    Result.Error(e)
+}
+
+inline fun <T> runLogged(tag: String, operation: String, block: () -> T): Result<T> = try {
+    Result.Success(block())
+} catch (e: Exception) {
+    Cedar.tag(tag).e("$operation: ${e.message}", e)
     Result.Error(e)
 }

@@ -26,7 +26,7 @@ object SignatureVerifier {
      *
      * IMPORTANT: Replace this with your actual release certificate hash!
      */
-    private val VALID_SIGNATURES = setOf(
+    private val VALID_SIGNATURES = emptySet<String>(
         // Add your release signing certificate SHA-256 hash here
         // Format: lowercase hex without colons
         // Example: "a1b2c3d4e5f6..."

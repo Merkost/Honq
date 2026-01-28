@@ -2,7 +2,6 @@ package com.merkost.honq.data.remote.mapper
 
 import com.merkost.honq.data.local.entity.AssessmentTypeEntity
 import com.merkost.honq.data.local.entity.CategoryEntity
-import com.merkost.honq.data.local.entity.LicenseStageEntity
 import com.merkost.honq.data.local.entity.LicenseTypeEntity
 import com.merkost.honq.data.local.entity.QuestionEntity
 import com.merkost.honq.data.local.entity.QuestionSetCategoryEntity
@@ -11,19 +10,15 @@ import com.merkost.honq.data.local.entity.StateEntity
 import com.merkost.honq.data.remote.api.SupabaseConfig
 import com.merkost.honq.data.remote.dto.AssessmentTypeDto
 import com.merkost.honq.data.remote.dto.CategoryDto
-import com.merkost.honq.data.remote.dto.LicenseStageDto
 import com.merkost.honq.data.remote.dto.LicenseTypeDto
 import com.merkost.honq.data.remote.dto.QuestionDto
 import com.merkost.honq.data.remote.dto.QuestionSetCategoryDto
 import com.merkost.honq.data.remote.dto.QuestionSetDto
 import com.merkost.honq.data.remote.dto.StateDto
 import com.merkost.honq.data.remote.dto.StateResourceDto
-import com.merkost.honq.data.remote.dto.ResourceTypeDto
-import com.merkost.honq.data.remote.dto.LicenseTypeIdDto
 import com.merkost.honq.domain.model.AssessmentType
 import com.merkost.honq.domain.model.Category
 import com.merkost.honq.domain.model.Difficulty
-import com.merkost.honq.domain.model.LicenseStage
 import com.merkost.honq.domain.model.LicenseType
 import com.merkost.honq.domain.model.Question
 import com.merkost.honq.domain.model.QuestionSet
@@ -33,18 +28,6 @@ import com.merkost.honq.domain.model.StateResource
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-fun ResourceTypeDto.toDomain(): ResourceType = when (this) {
-    ResourceTypeDto.PRACTICE_TEST -> ResourceType.PRACTICE_TEST
-    ResourceTypeDto.PDF -> ResourceType.PDF
-    ResourceTypeDto.HANDBOOK -> ResourceType.HANDBOOK
-    ResourceTypeDto.OTHER -> ResourceType.OTHER
-}
-
-fun LicenseTypeIdDto.toId(): String = when (this) {
-    LicenseTypeIdDto.CAR -> "car"
-    LicenseTypeIdDto.RIDER -> "rider"
-}
-
 fun QuestionDto.toDomain(): Question = Question(
     id = id,
     text = text,
@@ -52,10 +35,10 @@ fun QuestionDto.toDomain(): Question = Question(
     options = options,
     correctIndex = correctIndex,
     explanation = explanation.orEmpty(),
-    categoryId = category.name.lowercase(),
-    categoryName = category.name.lowercase(),
+    categoryId = category.lowercase(),
+    categoryName = category.lowercase(),
     questionSetId = questionSetId,
-    stateId = stateId.name.lowercase(),
+    stateId = stateId.lowercase(),
     difficulty = Difficulty.fromValue(difficulty ?: Difficulty.MEDIUM.value)
 )
 
@@ -66,10 +49,10 @@ fun QuestionDto.toEntity(json: Json): QuestionEntity = QuestionEntity(
     options = json.encodeToString(options),
     correctIndex = correctIndex,
     explanation = explanation.orEmpty(),
-    categoryId = category.name.lowercase(),
+    categoryId = category.lowercase(),
     questionSetId = questionSetId,
     updatedAt = updatedAt,
-    stateId = stateId.name.lowercase(),
+    stateId = stateId.lowercase(),
     difficulty = difficulty ?: Difficulty.MEDIUM.value,
     isActive = isActive,
     version = version,
@@ -90,9 +73,6 @@ fun StateDto.toEntity(): StateEntity = StateEntity(
     id = id,
     name = name,
     shortName = shortName,
-    mockTestQuestionCount = mockTestQuestionCount,
-    mockTestTimeLimitMinutes = mockTestTimeLimitMinutes,
-    mockTestPassPercentage = mockTestPassPercentage,
     externalPracticeUrl = externalPracticeUrl,
     handbookUrl = handbookUrl,
     isActive = isActive,
@@ -112,8 +92,8 @@ fun StateEntity.toDomain(): State = State(
 fun CategoryDto.toDomain(): Category = Category(
     id = id,
     name = name,
-    description = description,
-    iconName = iconName,
+    description = description.orEmpty(),
+    iconName = iconName.orEmpty(),
     displayOrder = displayOrder,
     isActive = isActive
 )
@@ -130,25 +110,15 @@ fun CategoryEntity.toDomain(): Category = Category(
 fun CategoryDto.toEntity(): CategoryEntity = CategoryEntity(
     id = id,
     name = name,
-    description = description,
-    iconName = iconName,
+    description = description.orEmpty(),
+    iconName = iconName.orEmpty(),
     displayOrder = displayOrder,
     isActive = isActive,
-    createdAt = createdAt,
-    updatedAt = updatedAt
+    createdAt = createdAt.orEmpty(),
+    updatedAt = updatedAt.orEmpty()
 )
 
 fun LicenseTypeDto.toEntity(): LicenseTypeEntity = LicenseTypeEntity(
-    id = id,
-    name = name,
-    shortName = shortName,
-    isActive = isActive,
-    displayOrder = displayOrder,
-    createdAt = createdAt,
-    updatedAt = updatedAt
-)
-
-fun LicenseStageDto.toEntity(): LicenseStageEntity = LicenseStageEntity(
     id = id,
     name = name,
     shortName = shortName,
@@ -170,10 +140,10 @@ fun AssessmentTypeDto.toEntity(): AssessmentTypeEntity = AssessmentTypeEntity(
 
 fun QuestionSetDto.toEntity(): QuestionSetEntity = QuestionSetEntity(
     id = id,
-    stateId = stateId.name.lowercase(),
-    licenseTypeId = licenseTypeId.name.lowercase(),
-    licenseStageId = licenseStageId.name.lowercase(),
-    assessmentTypeId = assessmentTypeId.name.lowercase(),
+    stateId = stateId.lowercase(),
+    licenseTypeId = licenseTypeId.lowercase(),
+    licenseStageId = licenseStageId.lowercase(),
+    assessmentTypeId = assessmentTypeId.lowercase(),
     mockTestQuestionCount = mockTestQuestionCount,
     mockTestTimeLimitMinutes = mockTestTimeLimitMinutes,
     mockTestPassPercentage = mockTestPassPercentage,
@@ -190,14 +160,6 @@ fun QuestionSetCategoryDto.toEntity(): QuestionSetCategoryEntity = QuestionSetCa
 )
 
 fun LicenseTypeEntity.toDomain(): LicenseType = LicenseType(
-    id = id,
-    name = name,
-    shortName = shortName,
-    isActive = isActive,
-    displayOrder = displayOrder
-)
-
-fun LicenseStageEntity.toDomain(): LicenseStage = LicenseStage(
     id = id,
     name = name,
     shortName = shortName,
@@ -227,10 +189,15 @@ fun QuestionSetEntity.toDomain(): QuestionSet = QuestionSet(
 
 fun StateResourceDto.toDomain(): StateResource = StateResource(
     id = id,
-    stateId = stateId.name.lowercase(),
+    stateId = stateId.lowercase(),
     title = title,
     url = url,
-    resourceType = resourceType.toDomain(),
-    licenseType = licenseType?.toId(),
+    resourceType = when (resourceType.lowercase()) {
+        "practice_test" -> ResourceType.PRACTICE_TEST
+        "pdf" -> ResourceType.PDF
+        "handbook" -> ResourceType.HANDBOOK
+        else -> ResourceType.OTHER
+    },
+    licenseType = licenseType?.lowercase(),
     displayOrder = displayOrder
 )

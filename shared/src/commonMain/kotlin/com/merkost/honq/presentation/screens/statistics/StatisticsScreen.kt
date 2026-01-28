@@ -1,5 +1,7 @@
 package com.merkost.honq.presentation.screens.statistics
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,12 +33,10 @@ import com.merkost.honq.domain.model.MockTestResult
 import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqCard
 import com.merkost.honq.presentation.components.base.HonqScaffold
-import com.merkost.honq.presentation.components.charts.BarChart
-import com.merkost.honq.presentation.components.charts.BarChartData
-import com.merkost.honq.presentation.components.charts.DonutChartSegment
 import com.merkost.honq.presentation.components.charts.LineChart
 import com.merkost.honq.presentation.components.charts.LineChartData
 import com.merkost.honq.presentation.components.charts.ProgressRing
+import com.merkost.honq.presentation.theme.HonqChartSizing
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
@@ -43,7 +48,10 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
 fun StatisticsScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToWeakestQuestions: () -> Unit = {},
+    onNavigateToUnansweredQuestions: () -> Unit = {},
+    onNavigateToMockTestReview: (Long) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val container = koinInject<StatisticsContainer> { parametersOf(scope) }
@@ -51,19 +59,24 @@ fun StatisticsScreen(
     val state by container.store.subscribe { action ->
         when (action) {
             StatisticsAction.NavigateBack -> onNavigateBack()
+            StatisticsAction.NavigateToWeakestQuestions -> onNavigateToWeakestQuestions()
+            StatisticsAction.NavigateToUnansweredQuestions -> onNavigateToUnansweredQuestions()
+            is StatisticsAction.NavigateToMockTestReview -> onNavigateToMockTestReview(action.mockTestResultId)
         }
     }
 
     StatisticsContent(
         state = state,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onIntent = container.store::intent
     )
 }
 
 @Composable
 private fun StatisticsContent(
     state: StatisticsState,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onIntent: (StatisticsIntent) -> Unit
 ) {
     val colors = HonqTheme.colors
 
@@ -113,9 +126,8 @@ private fun StatisticsContent(
                 ) {
                     OverviewSection(state)
                     PracticeAccuracySection(state)
-                    if (state.mockTestResults.isNotEmpty()) {
-                        MockTestPerformanceSection(state)
-                    }
+                    MockTestPerformanceSection(state, onIntent)
+                    InsightsSection(state, onIntent)
                     Spacer(modifier = Modifier.height(HonqSpacing.md))
                 }
             }
@@ -141,13 +153,12 @@ private fun OverviewSection(state: StatisticsState) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            // Completion Progress
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ProgressRing(
                     progress = state.progress.completionProgress,
-                    modifier = Modifier.size(100.dp),
+                    modifier = Modifier.size(HonqChartSizing.ringSize),
                     progressColor = colors.primary,
                     centerText = "${(state.progress.completionProgress * 100).toInt()}%",
                     centerSubtext = "Complete"
@@ -165,7 +176,6 @@ private fun OverviewSection(state: StatisticsState) {
                 )
             }
 
-            // Practice Accuracy
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -177,7 +187,7 @@ private fun OverviewSection(state: StatisticsState) {
                 }
                 ProgressRing(
                     progress = state.progress.practiceAccuracy,
-                    modifier = Modifier.size(100.dp),
+                    modifier = Modifier.size(HonqChartSizing.ringSize),
                     progressColor = accuracyColor,
                     centerText = "${(state.progress.practiceAccuracy * 100).toInt()}%",
                     centerSubtext = "Accuracy"
@@ -233,62 +243,11 @@ private fun PracticeAccuracySection(state: StatisticsState) {
             )
         }
 
-        Spacer(modifier = Modifier.height(HonqSpacing.lg))
-
-        // Accuracy breakdown bar
-        val correct = state.progress.correctAnswers
-        val incorrect = state.progress.totalPracticed - state.progress.correctAnswers
-
-        if (state.progress.totalPracticed > 0) {
-            Text(
-                text = "Accuracy Breakdown",
-                color = colors.textMuted,
-                fontSize = 12.sp
-            )
-            Spacer(modifier = Modifier.height(HonqSpacing.sm))
-
-            val barData = listOf(
-                BarChartData("Correct", correct.toFloat(), state.progress.totalPracticed.toFloat()),
-                BarChartData("Incorrect", incorrect.toFloat(), state.progress.totalPracticed.toFloat())
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ProgressRing(
-                        progress = state.progress.practiceAccuracy,
-                        modifier = Modifier.size(80.dp),
-                        progressColor = colors.correct,
-                        strokeWidth = 10.dp,
-                        centerText = "$correct",
-                        centerSubtext = "Correct"
-                    )
-                }
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ProgressRing(
-                        progress = 1f - state.progress.practiceAccuracy,
-                        modifier = Modifier.size(80.dp),
-                        progressColor = colors.incorrect,
-                        strokeWidth = 10.dp,
-                        centerText = "$incorrect",
-                        centerSubtext = "Incorrect"
-                    )
-                }
-            }
-        }
     }
 }
 
 @Composable
-private fun MockTestPerformanceSection(state: StatisticsState) {
+private fun MockTestPerformanceSection(state: StatisticsState, onIntent: (StatisticsIntent) -> Unit) {
     val colors = HonqTheme.colors
 
     HonqCard {
@@ -301,91 +260,109 @@ private fun MockTestPerformanceSection(state: StatisticsState) {
 
         Spacer(modifier = Modifier.height(HonqSpacing.md))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            StatItem(
-                value = state.progress.mockTestsTaken.toString(),
-                label = "Tests Taken",
-                color = colors.primary
-            )
-            StatItem(
-                value = state.progress.mockTestsPassed.toString(),
-                label = "Passed",
-                color = colors.correct
-            )
-            StatItem(
-                value = "${state.averageMockTestScore}%",
-                label = "Avg Score",
-                color = if (state.averageMockTestScore >= 90) colors.correct else colors.primary
-            )
-        }
-
-        if (state.recentMockTests.size >= 2) {
-            Spacer(modifier = Modifier.height(HonqSpacing.lg))
-
+        if (state.mockTestResults.isEmpty()) {
             Text(
-                text = "Recent Test Scores",
+                text = "Take a mock test to track your performance",
                 color = colors.textMuted,
-                fontSize = 12.sp
+                fontSize = 13.sp,
+                modifier = Modifier.padding(vertical = HonqSpacing.md)
             )
-            Spacer(modifier = Modifier.height(HonqSpacing.sm))
-
-            val chartData = state.recentMockTests
-                .reversed()
-                .mapIndexed { index, result ->
-                    LineChartData(
-                        label = formatTestDate(result),
-                        value = result.scorePercentage.toFloat()
-                    )
-                }
-
-            LineChart(
-                data = chartData,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp),
-                lineColor = colors.primary,
-                fillColor = colors.primarySurface
-            )
-
-            // Pass/Fail threshold line label
-            Spacer(modifier = Modifier.height(HonqSpacing.xs))
-            Text(
-                text = "90% = passing score",
-                color = colors.textMuted,
-                fontSize = 10.sp,
+        } else {
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.End
-            )
-        }
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StatItem(
+                    value = state.progress.mockTestsTaken.toString(),
+                    label = "Tests Taken",
+                    color = colors.primary
+                )
+                StatItem(
+                    value = state.progress.mockTestsPassed.toString(),
+                    label = "Passed",
+                    color = colors.correct
+                )
+                StatItem(
+                    value = "${state.averageMockTestScore}%",
+                    label = "Avg Score",
+                    color = if (state.averageMockTestScore >= 90) colors.correct else colors.primary
+                )
+            }
 
-        // Recent tests list
-        if (state.recentMockTests.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(HonqSpacing.lg))
+            if (state.recentMockTests.size >= 2) {
+                Spacer(modifier = Modifier.height(HonqSpacing.lg))
 
-            Text(
-                text = "Recent Tests",
-                color = colors.textMuted,
-                fontSize = 12.sp
-            )
-            Spacer(modifier = Modifier.height(HonqSpacing.sm))
+                Text(
+                    text = "Recent Test Scores",
+                    color = colors.textMuted,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(HonqSpacing.sm))
 
-            state.recentMockTests.take(5).forEach { result ->
-                MockTestResultItem(result)
+                val chartData = state.recentMockTests
+                    .reversed()
+                    .mapIndexed { index, result ->
+                        LineChartData(
+                            label = formatTestDate(result),
+                            value = result.scorePercentage.toFloat()
+                        )
+                    }
+
+                LineChart(
+                    data = chartData,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp),
+                    lineColor = colors.primary,
+                    fillColor = colors.primarySurface
+                )
+
                 Spacer(modifier = Modifier.height(HonqSpacing.xs))
+                Text(
+                    text = "90% = passing score",
+                    color = colors.textMuted,
+                    fontSize = 10.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End
+                )
+            }
+
+            if (state.recentMockTests.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(HonqSpacing.lg))
+
+                Text(
+                    text = "Recent Tests",
+                    color = colors.textMuted,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(HonqSpacing.sm))
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(HonqSpacing.xs)
+                ) {
+                    state.recentMockTests.take(5).forEach { result ->
+                        MockTestResultItem(
+                            result = result,
+                            onClick = { onIntent(StatisticsIntent.OpenMockTestReview(result.id)) }
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun MockTestResultItem(result: MockTestResult) {
+private fun MockTestResultItem(result: MockTestResult, onClick: () -> Unit) {
     val colors = HonqTheme.colors
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(HonqSizing.cornerRadiusSmall))
+            .background(color = colors.surfaceVariant)
+            .clickable(onClick = onClick)
+            .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -414,6 +391,81 @@ private fun MockTestResultItem(result: MockTestResult) {
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Medium
             )
+        }
+    }
+}
+
+@Composable
+private fun InsightsSection(
+    state: StatisticsState,
+    onIntent: (StatisticsIntent) -> Unit
+) {
+    val colors = HonqTheme.colors
+
+    Column(verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)) {
+        Text(
+            text = "Insights",
+            color = colors.textSecondary,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        if (state.weakestQuestionCount > 0) {
+            HonqCard(onClick = { onIntent(StatisticsIntent.OpenWeakestQuestions) }) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Weakest Questions",
+                            color = colors.textPrimary,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 15.sp
+                        )
+                        Spacer(modifier = Modifier.height(HonqSpacing.xs))
+                        Text(
+                            text = "${state.weakestQuestionCount} questions you got wrong",
+                            color = colors.textMuted,
+                            fontSize = 12.sp
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = "View All",
+                        tint = colors.textMuted
+                    )
+                }
+            }
+        }
+
+        HonqCard(onClick = { onIntent(StatisticsIntent.OpenUnansweredQuestions) }) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Unanswered Questions",
+                        color = colors.textPrimary,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 15.sp
+                    )
+                    Spacer(modifier = Modifier.height(HonqSpacing.xs))
+                    Text(
+                        text = "${state.unansweredQuestionCount} questions not yet attempted",
+                        color = colors.textMuted,
+                        fontSize = 12.sp
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                    contentDescription = "View All",
+                    tint = colors.textMuted
+                )
+            }
         }
     }
 }

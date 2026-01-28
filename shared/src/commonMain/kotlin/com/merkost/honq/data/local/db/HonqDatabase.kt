@@ -8,8 +8,8 @@ import com.merkost.honq.data.local.entity.AnswerHistoryEntity
 import com.merkost.honq.data.local.entity.AssessmentTypeEntity
 import com.merkost.honq.data.local.entity.CategoryEntity
 import com.merkost.honq.data.local.entity.FavoriteQuestionEntity
-import com.merkost.honq.data.local.entity.LicenseStageEntity
 import com.merkost.honq.data.local.entity.LicenseTypeEntity
+import com.merkost.honq.data.local.entity.MockTestAnswerEntity
 import com.merkost.honq.data.local.entity.MockTestResultEntity
 import com.merkost.honq.data.local.entity.QuestionEntity
 import com.merkost.honq.data.local.entity.QuestionSetCategoryEntity
@@ -22,10 +22,10 @@ import com.merkost.honq.data.local.entity.StateEntity
         AnswerHistoryEntity::class,
         FavoriteQuestionEntity::class,
         MockTestResultEntity::class,
+        MockTestAnswerEntity::class,
         StateEntity::class,
         CategoryEntity::class,
         LicenseTypeEntity::class,
-        LicenseStageEntity::class,
         AssessmentTypeEntity::class,
         QuestionSetEntity::class,
         QuestionSetCategoryEntity::class
@@ -42,10 +42,10 @@ abstract class HonqDatabase : RoomDatabase() {
     abstract fun stateDao(): StateDao
     abstract fun categoryDao(): CategoryDao
     abstract fun licenseTypeDao(): LicenseTypeDao
-    abstract fun licenseStageDao(): LicenseStageDao
     abstract fun assessmentTypeDao(): AssessmentTypeDao
     abstract fun questionSetDao(): QuestionSetDao
     abstract fun questionSetCategoryDao(): QuestionSetCategoryDao
+    abstract fun mockTestAnswerDao(): MockTestAnswerDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

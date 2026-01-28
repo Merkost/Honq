@@ -1,8 +1,10 @@
 package com.merkost.honq.presentation.screens.search
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,10 +52,12 @@ import com.merkost.honq.domain.model.Question
 import com.merkost.honq.presentation.components.base.AnimatedFavoriteButton
 import com.merkost.honq.presentation.components.base.HonqCard
 import com.merkost.honq.presentation.components.base.HonqScaffold
+import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
@@ -62,8 +66,7 @@ fun SearchScreen(
     onNavigateBack: () -> Unit,
     onNavigateToQuestion: (questionId: String) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val container = koinInject<SearchContainer> { parametersOf(scope) }
+    val container = koinViewModel<SearchContainer>()
 
     val state by container.store.subscribe { action ->
         when (action) {
@@ -112,49 +115,71 @@ private fun SearchContent(
                 modifier = Modifier.padding(HonqSizing.screenPadding)
             )
 
-            Spacer(modifier = Modifier.height(HonqSpacing.md))
+            val contentKey = when {
+                state.error != null -> SearchContentKey.Error
+                state.isEmpty -> SearchContentKey.Empty
+                state.results.isNotEmpty() -> SearchContentKey.Results
+                state.query.isBlank() -> SearchContentKey.Prompt
+                state.query.length < 2 -> SearchContentKey.MinChars
+                state.isSearching -> SearchContentKey.Searching
+                else -> SearchContentKey.Prompt
+            }
 
-            Box(modifier = Modifier.weight(1f)) {
-                when {
-                    state.isSearching -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = colors.loadingIndicator
-                        )
-                    }
-                    state.error != null -> {
-                        Text(
-                            text = state.error,
-                            color = colors.incorrect,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(HonqSizing.screenPadding)
-                        )
-                    }
-                    state.isEmpty -> {
-                        EmptySearchState(
-                            query = state.query,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    state.results.isNotEmpty() -> {
-                        SearchResults(
-                            results = state.results,
-                            favoriteIds = state.favoriteQuestionIds,
-                            onQuestionClick = { onIntent(SearchIntent.SelectQuestion(it)) },
-                            onToggleFavorite = { onIntent(SearchIntent.ToggleFavorite(it)) }
-                        )
-                    }
-                    state.query.isBlank() -> {
-                        SearchPrompt(modifier = Modifier.align(Alignment.Center))
-                    }
-                    state.query.length < 2 -> {
-                        Text(
-                            text = "Type at least 2 characters to search",
-                            color = colors.textMuted,
-                            fontSize = 14.sp,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+            AnimatedContent(
+                targetState = contentKey,
+                transitionSpec = {
+                    fadeIn(HonqMotion.tweenMedium())
+                        .togetherWith(fadeOut(HonqMotion.tweenShort()))
+                },
+                modifier = Modifier.weight(1f).fillMaxWidth()
+            ) { key ->
+                Box(modifier = Modifier.fillMaxSize()) {
+                    when (key) {
+                        SearchContentKey.Searching -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = HonqSpacing.xl),
+                                color = colors.loadingIndicator
+                            )
+                        }
+                        SearchContentKey.Error -> {
+                            Text(
+                                text = state.error.orEmpty(),
+                                color = colors.incorrect,
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(horizontal = HonqSizing.screenPadding)
+                                    .padding(top = HonqSpacing.lg)
+                            )
+                        }
+                        SearchContentKey.Empty -> {
+                            EmptySearchState(
+                                query = state.query,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+                        }
+                        SearchContentKey.Results -> {
+                            SearchResults(
+                                results = state.results,
+                                favoriteIds = state.favoriteQuestionIds,
+                                onQuestionClick = { onIntent(SearchIntent.SelectQuestion(it)) },
+                                onToggleFavorite = { onIntent(SearchIntent.ToggleFavorite(it)) }
+                            )
+                        }
+                        SearchContentKey.Prompt -> {
+                            SearchPrompt(modifier = Modifier.align(Alignment.TopCenter))
+                        }
+                        SearchContentKey.MinChars -> {
+                            Text(
+                                text = "Type at least 2 characters to search",
+                                color = colors.textMuted,
+                                fontSize = 14.sp,
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = HonqSpacing.lg)
+                            )
+                        }
                     }
                 }
             }
@@ -223,23 +248,28 @@ private fun SearchBar(
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            if (isSearching) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = colors.loadingIndicator,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                IconButton(
-                    onClick = onClear,
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = "Clear",
-                        tint = colors.textMuted,
-                        modifier = Modifier.size(20.dp)
+            Box(
+                modifier = Modifier.size(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isSearching) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = colors.loadingIndicator,
+                        strokeWidth = 2.dp
                     )
+                } else {
+                    IconButton(
+                        onClick = onClear,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Clear",
+                            tint = colors.textMuted,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
@@ -347,30 +377,36 @@ private fun SearchPrompt(modifier: Modifier = Modifier) {
     val colors = HonqTheme.colors
 
     Column(
-        modifier = modifier.padding(HonqSizing.screenPadding),
+        modifier = modifier
+            .padding(horizontal = HonqSizing.screenPadding)
+            .padding(top = HonqSpacing.lg),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
             imageVector = Icons.Rounded.Search,
             contentDescription = null,
             tint = colors.textMuted,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(36.dp)
         )
-        Spacer(modifier = Modifier.height(HonqSpacing.md))
+        Spacer(modifier = Modifier.height(HonqSpacing.sm))
         Text(
             text = "Search for questions",
             color = colors.textSecondary,
-            fontSize = 16.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(HonqSpacing.xs))
         Text(
-            text = "Find questions by keywords, question ID,\nor answer text",
+            text = "Find questions by keywords, question ID, or answer text",
             color = colors.textMuted,
-            fontSize = 14.sp,
+            fontSize = 13.sp,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }
+}
+
+private enum class SearchContentKey {
+    Prompt, MinChars, Searching, Error, Empty, Results
 }
 
 @Composable
@@ -381,20 +417,22 @@ private fun EmptySearchState(
     val colors = HonqTheme.colors
 
     Column(
-        modifier = modifier.padding(HonqSizing.screenPadding),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
+            .padding(horizontal = HonqSizing.screenPadding)
+            .padding(top = HonqSpacing.lg),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "No results found",
             color = colors.textSecondary,
-            fontSize = 16.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(HonqSpacing.xs))
         Text(
-            text = "No questions match \"$query\".\nTry a different search term.",
+            text = "No questions match \"$query\". Try a different search term.",
             color = colors.textMuted,
-            fontSize = 14.sp,
+            fontSize = 13.sp,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }

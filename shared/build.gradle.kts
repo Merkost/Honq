@@ -53,6 +53,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
+            implementation(libs.cedar)
+
             implementation(libs.navigation.compose)
 
             implementation(libs.koin.core)
@@ -65,6 +67,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
+            implementation(libs.ktor.client.logging)
 
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
@@ -81,6 +84,8 @@ kotlin {
             implementation(libs.amplitude)
 
             implementation(libs.datastore.preferences)
+
+            api(libs.firebase.crashlytics)
         }
 
         androidMain.dependencies {

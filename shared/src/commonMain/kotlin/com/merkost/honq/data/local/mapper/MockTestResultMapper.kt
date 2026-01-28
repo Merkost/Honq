@@ -7,6 +7,7 @@ import kotlin.time.Duration.Companion.seconds
 
 fun MockTestResultEntity.toDomain(): MockTestResult = MockTestResult(
     id = id,
+    questionSetId = questionSetId,
     totalQuestions = totalQuestions,
     correctAnswers = correctAnswers,
     timeTaken = timeTakenSeconds.seconds,
@@ -15,6 +16,7 @@ fun MockTestResultEntity.toDomain(): MockTestResult = MockTestResult(
 
 fun MockTestResult.toEntity(): MockTestResultEntity = MockTestResultEntity(
     id = id,
+    questionSetId = questionSetId,
     totalQuestions = totalQuestions,
     correctAnswers = correctAnswers,
     timeTakenSeconds = timeTaken.inWholeSeconds,

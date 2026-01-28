@@ -2,6 +2,8 @@ package com.merkost.honq.presentation.screens.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,6 +12,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -37,6 +41,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,9 +52,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.presentation.components.base.BottomActionBarVertical
+import com.merkost.honq.presentation.components.base.LicenseTypeIcon
 import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.HonqButtonVariant
@@ -70,10 +80,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import pro.respawn.flowmvi.compose.dsl.subscribe
 import pro.respawn.flowmvi.dsl.intent
 
+private const val STAGGER_DELAY = 60L
+private const val SLIDE_UP_PX = 40f
+
 @Composable
 fun HomeScreen(
     onNavigateToPractice: () -> Unit,
-    onNavigateToCategories: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToSearch: () -> Unit,
@@ -91,7 +103,6 @@ fun HomeScreen(
     HomeContent(
         state = state,
         onNavigateToPractice = onNavigateToPractice,
-        onNavigateToCategories = onNavigateToCategories,
         onNavigateToMockTest = onNavigateToMockTest,
         onNavigateToFavorites = onNavigateToFavorites,
         onNavigateToSearch = onNavigateToSearch,
@@ -110,7 +121,6 @@ fun HomeScreen(
 private fun HomeContent(
     state: HomeState,
     onNavigateToPractice: () -> Unit,
-    onNavigateToCategories: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToSearch: () -> Unit,
@@ -179,6 +189,32 @@ private fun HomeContent(
                     val selectedState = state.states.firstOrNull { it.id == state.selectedStateId }
                     val isExternalOnly = selectedState?.isExternalOnly == true
 
+                    val itemCount = if (isExternalOnly) 2 else {
+                        4 + (if (state.stateResources.isNotEmpty()) 1 else 0) + 1 // cards + bottom bar
+                    }
+                    val animProgress = remember { List(itemCount) { Animatable(0f) } }
+                    LaunchedEffect(Unit) {
+                        animProgress.forEachIndexed { index, anim ->
+                            launch {
+                                delay(index * STAGGER_DELAY)
+                                anim.animateTo(
+                                    1f,
+                                    animationSpec = tween(
+                                        durationMillis = HonqMotion.durationEnter,
+                                        easing = HonqMotion.easingEmphasizedDecelerate
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    fun Modifier.staggeredEntrance(index: Int): Modifier {
+                        val progress = animProgress.getOrNull(index)?.value ?: 1f
+                        return this
+                            .alpha(progress)
+                            .offset { IntOffset(0, ((1f - progress) * SLIDE_UP_PX).toInt()) }
+                    }
+
                     Column(modifier = Modifier.fillMaxSize()) {
                         Column(
                             modifier = Modifier
@@ -187,46 +223,55 @@ private fun HomeContent(
                                 .padding(HonqSizing.screenPadding),
                             verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
                         ) {
-                            ConfigurationCard(state, onSelectState, onSelectLicenseType)
+                            Box(modifier = Modifier.staggeredEntrance(0)) {
+                                ConfigurationCard(state, onSelectState, onSelectLicenseType)
+                            }
 
                             if (isExternalOnly && selectedState != null) {
-                                ExternalResourcesCard(
-                                    state = selectedState,
-                                    onOpenExternalLink = onOpenExternalLink
-                                )
-                            } else {
-                                QuestionBankCard(state)
-                                FavoritesCard(state, onNavigateToFavorites)
-                                StatsRow(state, onNavigateToStatistics)
-
-                                if (state.stateResources.isNotEmpty()) {
-                                    OfficialResourcesCard(
-                                        resources = state.stateResources,
+                                Box(modifier = Modifier.staggeredEntrance(1)) {
+                                    ExternalResourcesCard(
+                                        state = selectedState,
                                         onOpenExternalLink = onOpenExternalLink
                                     )
+                                }
+                            } else {
+                                Box(modifier = Modifier.staggeredEntrance(1)) {
+                                    QuestionBankCard(state)
+                                }
+                                Box(modifier = Modifier.staggeredEntrance(2)) {
+                                    FavoritesCard(state, onNavigateToFavorites)
+                                }
+                                Box(modifier = Modifier.staggeredEntrance(3)) {
+                                    StatsRow(state, onNavigateToStatistics)
+                                }
+
+                                if (state.stateResources.isNotEmpty()) {
+                                    Box(modifier = Modifier.staggeredEntrance(4)) {
+                                        OfficialResourcesCard(
+                                            resources = state.stateResources,
+                                            onOpenExternalLink = onOpenExternalLink
+                                        )
+                                    }
                                 }
                             }
                         }
 
                         if (!isExternalOnly) {
-                            BottomActionBarVertical {
-                                HonqButton(
-                                    text = stringResource(Res.string.home_start_practice),
-                                    onClick = onNavigateToPractice,
-                                    enabled = state.isReady
-                                )
-                                HonqButton(
-                                    text = "Practice by Category",
-                                    onClick = onNavigateToCategories,
-                                    variant = HonqButtonVariant.Secondary,
-                                    enabled = state.isReady
-                                )
-                                HonqButton(
-                                    text = stringResource(Res.string.home_take_mock_test),
-                                    onClick = onNavigateToMockTest,
-                                    variant = HonqButtonVariant.Text,
-                                    enabled = state.isReady
-                                )
+                            val bottomBarIndex = itemCount - 1
+                            Box(modifier = Modifier.staggeredEntrance(bottomBarIndex)) {
+                                BottomActionBarVertical {
+                                    HonqButton(
+                                        text = stringResource(Res.string.home_start_practice),
+                                        onClick = onNavigateToPractice,
+                                        enabled = state.isReady
+                                    )
+                                    HonqButton(
+                                        text = stringResource(Res.string.home_take_mock_test),
+                                        onClick = onNavigateToMockTest,
+                                        variant = HonqButtonVariant.Secondary,
+                                        enabled = state.isReady
+                                    )
+                                }
                             }
                         }
                     }
@@ -337,11 +382,22 @@ private fun ConfigurationCard(
                 ) {
                     state.licenseTypes.forEach { type ->
                         val hasQuestionSet = state.questionSets.any { it.licenseTypeId == type.id }
+                        val isSelected = type.id == state.selectedLicenseTypeId
+                        val tint = if (!hasQuestionSet) colors.textMuted
+                            else if (isSelected) colors.primary
+                            else colors.textSecondary
                         SelectableChip(
                             text = type.name,
-                            selected = type.id == state.selectedLicenseTypeId,
+                            selected = isSelected,
                             enabled = hasQuestionSet,
-                            onClick = { onSelectLicenseType(type.id) }
+                            onClick = { onSelectLicenseType(type.id) },
+                            icon = {
+                                LicenseTypeIcon(
+                                    typeId = LicenseTypeId.fromId(type.id),
+                                    tint = tint,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         )
                     }
                 }
@@ -370,7 +426,8 @@ private fun SelectableChip(
     text: String,
     selected: Boolean,
     enabled: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    icon: @Composable (() -> Unit)? = null
 ) {
     val colors = HonqTheme.colors
     val backgroundColor = if (selected) colors.primarySurface else colors.surfaceVariant
@@ -379,7 +436,7 @@ private fun SelectableChip(
         if (!enabled) colors.textMuted else if (selected) colors.primary else colors.textSecondary
     val contentAlpha = if (enabled) 1f else 0.5f
 
-    Box(
+    Row(
         modifier = Modifier
             .alpha(contentAlpha)
             .clip(RoundedCornerShape(HonqSizing.cornerRadiusSmall))
@@ -390,8 +447,13 @@ private fun SelectableChip(
                 shape = RoundedCornerShape(HonqSizing.cornerRadiusSmall)
             )
             .clickable(enabled = enabled && !selected, onClick = onClick)
-            .padding(horizontal = HonqSpacing.sm, vertical = HonqSpacing.xs)
+            .padding(horizontal = HonqSpacing.sm, vertical = HonqSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(HonqSpacing.xs)
     ) {
+        if (icon != null) {
+            icon()
+        }
         Text(
             text = text,
             color = textColor,
@@ -417,8 +479,14 @@ private fun SyncIndicator(
         Row(
             modifier = Modifier
                 .padding(vertical = HonqSpacing.sm, horizontal = HonqSpacing.md)
+                .shadow(2.dp, RoundedCornerShape(16.dp))
                 .background(
-                    color = colors.surface,
+                    color = colors.primarySurface,
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .border(
+                    width = 1.dp,
+                    color = colors.primary,
                     shape = RoundedCornerShape(16.dp)
                 )
                 .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.xs),
@@ -427,13 +495,13 @@ private fun SyncIndicator(
         ) {
             CircularProgressIndicator(
                 modifier = Modifier.size(14.dp),
-                color = colors.loadingIndicator,
+                color = colors.primary,
                 strokeWidth = 2.dp
             )
             Spacer(modifier = Modifier.padding(horizontal = HonqSpacing.xs))
             Text(
                 text = stringResource(Res.string.syncing),
-                color = colors.textMuted,
+                color = colors.primary,
                 fontSize = 12.sp
             )
         }

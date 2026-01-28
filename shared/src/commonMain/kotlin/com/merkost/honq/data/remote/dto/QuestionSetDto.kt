@@ -6,10 +6,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class QuestionSetDto(
     val id: String,
-    @SerialName("state_id") val stateId: StateIdDto,
-    @SerialName("license_type_id") val licenseTypeId: LicenseTypeIdDto,
-    @SerialName("license_stage_id") val licenseStageId: LicenseStageIdDto,
-    @SerialName("assessment_type_id") val assessmentTypeId: AssessmentTypeIdDto,
+    @SerialName("state_id") val stateId: String,
+    @SerialName("license_type_id") val licenseTypeId: String,
+    @SerialName("license_stage_id") val licenseStageId: String,
+    @SerialName("assessment_type_id") val assessmentTypeId: String,
     @SerialName("mock_test_question_count") val mockTestQuestionCount: Int = 45,
     @SerialName("mock_test_time_limit_minutes") val mockTestTimeLimitMinutes: Int = 45,
     @SerialName("mock_test_pass_percentage") val mockTestPassPercentage: Int = 75,

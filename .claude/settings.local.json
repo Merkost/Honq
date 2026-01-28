@@ -18,7 +18,10 @@
       "mcp__supabase__get_publishable_keys",
       "Bash(supabase --version:*)",
       "Bash(supabase storage ls:*)",
-      "Bash(supabase link:*)"
+      "Bash(supabase link:*)",
+      "Bash(tree:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:central.sonatype.com)"
     ]
   },
   "enableAllProjectMcpServers": true,

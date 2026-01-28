@@ -6,6 +6,8 @@ import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.createAmplitude
 import com.merkost.honq.core.util.AppDispatchers
 import com.merkost.honq.core.util.AppDispatchersImpl
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.crashlytics.crashlytics
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
@@ -19,4 +21,5 @@ val coreModule = module {
     }
     single { createAmplitude(BuildKonfig.AMPLITUDE_API_KEY) }
     single<Analytics> { AmplitudeAnalytics(get()) }
+    single { Firebase.crashlytics }
 }

@@ -26,6 +26,7 @@ import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
@@ -34,8 +35,7 @@ fun FavoriteQuestionScreen(
     questionId: String,
     onNavigateBack: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val container = koinInject<FavoriteQuestionContainer> { parametersOf(questionId, scope) }
+    val container = koinViewModel<FavoriteQuestionContainer> { parametersOf(questionId,) }
 
     val state by container.store.subscribe { action ->
         when (action) {

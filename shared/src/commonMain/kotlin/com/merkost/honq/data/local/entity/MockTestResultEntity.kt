@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "mock_test_results")
 data class MockTestResultEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val questionSetId: String = "",
     val totalQuestions: Int,
     val correctAnswers: Int,
     val timeTakenSeconds: Long,

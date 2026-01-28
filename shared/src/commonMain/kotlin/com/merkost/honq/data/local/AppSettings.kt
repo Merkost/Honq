@@ -22,11 +22,13 @@ private const val DATA_STORE_FILE_NAME = "honq_settings.preferences_pb"
 
 expect fun getDataStorePath(): String
 
-fun createDataStore(): DataStore<Preferences> {
-    return PreferenceDataStoreFactory.createWithPath(
+private val dataStoreSingleton = lazy {
+    PreferenceDataStoreFactory.createWithPath(
         produceFile = { getDataStorePath().toPath() }
     )
 }
+
+fun createDataStore(): DataStore<Preferences> = dataStoreSingleton.value
 
 class DataStoreOnboardingPreferences(
     private val dataStore: DataStore<Preferences>

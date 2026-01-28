@@ -16,7 +16,7 @@ fun QuestionEntity.toDomain(
     correctIndex = correctIndex,
     explanation = explanation,
     categoryId = categoryId,
-    categoryName = categoryNames[categoryId] ?: categoryId,
+    categoryName = categoryNames[categoryId] ?: "",
     questionSetId = questionSetId,
     stateId = stateId,
     difficulty = Difficulty.fromValue(difficulty)

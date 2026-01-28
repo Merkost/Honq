@@ -1,5 +1,7 @@
 package com.merkost.honq.presentation.screens.search
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.onError
@@ -9,6 +11,9 @@ import com.merkost.honq.domain.usecase.SearchQuestionsUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
+import org.kimplify.cedar.logging.Cedar
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -26,12 +31,11 @@ class SearchContainer(
     private val observeFavoriteQuestionIds: ObserveFavoriteQuestionIdsUseCase,
     private val toggleFavoriteQuestion: ToggleFavoriteQuestionUseCase,
     private val analytics: Analytics,
-    scope: CoroutineScope
-) : Container<SearchState, SearchIntent, SearchAction> {
+) : Container<SearchState, SearchIntent, SearchAction>, ViewModel() {
 
     private val searchQueryFlow = MutableStateFlow("")
 
-    override val store = store(SearchState(), scope) {
+    override val store = store(SearchState(), viewModelScope) {
         init {
             analytics.track(AnalyticsEvent.ScreenViewed("search"))
         }
@@ -78,7 +82,11 @@ class SearchContainer(
     private suspend fun PipelineContext<SearchState, SearchIntent, SearchAction>.performSearch(query: String) {
         updateState { copy(isSearching = true) }
 
-        searchQuestions(query)
+        val minDelay = async { delay(MIN_LOADING_DURATION) }
+        val result = searchQuestions(query)
+        minDelay.await()
+
+        result
             .onSuccess { questions ->
                 analytics.track(AnalyticsEvent.SearchPerformed(query, questions.size))
                 updateState {
@@ -91,6 +99,7 @@ class SearchContainer(
                 }
             }
             .onError { e ->
+                Cedar.tag("Search").e("performSearch: query='$query' failed: ${e.message}", e)
                 updateState {
                     copy(
                         isSearching = false,
@@ -99,6 +108,10 @@ class SearchContainer(
                     )
                 }
             }
+    }
+
+    companion object {
+        private const val MIN_LOADING_DURATION = 400L
     }
 
     private suspend fun PipelineContext<SearchState, SearchIntent, SearchAction>.toggleFavorite(

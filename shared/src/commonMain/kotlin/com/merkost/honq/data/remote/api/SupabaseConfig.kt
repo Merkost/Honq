@@ -2,8 +2,13 @@ package com.merkost.honq.data.remote.api
 
 import com.merkost.honq.BuildKonfig
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.annotations.SupabaseInternal
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.logging.LogLevel
 import io.github.jan.supabase.postgrest.Postgrest
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import org.kimplify.cedar.logging.Cedar
 
 object SupabaseConfig {
     private var supabaseUrl: String = BuildKonfig.SUPABASE_URL
@@ -19,6 +24,7 @@ object SupabaseConfig {
     val isConfigured: Boolean
         get() = supabaseUrl.isNotBlank() && supabaseKey.isNotBlank()
 
+    @OptIn(SupabaseInternal::class)
     fun createClient(): SupabaseClient {
         require(isConfigured) { "Supabase credentials not configured. Add supabase.url and supabase.anon.key to local.properties" }
         return createSupabaseClient(
@@ -26,6 +32,19 @@ object SupabaseConfig {
             supabaseKey = supabaseKey
         ) {
             install(Postgrest)
+
+            defaultLogLevel = LogLevel.DEBUG
+
+            httpConfig {
+                install(Logging) {
+                    level = io.ktor.client.plugins.logging.LogLevel.ALL
+                    logger = object : Logger {
+                        override fun log(message: String) {
+                            Cedar.tag("SupabaseKtorClient").d(message)
+                        }
+                    }
+                }
+            }
         }
     }
 

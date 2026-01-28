@@ -9,6 +9,8 @@ import pro.respawn.flowmvi.api.MVIState
 data class StatisticsState(
     val progress: UserProgress = UserProgress.EMPTY,
     val mockTestResults: List<MockTestResult> = emptyList(),
+    val weakestQuestionCount: Int = 0,
+    val unansweredQuestionCount: Int = 0,
     val isLoading: Boolean = true,
     val error: String? = null
 ) : MVIState {
@@ -25,8 +27,14 @@ data class StatisticsState(
 
 sealed interface StatisticsIntent : MVIIntent {
     data object Exit : StatisticsIntent
+    data object OpenWeakestQuestions : StatisticsIntent
+    data object OpenUnansweredQuestions : StatisticsIntent
+    data class OpenMockTestReview(val mockTestResultId: Long) : StatisticsIntent
 }
 
 sealed interface StatisticsAction : MVIAction {
     data object NavigateBack : StatisticsAction
+    data object NavigateToWeakestQuestions : StatisticsAction
+    data object NavigateToUnansweredQuestions : StatisticsAction
+    data class NavigateToMockTestReview(val mockTestResultId: Long) : StatisticsAction
 }

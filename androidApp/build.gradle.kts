@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 kotlin {
@@ -24,6 +26,9 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+    buildFeatures {
+        buildConfig = true
+    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -42,6 +47,8 @@ android {
 
 dependencies {
     implementation(projects.shared)
+    implementation(libs.cedar)
+
     implementation(libs.koin.android)
     implementation(libs.bundles.koin)
     implementation(libs.androidx.activity.compose)

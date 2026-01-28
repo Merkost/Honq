@@ -1,8 +1,11 @@
 package com.merkost.honq.domain.di
 
 import com.merkost.honq.domain.usecase.GetCategoriesUseCase
-import com.merkost.honq.domain.usecase.GetLicenseStagesUseCase
+import com.merkost.honq.domain.usecase.GetCategoryProgressUseCase
+import com.merkost.honq.domain.usecase.GetMockTestReviewUseCase
 import com.merkost.honq.domain.usecase.GetStatisticsUseCase
+import com.merkost.honq.domain.usecase.GetUnansweredQuestionsUseCase
+import com.merkost.honq.domain.usecase.GetWeakestQuestionsUseCase
 import com.merkost.honq.domain.usecase.SearchQuestionsUseCase
 import com.merkost.honq.domain.usecase.GetLicenseTypesUseCase
 import com.merkost.honq.domain.usecase.GetMockTestQuestionsUseCase
@@ -37,7 +40,6 @@ val domainModule = module {
     factory { SyncQuestionsUseCase(get(), get()) }
     factory { GetStatesUseCase(get()) }
     factory { GetStateResourcesUseCase(get()) }
-    factory { GetLicenseStagesUseCase(get()) }
     factory { GetLicenseTypesUseCase(get()) }
     factory { GetQuestionSetsByStateUseCase(get()) }
     factory { ObserveSelectedStateUseCase(get()) }
@@ -51,6 +53,10 @@ val domainModule = module {
     factory { ObserveIncorrectAnswersUseCase(get()) }
     factory { HasIncorrectAnswersUseCase(get()) }
     factory { GetCategoriesUseCase(get(), get()) }
+    factory { GetCategoryProgressUseCase(get(), get()) }
     factory { SearchQuestionsUseCase(get(), get()) }
     factory { GetStatisticsUseCase(get()) }
+    factory { GetWeakestQuestionsUseCase(get()) }
+    factory { GetUnansweredQuestionsUseCase(get()) }
+    factory { GetMockTestReviewUseCase(get()) }
 }

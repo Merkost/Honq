@@ -6,11 +6,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class StateResourceDto(
     val id: String,
-    @SerialName("state_id") val stateId: StateIdDto,
+    @SerialName("state_id") val stateId: String,
     val title: String,
     val url: String,
-    @SerialName("resource_type") val resourceType: ResourceTypeDto,
-    @SerialName("license_type") val licenseType: LicenseTypeIdDto? = null,
+    @SerialName("resource_type") val resourceType: String,
+    @SerialName("license_type") val licenseType: String? = null,
     @SerialName("display_order") val displayOrder: Int = 0,
     @SerialName("is_active") val isActive: Boolean = true
 )

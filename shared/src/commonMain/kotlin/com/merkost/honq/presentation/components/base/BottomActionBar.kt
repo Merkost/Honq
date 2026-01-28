@@ -68,7 +68,7 @@ fun BottomActionBarVertical(
                         )
                     )
                 )
-                .padding(top = 24.dp)
+                .padding(top = 12.dp)
         )
         Column(
             modifier = Modifier
@@ -76,7 +76,7 @@ fun BottomActionBarVertical(
                 .background(HonqColors.Background)
                 .padding(
                     horizontal = HonqSizing.screenPadding,
-                    vertical = HonqSpacing.md
+                    vertical = HonqSpacing.sm
                 ),
             verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm),
             content = content

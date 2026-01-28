@@ -1,16 +1,19 @@
 package com.merkost.honq
 
 import android.app.Application
-import android.util.Log
 import com.merkost.honq.core.analytics.initAmplitudeContext
 import com.merkost.honq.data.local.initDataStore
 import com.merkost.honq.security.SignatureVerifier
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.initialize
+import org.kimplify.cedar.logging.Cedar
 
 class HonqApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Verify app signature to detect tampering
+        Firebase.initialize(this)
+
         verifyAppSignature()
 
         initDataStore(this)
@@ -18,18 +21,15 @@ class HonqApplication : Application() {
     }
 
     private fun verifyAppSignature() {
-        // Log the current signature hash during development
-        // This helps you find the hash to add to VALID_SIGNATURES
         if (BuildConfig.DEBUG) {
             val signatureHash = SignatureVerifier.getSignatureHashForSetup(this)
-            Log.d("SignatureVerifier", "Current signature hash: $signatureHash")
-            Log.d("SignatureVerifier", "Add this to VALID_SIGNATURES in SignatureVerifier.kt")
+            Cedar.tag("SignatureVerifier").d("Current signature hash: $signatureHash")
+            Cedar.tag("SignatureVerifier").d("Add this to VALID_SIGNATURES in SignatureVerifier.kt")
         }
 
-        // Verify signature
         when (val result = SignatureVerifier.verify(this)) {
             is SignatureVerifier.VerificationResult.Success -> {
-                // Signature is valid, continue normally
+                Cedar.tag("SignatureVerifier").d("App signature verification passed")
             }
             is SignatureVerifier.VerificationResult.Failure -> {
                 handleTamperedApp(result)
@@ -38,7 +38,6 @@ class HonqApplication : Application() {
     }
 
     private fun handleTamperedApp(failure: SignatureVerifier.VerificationResult.Failure) {
-        // Log the failure for analytics/debugging
         val message = when (failure) {
             is SignatureVerifier.VerificationResult.Failure.NoSignatureFound ->
                 "No signature found"
@@ -47,7 +46,7 @@ class HonqApplication : Application() {
             is SignatureVerifier.VerificationResult.Failure.Error ->
                 "Verification error: ${failure.message}"
         }
-        Log.e("SignatureVerifier", "App integrity check failed: $message")
+        Cedar.tag("SignatureVerifier").e("App integrity check failed: $message")
 
         // Option 1: Kill the app immediately (aggressive)
         // android.os.Process.killProcess(android.os.Process.myPid())

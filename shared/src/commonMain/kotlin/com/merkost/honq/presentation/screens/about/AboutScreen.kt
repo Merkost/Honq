@@ -58,6 +58,8 @@ import org.koin.compose.koinInject
 
 private const val CONTACT_EMAIL = "merkostdev+honq@gmail.com"
 private const val SHARE_TEXT = "Check out Honq - the best way to prepare for your Australian driver's license test!"
+private const val PRIVACY_POLICY_URL = "https://honqapp.com/privacy"
+private const val TERMS_OF_SERVICE_URL = "https://honqapp.com/terms"
 
 @Composable
 fun AboutScreen(
@@ -81,7 +83,6 @@ fun AboutScreen(
         ) {
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
-            // Hero section with app identity
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(horizontal = HonqSizing.screenPadding)
@@ -150,56 +151,49 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
-            // Resources section
+            // Disclaimer
+            Text(
+                text = "This app is not affiliated with any Australian state or territory transport authority. " +
+                    "Content is for practice purposes only. Always refer to your state's official handbook.",
+                fontSize = 12.sp,
+                color = colors.textMuted,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = HonqSizing.screenPadding)
+                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+                    .background(colors.surface)
+                    .padding(HonqSpacing.md)
+            )
+
+            Spacer(modifier = Modifier.height(HonqSpacing.xl))
+
+            // Legal links
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = HonqSizing.screenPadding)
+                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+                    .background(colors.surface)
             ) {
-                Text(
-                    text = "OFFICIAL RESOURCES",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colors.textMuted,
-                    letterSpacing = 1.sp,
-                    modifier = Modifier.padding(start = HonqSpacing.sm, bottom = HonqSpacing.sm)
+                LegalLink(
+                    title = "Privacy Policy",
+                    onClick = { openUrl(PRIVACY_POLICY_URL) }
                 )
-
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(HonqSizing.cornerRadius))
-                        .background(colors.surface)
-                ) {
-                    ResourceLink(
-                        state = "NSW",
-                        title = "Road Users Handbook",
-                        onClick = {
-                            openUrl("https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/road-users-handbook")
-                        }
-                    )
-                    Divider()
-                    ResourceLink(
-                        state = "VIC",
-                        title = "Road to Solo Driving",
-                        onClick = {
-                            openUrl("https://www.vicroads.vic.gov.au/licences/your-licence/getting-your-licence/road-to-solo-driving-handbook")
-                        }
-                    )
-                    Divider()
-                    ResourceLink(
-                        state = "QLD",
-                        title = "Your Keys to Driving",
-                        onClick = {
-                            openUrl("https://www.qld.gov.au/transport/licensing/getting/handbook")
-                        }
-                    )
-                }
+                        .padding(start = HonqSpacing.md)
+                        .height(0.5.dp)
+                        .background(colors.border.copy(alpha = 0.5f))
+                )
+                LegalLink(
+                    title = "Terms of Service",
+                    onClick = { openUrl(TERMS_OF_SERVICE_URL) }
+                )
             }
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
-            // Reset progress - subtle destructive action
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -232,7 +226,6 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
-            // Version footer
             Text(
                 text = "Version ${BuildKonfig.APP_VERSION}",
                 fontSize = 12.sp,
@@ -289,6 +282,35 @@ fun AboutScreen(
 }
 
 @Composable
+private fun LegalLink(
+    title: String,
+    onClick: () -> Unit
+) {
+    val colors = HonqTheme.colors
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm + 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            color = colors.textPrimary,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+            contentDescription = null,
+            tint = colors.textMuted,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+@Composable
 private fun ActionPill(
     icon: ImageVector,
     label: String,
@@ -321,63 +343,3 @@ private fun ActionPill(
     }
 }
 
-@Composable
-private fun ResourceLink(
-    state: String,
-    title: String,
-    onClick: () -> Unit
-) {
-    val colors = HonqTheme.colors
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm + 2.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // State badge with fixed width for alignment
-        Box(
-            modifier = Modifier
-                .width(40.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(colors.primarySurface)
-                .padding(vertical = 2.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = state,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = colors.primary
-            )
-        }
-
-        Spacer(modifier = Modifier.width(HonqSpacing.md))
-
-        Text(
-            text = title,
-            fontSize = 14.sp,
-            color = colors.textPrimary,
-            modifier = Modifier.weight(1f)
-        )
-
-        Icon(
-            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-            contentDescription = null,
-            tint = colors.textMuted,
-            modifier = Modifier.size(18.dp)
-        )
-    }
-}
-
-@Composable
-private fun Divider() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 72.dp)
-            .height(0.5.dp)
-            .background(HonqTheme.colors.border.copy(alpha = 0.5f))
-    )
-}

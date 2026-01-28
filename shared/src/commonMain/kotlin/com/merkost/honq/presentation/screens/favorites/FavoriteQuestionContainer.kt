@@ -1,8 +1,11 @@
 package com.merkost.honq.presentation.screens.favorites
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.domain.usecase.GetQuestionByIdUseCase
+import org.kimplify.cedar.logging.Cedar
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -18,10 +21,9 @@ class FavoriteQuestionContainer(
     private val getQuestionById: GetQuestionByIdUseCase,
     private val observeFavoriteQuestionIds: ObserveFavoriteQuestionIdsUseCase,
     private val toggleFavoriteQuestion: ToggleFavoriteQuestionUseCase,
-    scope: CoroutineScope
-) : Container<FavoriteQuestionState, FavoriteQuestionIntent, FavoriteQuestionAction> {
+) : Container<FavoriteQuestionState, FavoriteQuestionIntent, FavoriteQuestionAction>, ViewModel() {
 
-    override val store = store(FavoriteQuestionState(), scope) {
+    override val store = store(FavoriteQuestionState(), viewModelScope) {
         init {
             loadQuestion()
         }
@@ -47,12 +49,14 @@ class FavoriteQuestionContainer(
         getQuestionById(questionId)
             .onSuccess { question ->
                 if (question == null) {
+                    Cedar.tag("FavoriteQuestion").w("loadQuestion: question $questionId not found")
                     updateState { copy(isLoading = false, error = "Question not found") }
                 } else {
                     updateState { copy(question = question, isLoading = false, error = null) }
                 }
             }
             .onError { e ->
+                Cedar.tag("FavoriteQuestion").e("loadQuestion: failed for $questionId: ${e.message}", e)
                 updateState { copy(isLoading = false, error = e.message) }
             }
     }

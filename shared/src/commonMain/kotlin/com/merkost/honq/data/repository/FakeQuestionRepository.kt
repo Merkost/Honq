@@ -3,7 +3,7 @@ package com.merkost.honq.data.repository
 import com.merkost.honq.core.util.Result
 import com.merkost.honq.domain.model.AssessmentType
 import com.merkost.honq.domain.model.Category
-import com.merkost.honq.domain.model.LicenseStage
+import com.merkost.honq.domain.model.CategoryProgress
 import com.merkost.honq.domain.model.LicenseType
 import com.merkost.honq.domain.model.Question
 import com.merkost.honq.domain.model.QuestionSet
@@ -27,14 +27,6 @@ class FakeQuestionRepository : QuestionRepository {
         displayOrder = 1
     )
 
-    private val defaultLicenseStage = LicenseStage(
-        id = "learner",
-        name = "Learner (L)",
-        shortName = "L",
-        isActive = true,
-        displayOrder = 1
-    )
-
     private val defaultAssessmentType = AssessmentType(
         id = "knowledge_test",
         name = "Knowledge Test",
@@ -47,7 +39,7 @@ class FakeQuestionRepository : QuestionRepository {
         id = "nsw_car",
         stateId = defaultState.id,
         licenseTypeId = defaultLicenseType.id,
-        licenseStageId = defaultLicenseStage.id,
+        licenseStageId = "learner",
         assessmentTypeId = defaultAssessmentType.id,
         mockTestQuestionCount = 45,
         mockTestTimeLimitMinutes = 45,
@@ -329,6 +321,13 @@ class FakeQuestionRepository : QuestionRepository {
         return Result.Success(sampleQuestions.find { it.id == questionId })
     }
 
+    override suspend fun searchQuestions(
+        questionSetId: String,
+        query: String
+    ): Result<List<Question>> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun syncQuestions(): Result<Unit> {
         return Result.Success(Unit)
     }
@@ -349,10 +348,6 @@ class FakeQuestionRepository : QuestionRepository {
         return Result.Success(listOf(defaultLicenseType))
     }
 
-    override suspend fun getLicenseStages(): Result<List<LicenseStage>> {
-        return Result.Success(listOf(defaultLicenseStage))
-    }
-
     override suspend fun getAssessmentTypes(): Result<List<AssessmentType>> {
         return Result.Success(listOf(defaultAssessmentType))
     }
@@ -369,5 +364,17 @@ class FakeQuestionRepository : QuestionRepository {
         return Result.Success(categories.values.toList())
     }
 
+    override suspend fun fullSync(questionSetId: String?): Result<Unit> = Result.Success(Unit)
+
+    override suspend fun getAllActiveCategories(): Result<List<Category>> =
+        Result.Success(categories.values.toList())
+
+    override suspend fun getCategoryProgress(questionSetId: String): Result<Map<String, CategoryProgress>> =
+        Result.Success(emptyMap())
+
     override fun getLastSyncTime(questionSetId: String): kotlin.time.Instant? = null
+
+    override suspend fun isDatabaseEmpty(): Boolean = false
+
+    override suspend fun hasQuestionsForSet(questionSetId: String): Boolean = true
 }

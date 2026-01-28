@@ -56,6 +56,7 @@ import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.domain.model.State
 import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqButton
+import com.merkost.honq.presentation.components.base.LicenseTypeIcon
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
@@ -513,22 +514,13 @@ private fun LicenseTypeCard(
 }
 
 @Composable
-private fun LicenseTypeIcon(
-    typeId: LicenseTypeId?,
-    tint: Color
-) {
-    val icon = when (typeId) {
-        LicenseTypeId.CAR -> Icons.Rounded.DirectionsCar
-        LicenseTypeId.RIDER -> Icons.Rounded.TwoWheeler
-        null -> Icons.Rounded.DirectionsCar
-    }
-
-    Icon(
-        imageVector = icon,
-        contentDescription = null,
-        tint = tint,
-        modifier = Modifier.size(32.dp)
-    )
+private fun getLicenseTypeDescription(typeId: LicenseTypeId?): String = when (typeId) {
+    LicenseTypeId.CAR -> stringResource(Res.string.onboarding_car_license)
+    LicenseTypeId.RIDER -> stringResource(Res.string.onboarding_rider_license)
+    LicenseTypeId.RIDER_SPECIAL_MOBILITY_VEHICLE -> stringResource(Res.string.onboarding_rider_license)
+    LicenseTypeId.HEAVY_RIGID -> ""
+    LicenseTypeId.HEAVY_COMBINATION -> ""
+    null -> ""
 }
 
 @Composable
@@ -565,9 +557,3 @@ private fun AnimatedCheckmark(selected: Boolean) {
     }
 }
 
-@Composable
-private fun getLicenseTypeDescription(typeId: LicenseTypeId?): String = when (typeId) {
-    LicenseTypeId.CAR -> stringResource(Res.string.onboarding_car_license)
-    LicenseTypeId.RIDER -> stringResource(Res.string.onboarding_rider_license)
-    null -> ""
-}

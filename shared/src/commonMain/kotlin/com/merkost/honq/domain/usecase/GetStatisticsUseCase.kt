@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.combine
 
 data class Statistics(
     val progress: UserProgress,
-    val mockTestResults: List<MockTestResult>
+    val mockTestResults: List<MockTestResult>,
+    val weakestQuestionCount: Int,
+    val unansweredQuestionCount: Int
 )
 
 class GetStatisticsUseCase(
@@ -17,11 +19,15 @@ class GetStatisticsUseCase(
     operator fun invoke(): Flow<Statistics> {
         return combine(
             progressRepository.observeUserProgress(),
-            progressRepository.observeMockTestResults()
-        ) { progress, mockTestResults ->
+            progressRepository.observeMockTestResults(),
+            progressRepository.observeWeakestQuestionCount(),
+            progressRepository.observeUnansweredQuestionCount()
+        ) { progress, mockTestResults, weakestCount, unansweredCount ->
             Statistics(
                 progress = progress,
-                mockTestResults = mockTestResults.sortedByDescending { it.completedAt }
+                mockTestResults = mockTestResults.sortedByDescending { it.completedAt },
+                weakestQuestionCount = weakestCount,
+                unansweredQuestionCount = unansweredCount
             )
         }
     }

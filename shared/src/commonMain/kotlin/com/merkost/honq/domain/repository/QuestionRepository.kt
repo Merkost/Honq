@@ -3,7 +3,7 @@ package com.merkost.honq.domain.repository
 import com.merkost.honq.core.util.Result
 import com.merkost.honq.domain.model.AssessmentType
 import com.merkost.honq.domain.model.Category
-import com.merkost.honq.domain.model.LicenseStage
+import com.merkost.honq.domain.model.CategoryProgress
 import com.merkost.honq.domain.model.LicenseType
 import com.merkost.honq.domain.model.Question
 import com.merkost.honq.domain.model.QuestionSet
@@ -21,10 +21,14 @@ interface QuestionRepository {
     suspend fun getStates(): Result<List<State>>
     suspend fun syncStates(): Result<Unit>
     suspend fun getLicenseTypes(): Result<List<LicenseType>>
-    suspend fun getLicenseStages(): Result<List<LicenseStage>>
     suspend fun getAssessmentTypes(): Result<List<AssessmentType>>
     suspend fun getQuestionSetsByState(stateId: String): Result<List<QuestionSet>>
     suspend fun getQuestionSetById(questionSetId: String): Result<QuestionSet?>
     suspend fun getCategoriesByQuestionSet(questionSetId: String): Result<List<Category>>
+    suspend fun fullSync(questionSetId: String? = null): Result<Unit>
+    suspend fun getAllActiveCategories(): Result<List<Category>>
+    suspend fun getCategoryProgress(questionSetId: String): Result<Map<String, CategoryProgress>>
     fun getLastSyncTime(questionSetId: String): kotlin.time.Instant?
+    suspend fun isDatabaseEmpty(): Boolean
+    suspend fun hasQuestionsForSet(questionSetId: String): Boolean
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "114636921442",
+    "project_id": "honq-ac8e4",
+    "storage_bucket": "honq-ac8e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114636921442:android:daa14b00a24763932d8f3b",
+        "android_client_info": {
+          "package_name": "com.merkost.honq"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiQmbHMYTCLsoTUI0lrDyt1uXt4z4arvM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

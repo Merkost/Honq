@@ -1,6 +1,7 @@
 package com.merkost.honq.presentation.theme
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 object HonqSpacing {
     val xs = 4.dp
@@ -22,4 +23,17 @@ object HonqSizing {
     val iconSizeSmall = 20.dp
     val iconSizeMedium = 24.dp
     val iconSizeLarge = 32.dp
+}
+
+object HonqChartSizing {
+    val donutStrokeWidth = 24.dp
+    val ringStrokeWidth = 14.dp
+    val ringGlowExtra = 4.dp
+    const val ringGlowAlpha = 0.2f
+    val ringSize = 120.dp
+    const val chartAnimationDuration = 1000
+    val ringCenterTextSize = 24.sp
+    val ringCenterSubtextSize = 11.sp
+    val donutCenterTextSize = 28.sp
+    val donutCenterSubtextSize = 12.sp
 }

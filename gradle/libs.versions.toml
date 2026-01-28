@@ -15,6 +15,7 @@ kotlin = "2.3.0"
 material3 = "1.10.0-alpha05"
 
 navigation = "2.9.1"
+cedar = "0.2.2"
 koin = "4.1.1"
 room = "2.8.4"
 ksp = "2.3.4"
@@ -28,8 +29,14 @@ flowmvi = "3.2.1"
 buildkonfig = "0.17.1"
 datastore = "1.1.7"
 amplitude = "1.16.8"
+gitlive-firebase = "2.4.0"
+google-services = "4.4.4"
+firebase-crashlytics-plugin = "3.0.6"
 
 [libraries]
+cedar = { module = "org.kimplify:cedar-logging", version.ref = "cedar" }
+
+
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -62,6 +69,7 @@ sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sql
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 
@@ -81,6 +89,8 @@ amplitude = { module = "com.amplitude:analytics-android", version.ref = "amplitu
 
 datastore-preferences = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
+firebase-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive-firebase" }
+
 [bundles]
 koin = ["koin-core", "koin-compose",]
 
@@ -95,3 +105,5 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 room = { id = "androidx.room", version.ref = "room" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }

@@ -1,31 +1,26 @@
 package com.merkost.honq.presentation.navigation
 
-import java.net.URLEncoder
+import kotlinx.serialization.Serializable
 
-sealed class Screen(val route: String) {
-    data object Onboarding : Screen("onboarding")
-    data object Home : Screen("home")
-    data object About : Screen("about")
-    data object Favorites : Screen("favorites")
-    data object FavoriteQuestion : Screen("favorites/question/{questionId}") {
-        fun createRoute(questionId: String) = "favorites/question/$questionId"
-    }
-    data object Practice : Screen("practice")
-    data object CategorySelection : Screen("categories")
-    data object PracticeByCategory : Screen("practice/{categoryId}/{categoryName}") {
-        fun createRoute(categoryId: String, categoryName: String): String {
-            val encodedName = URLEncoder.encode(categoryName, "UTF-8")
-            return "practice/$categoryId/$encodedName"
-        }
-    }
-    data object MockTest : Screen("mocktest")
-    data object Results : Screen("results/{score}/{total}/{hasIncorrect}") {
-        fun createRoute(score: Int, total: Int, hasIncorrect: Boolean) = "results/$score/$total/$hasIncorrect"
-    }
-    data object ReviewIncorrect : Screen("review_incorrect")
-    data object Search : Screen("search")
-    data object SearchQuestion : Screen("search/question/{questionId}") {
-        fun createRoute(questionId: String) = "search/question/$questionId"
-    }
-    data object Statistics : Screen("statistics")
+@Serializable
+sealed interface Screen {
+    @Serializable data object Onboarding : Screen
+    @Serializable data object Home : Screen
+    @Serializable data object About : Screen
+    @Serializable data object Favorites : Screen
+    @Serializable data class FavoriteQuestion(val questionId: String) : Screen
+    @Serializable data object Practice : Screen
+    @Serializable data object CategorySelection : Screen
+    @Serializable data class PracticeByCategory(val categoryId: String, val categoryName: String) : Screen
+    @Serializable data object MockTest : Screen
+    @Serializable data class Results(val score: Int, val total: Int, val hasIncorrect: Boolean) : Screen
+    @Serializable data object ReviewIncorrect : Screen
+    @Serializable data object Search : Screen
+    @Serializable data class SearchQuestion(val questionId: String) : Screen
+    @Serializable data object Statistics : Screen
+    @Serializable data object WeakestQuestions : Screen
+    @Serializable data class WeakestQuestion(val questionId: String) : Screen
+    @Serializable data object UnansweredQuestions : Screen
+    @Serializable data class UnansweredQuestion(val questionId: String) : Screen
+    @Serializable data class MockTestReview(val mockTestResultId: Long) : Screen
 }

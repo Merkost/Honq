@@ -1,17 +1,23 @@
 package com.merkost.honq.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.ColumnInfo
 
-@Entity(tableName = "questions")
+@Entity(
+    tableName = "questions",
+    indices = [
+        Index(value = ["questionSetId", "isActive"]),
+        Index(value = ["categoryId"])
+    ]
+)
 data class QuestionEntity(
     @PrimaryKey val id: String,
     val text: String,
     val options: String,
     val correctIndex: Int,
     val explanation: String,
-    @ColumnInfo(name = "category") val categoryId: String,
+    val categoryId: String,
     val questionSetId: String = "",
     val imageUrl: String? = null,
     val updatedAt: String = "",

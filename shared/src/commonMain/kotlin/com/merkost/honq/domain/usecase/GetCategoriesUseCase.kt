@@ -9,8 +9,9 @@ class GetCategoriesUseCase(
     private val repository: QuestionRepository,
     private val questionSetSelectionRepository: QuestionSetSelectionRepository
 ) {
-    suspend operator fun invoke(): Result<List<Category>> =
-        questionSetSelectionRepository.selectedQuestionSetId.value?.let { questionSetId ->
-            repository.getCategoriesByQuestionSet(questionSetId)
-        } ?: Result.Success(emptyList())
+    suspend operator fun invoke(): Result<List<Category>> {
+        val questionSetId = questionSetSelectionRepository.selectedQuestionSetId.value
+            ?: return repository.getAllActiveCategories()
+        return repository.getCategoriesByQuestionSet(questionSetId)
+    }
 }

@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.merkost.honq.presentation.theme.HonqChartSizing
 import com.merkost.honq.presentation.theme.HonqTheme
 
 data class DonutChartSegment(
@@ -30,11 +31,11 @@ data class DonutChartSegment(
 fun DonutChart(
     segments: List<DonutChartSegment>,
     modifier: Modifier = Modifier,
-    strokeWidth: Dp = 24.dp,
+    strokeWidth: Dp = HonqChartSizing.donutStrokeWidth,
     backgroundColor: Color = HonqTheme.colors.surfaceVariant,
     centerText: String? = null,
     centerSubtext: String? = null,
-    animationDuration: Int = 1000
+    animationDuration: Int = HonqChartSizing.chartAnimationDuration
 ) {
     val colors = HonqTheme.colors
     val animationProgress = remember { Animatable(0f) }
@@ -95,7 +96,7 @@ fun DonutChart(
                     Text(
                         text = it,
                         color = colors.textPrimary,
-                        fontSize = 28.sp,
+                        fontSize = HonqChartSizing.donutCenterTextSize,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -103,7 +104,7 @@ fun DonutChart(
                     Text(
                         text = it,
                         color = colors.textMuted,
-                        fontSize = 12.sp
+                        fontSize = HonqChartSizing.donutCenterSubtextSize
                     )
                 }
             }
@@ -117,10 +118,10 @@ fun ProgressRing(
     modifier: Modifier = Modifier,
     progressColor: Color = HonqTheme.colors.primary,
     backgroundColor: Color = HonqTheme.colors.surfaceVariant,
-    strokeWidth: Dp = 12.dp,
+    strokeWidth: Dp = HonqChartSizing.ringStrokeWidth,
     centerText: String? = null,
     centerSubtext: String? = null,
-    animationDuration: Int = 1000
+    animationDuration: Int = HonqChartSizing.chartAnimationDuration
 ) {
     val colors = HonqTheme.colors
     val animationProgress = remember { Animatable(0f) }
@@ -140,15 +141,28 @@ fun ProgressRing(
             val centerX = size.width / 2
             val centerY = size.height / 2
 
-            // Background circle
             drawCircle(
                 color = backgroundColor,
                 radius = radius,
                 style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
             )
 
-            // Progress arc
             val sweepAngle = progress.coerceIn(0f, 1f) * 360f * animationProgress.value
+
+            if (sweepAngle > 0f) {
+                drawArc(
+                    color = progressColor.copy(alpha = HonqChartSizing.ringGlowAlpha),
+                    startAngle = -90f,
+                    sweepAngle = sweepAngle,
+                    useCenter = false,
+                    style = Stroke(width = strokeWidthPx + HonqChartSizing.ringGlowExtra.toPx(), cap = StrokeCap.Round),
+                    topLeft = androidx.compose.ui.geometry.Offset(
+                        centerX - radius,
+                        centerY - radius
+                    ),
+                    size = androidx.compose.ui.geometry.Size(radius * 2, radius * 2)
+                )
+            }
 
             drawArc(
                 color = progressColor,
@@ -164,7 +178,6 @@ fun ProgressRing(
             )
         }
 
-        // Center content
         if (centerText != null || centerSubtext != null) {
             androidx.compose.foundation.layout.Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -173,7 +186,7 @@ fun ProgressRing(
                     Text(
                         text = it,
                         color = colors.textPrimary,
-                        fontSize = 24.sp,
+                        fontSize = HonqChartSizing.ringCenterTextSize,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -181,7 +194,7 @@ fun ProgressRing(
                     Text(
                         text = it,
                         color = colors.textMuted,
-                        fontSize = 11.sp
+                        fontSize = HonqChartSizing.ringCenterSubtextSize
                     )
                 }
             }

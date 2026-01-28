@@ -7,13 +7,16 @@ import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.domain.model.IncorrectAnswer
 import com.merkost.honq.domain.model.MockTestResult
 import com.merkost.honq.domain.model.QuizSession
+import com.merkost.honq.domain.repository.MockTestAnswer
 import com.merkost.honq.domain.usecase.GetMockTestQuestionsUseCase
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
 import com.merkost.honq.domain.usecase.SaveIncorrectAnswersUseCase
 import com.merkost.honq.domain.usecase.SaveMockTestResultUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
+import com.merkost.honq.domain.repository.QuestionSetSelectionRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import org.kimplify.cedar.logging.Cedar
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.PipelineContext
 import pro.respawn.flowmvi.dsl.store
@@ -31,6 +34,7 @@ class MockTestContainer(
     private val saveIncorrectAnswers: SaveIncorrectAnswersUseCase,
     private val observeFavoriteQuestionIds: ObserveFavoriteQuestionIdsUseCase,
     private val toggleFavoriteQuestion: ToggleFavoriteQuestionUseCase,
+    private val questionSetSelectionRepository: QuestionSetSelectionRepository,
     private val analytics: Analytics,
     scope: CoroutineScope
 ) : Container<MockTestState, MockTestIntent, MockTestAction> {
@@ -64,9 +68,11 @@ class MockTestContainer(
     }
 
     private suspend fun PipelineContext<MockTestState, MockTestIntent, MockTestAction>.loadQuestions() {
+        Cedar.tag("MockTest").d("loadQuestions: loading mock test questions...")
         val startTime = clock.now()
         getMockTestQuestions()
             .onSuccess { questions ->
+                Cedar.tag("MockTest").d("loadQuestions: loaded ${questions.size} questions")
                 updateState {
                     copy(
                         session = QuizSession(questions = questions, startTime = startTime),
@@ -75,6 +81,7 @@ class MockTestContainer(
                 }
             }
             .onError { e ->
+                Cedar.tag("MockTest").e("loadQuestions: failed: ${e.message}", e)
                 updateState { copy(error = e.message, isLoading = false) }
             }
     }
@@ -131,9 +138,11 @@ class MockTestContainer(
     }
 
     private suspend fun PipelineContext<MockTestState, MockTestIntent, MockTestAction>.submitTest() {
+        Cedar.tag("MockTest").d("submitTest: submitting...")
         updateState { copy(isSubmitting = true) }
 
         val now = clock.now()
+        val questionSetId = questionSetSelectionRepository.selectedQuestionSetId.value ?: ""
         withState {
             val correctCount = session.questions.count { question ->
                 session.answers[question.id] == question.correctIndex
@@ -160,13 +169,24 @@ class MockTestContainer(
             val passed = totalQuestions > 0 && (correctCount * 100 / totalQuestions) >= passPercentage
 
             val result = MockTestResult(
+                questionSetId = questionSetId,
                 totalQuestions = totalQuestions,
                 correctAnswers = correctCount,
                 timeTaken = timeTaken,
                 completedAt = now
             )
 
-            saveMockTestResult(result)
+            val allAnswers = session.questions.mapNotNull { question ->
+                val selectedIndex = session.answers[question.id] ?: return@mapNotNull null
+                MockTestAnswer(
+                    questionId = question.id,
+                    selectedAnswerIndex = selectedIndex,
+                    wasCorrect = selectedIndex == question.correctIndex
+                )
+            }
+
+            saveMockTestResult(result, allAnswers)
+            Cedar.tag("MockTest").d("submitTest: score=$correctCount/$totalQuestions, passed=$passed, timeTaken=${timeTaken.inWholeSeconds}s")
 
             analytics.track(
                 AnalyticsEvent.MockTestCompleted(

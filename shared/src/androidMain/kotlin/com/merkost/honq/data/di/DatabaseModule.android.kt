@@ -15,8 +15,8 @@ val databaseModule = module {
     single { get<HonqDatabase>().stateDao() }
     single { get<HonqDatabase>().categoryDao() }
     single { get<HonqDatabase>().licenseTypeDao() }
-    single { get<HonqDatabase>().licenseStageDao() }
     single { get<HonqDatabase>().assessmentTypeDao() }
     single { get<HonqDatabase>().questionSetDao() }
     single { get<HonqDatabase>().questionSetCategoryDao() }
+    single { get<HonqDatabase>().mockTestAnswerDao() }
 }

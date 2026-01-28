@@ -6,11 +6,14 @@ import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.data.local.OnboardingPreferences
+import com.merkost.honq.data.repository.DataSyncManager
+import com.merkost.honq.domain.repository.QuestionRepository
 import com.merkost.honq.domain.usecase.GetLicenseTypesUseCase
 import com.merkost.honq.domain.usecase.GetStatesUseCase
 import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
 import com.merkost.honq.domain.usecase.GetQuestionSetsByStateUseCase
 import kotlinx.coroutines.CoroutineScope
+import org.kimplify.cedar.logging.Cedar
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.PipelineContext
 import pro.respawn.flowmvi.dsl.store
@@ -24,6 +27,8 @@ class OnboardingContainer(
     private val setSelectedQuestionSet: SetSelectedQuestionSetUseCase,
     private val onboardingPreferences: OnboardingPreferences,
     private val analytics: Analytics,
+    private val dataSyncManager: DataSyncManager,
+    private val repository: QuestionRepository,
     scope: CoroutineScope
 ) : Container<OnboardingState, OnboardingIntent, OnboardingAction>, ViewModel() {
 
@@ -58,30 +63,46 @@ class OnboardingContainer(
     }
 
     private suspend fun PipelineContext<OnboardingState, OnboardingIntent, OnboardingAction>.loadData() {
+        Cedar.tag("Onboarding").d("loadData: starting...")
         updateState { copy(isLoading = true, error = null) }
+
+        if (dataSyncManager.needsInitialSync()) {
+            Cedar.tag("Onboarding").d("loadData: first launch, running full sync")
+            val remoteVersion = dataSyncManager.fetchRemoteVersion().getOrDefault(0)
+            repository.fullSync(null)
+            dataSyncManager.markSyncCompleted(remoteVersion)
+        }
 
         getStates()
             .onSuccess { states ->
+                Cedar.tag("Onboarding").d("loadData: loaded ${states.size} states")
                 updateState { copy(states = states) }
             }
             .onError { e ->
+                Cedar.tag("Onboarding").e("loadData: failed to load states: ${e.message}", e)
                 updateState { copy(error = e.message ?: "Failed to load states") }
             }
 
         getLicenseTypes()
             .onSuccess { types ->
                 val activeTypes = types.filter { it.isActive }.sortedBy { it.displayOrder }
+                Cedar.tag("Onboarding").d("loadData: loaded ${activeTypes.size} active license types")
                 updateState { copy(licenseTypes = activeTypes, isLoading = false) }
             }
             .onError { e ->
+                Cedar.tag("Onboarding").e("loadData: failed to load license types: ${e.message}", e)
                 updateState { copy(isLoading = false, error = e.message ?: "Failed to load license types") }
             }
     }
 
     private suspend fun PipelineContext<OnboardingState, OnboardingIntent, OnboardingAction>.completeOnboarding() {
         withState {
-            val stateId = selectedStateId ?: return@withState
-            val typeId = selectedLicenseTypeId ?: return@withState
+            val stateId = selectedStateId
+            val typeId = selectedLicenseTypeId
+            if (stateId == null || typeId == null) {
+                Cedar.tag("Onboarding").w("completeOnboarding: missing selection (state=$stateId, type=$typeId)")
+                return@withState
+            }
 
             onboardingPreferences.setSelectedStateId(stateId)
             onboardingPreferences.setSelectedLicenseTypeId(typeId)
@@ -93,18 +114,21 @@ class OnboardingContainer(
                 )
             )
 
+            Cedar.tag("Onboarding").d("completeOnboarding: state=$stateId, type=$typeId")
             getQuestionSetsByState(stateId)
                 .onSuccess { questionSets ->
                     val matchingSet = questionSets.firstOrNull {
                         it.isActive && it.licenseTypeId == typeId
                     } ?: questionSets.firstOrNull { it.isActive }
 
+                    Cedar.tag("Onboarding").d("completeOnboarding: selected questionSet=${matchingSet?.id}")
                     matchingSet?.let { setSelectedQuestionSet(it.id) }
 
                     onboardingPreferences.setOnboardingCompleted(true)
                     action(OnboardingAction.NavigateToHome)
                 }
-                .onError {
+                .onError { e ->
+                    Cedar.tag("Onboarding").e("completeOnboarding: failed to load question sets, proceeding anyway: ${e.message}", e)
                     onboardingPreferences.setOnboardingCompleted(true)
                     action(OnboardingAction.NavigateToHome)
                 }

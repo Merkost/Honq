@@ -4,19 +4,20 @@ import com.merkost.honq.data.local.db.AnswerHistoryDao
 import com.merkost.honq.data.local.db.AssessmentTypeDao
 import com.merkost.honq.data.local.db.CategoryDao
 import com.merkost.honq.data.local.db.FavoriteQuestionDao
-import com.merkost.honq.data.local.db.LicenseStageDao
 import com.merkost.honq.data.local.db.LicenseTypeDao
+import com.merkost.honq.data.local.db.MockTestAnswerDao
 import com.merkost.honq.data.local.db.MockTestResultDao
 import com.merkost.honq.data.local.db.QuestionDao
 import com.merkost.honq.data.local.db.QuestionSetCategoryDao
 import com.merkost.honq.data.local.db.QuestionSetDao
 import com.merkost.honq.data.local.db.StateDao
 import com.merkost.honq.data.local.entity.AnswerHistoryEntity
+import com.merkost.honq.data.local.entity.WeakQuestionResult
 import com.merkost.honq.data.local.entity.AssessmentTypeEntity
 import com.merkost.honq.data.local.entity.CategoryEntity
 import com.merkost.honq.data.local.entity.FavoriteQuestionEntity
-import com.merkost.honq.data.local.entity.LicenseStageEntity
 import com.merkost.honq.data.local.entity.LicenseTypeEntity
+import com.merkost.honq.data.local.entity.MockTestAnswerEntity
 import com.merkost.honq.data.local.entity.QuestionEntity
 import com.merkost.honq.data.local.entity.QuestionSetCategoryEntity
 import com.merkost.honq.data.local.entity.QuestionSetEntity
@@ -26,9 +27,10 @@ import com.merkost.honq.data.local.mapper.toEntity
 import com.merkost.honq.data.remote.mapper.toDomain
 import com.merkost.honq.domain.model.AssessmentType
 import com.merkost.honq.domain.model.Category
-import com.merkost.honq.domain.model.LicenseStage
 import com.merkost.honq.domain.model.LicenseType
 import com.merkost.honq.domain.model.MockTestResult
+import com.merkost.honq.domain.model.CategoryProgress
+import com.merkost.honq.domain.model.MockTestReviewAnswer
 import com.merkost.honq.domain.model.Question
 import com.merkost.honq.domain.model.QuestionSet
 import com.merkost.honq.domain.model.State
@@ -37,17 +39,18 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlin.time.Clock
 import kotlinx.serialization.json.Json
+import org.kimplify.cedar.logging.Cedar
 
 class QuestionLocalDataSource(
     private val questionDao: QuestionDao,
     private val answerHistoryDao: AnswerHistoryDao,
     private val favoriteQuestionDao: FavoriteQuestionDao,
     private val mockTestResultDao: MockTestResultDao,
+    private val mockTestAnswerDao: MockTestAnswerDao,
     private val stateDao: StateDao,
     private val categoryDao: CategoryDao,
     private val questionSetDao: QuestionSetDao,
     private val licenseTypeDao: LicenseTypeDao,
-    private val licenseStageDao: LicenseStageDao,
     private val assessmentTypeDao: AssessmentTypeDao,
     private val questionSetCategoryDao: QuestionSetCategoryDao,
     private val json: Json
@@ -96,8 +99,10 @@ class QuestionLocalDataSource(
     suspend fun insertQuestions(questions: List<QuestionEntity>) =
         questionDao.insertAll(questions)
 
-    suspend fun upsertQuestions(questions: List<QuestionEntity>) =
+    suspend fun upsertQuestions(questions: List<QuestionEntity>) {
+        Cedar.tag("LocalData").d("upsertQuestions: ${questions.size} questions")
         questionDao.upsertQuestions(questions)
+    }
 
     suspend fun getLastUpdatedAt(questionSetId: String): String? =
         questionDao.getLastUpdatedAt(questionSetId)
@@ -105,8 +110,10 @@ class QuestionLocalDataSource(
     suspend fun getQuestionCountByQuestionSet(questionSetId: String): Int =
         questionDao.getQuestionCountByQuestionSet(questionSetId)
 
-    suspend fun deleteQuestionsByQuestionSet(questionSetId: String) =
+    suspend fun deleteQuestionsByQuestionSet(questionSetId: String) {
+        Cedar.tag("LocalData").d("deleteQuestionsByQuestionSet: $questionSetId")
         questionDao.deleteByQuestionSet(questionSetId)
+    }
 
     suspend fun recordAnswer(questionId: String, wasCorrect: Boolean) {
         answerHistoryDao.insert(
@@ -121,8 +128,10 @@ class QuestionLocalDataSource(
     suspend fun toggleFavorite(questionId: String) {
         val isFavorite = favoriteQuestionDao.isFavorite(questionId)
         if (isFavorite) {
+            Cedar.tag("LocalData").d("toggleFavorite: removing $questionId from favorites")
             favoriteQuestionDao.delete(questionId)
         } else {
+            Cedar.tag("LocalData").d("toggleFavorite: adding $questionId to favorites")
             favoriteQuestionDao.insert(
                 FavoriteQuestionEntity(
                     questionId = questionId,
@@ -168,6 +177,16 @@ class QuestionLocalDataSource(
         mockTestResultDao.insert(result.toEntity())
     }
 
+    suspend fun getLastMockTestResultId(): Long? =
+        mockTestResultDao.getLastInsertedId()
+
+    suspend fun saveMockTestAnswers(resultId: Long, answers: List<MockTestAnswerEntity>) {
+        mockTestAnswerDao.insertAll(answers)
+    }
+
+    fun observeMockTestAnswers(resultId: Long): Flow<List<MockTestAnswerEntity>> =
+        mockTestAnswerDao.observeByMockTestResultId(resultId)
+
     fun observeMockTestResults(): Flow<List<MockTestResult>> =
         mockTestResultDao.observeAll().map { entities -> entities.map { it.toDomain() } }
 
@@ -187,9 +206,6 @@ class QuestionLocalDataSource(
     suspend fun getLicenseTypes(): List<LicenseType> =
         licenseTypeDao.getActiveLicenseTypes().map { it.toDomain() }
 
-    suspend fun getLicenseStages(): List<LicenseStage> =
-        licenseStageDao.getActiveLicenseStages().map { it.toDomain() }
-
     suspend fun getAssessmentTypes(): List<AssessmentType> =
         assessmentTypeDao.getActiveAssessmentTypes().map { it.toDomain() }
 
@@ -199,14 +215,17 @@ class QuestionLocalDataSource(
     suspend fun getQuestionSetById(questionSetId: String): QuestionSet? =
         questionSetDao.getQuestionSetById(questionSetId)?.toDomain()
 
-    suspend fun getCategoriesForQuestionSet(questionSetId: String): List<Category> =
-        categoryDao.getCategoriesForQuestionSet(questionSetId).map { it.toDomain() }
+    suspend fun getCategoriesForQuestionSet(questionSetId: String): List<Category> {
+        val fromJunction = categoryDao.getCategoriesForQuestionSet(questionSetId)
+        if (fromJunction.isNotEmpty()) return fromJunction.map { it.toDomain() }
+        return categoryDao.getCategoriesFromQuestions(questionSetId).map { it.toDomain() }
+    }
+
+    suspend fun getAllActiveCategories(): List<Category> =
+        categoryDao.getActiveCategories().map { it.toDomain() }
 
     suspend fun insertLicenseTypes(licenseTypes: List<LicenseTypeEntity>) =
         licenseTypeDao.insertAll(licenseTypes)
-
-    suspend fun insertLicenseStages(stages: List<LicenseStageEntity>) =
-        licenseStageDao.insertAll(stages)
 
     suspend fun insertAssessmentTypes(types: List<AssessmentTypeEntity>) =
         assessmentTypeDao.insertAll(types)
@@ -223,9 +242,6 @@ class QuestionLocalDataSource(
     suspend fun upsertLicenseTypes(licenseTypes: List<LicenseTypeEntity>) =
         licenseTypeDao.upsertAll(licenseTypes)
 
-    suspend fun upsertLicenseStages(stages: List<LicenseStageEntity>) =
-        licenseStageDao.upsertAll(stages)
-
     suspend fun upsertAssessmentTypes(types: List<AssessmentTypeEntity>) =
         assessmentTypeDao.upsertAll(types)
 
@@ -239,7 +255,56 @@ class QuestionLocalDataSource(
         questionSetCategoryDao.upsertAll(categories)
 
     suspend fun clearAllProgress() {
+        Cedar.tag("LocalData").d("clearAllProgress: deleting all answer history and mock test results")
         answerHistoryDao.deleteAll()
         mockTestResultDao.deleteAll()
+        Cedar.tag("LocalData").d("clearAllProgress: completed")
+    }
+
+    suspend fun getWeakestQuestionResults(questionSetId: String, limit: Int): List<WeakQuestionResult> =
+        answerHistoryDao.getWeakestQuestionIds(questionSetId, limit)
+
+    suspend fun getWeakestQuestions(questionSetId: String, limit: Int): List<Pair<Question, WeakQuestionResult>> {
+        val weakResults = answerHistoryDao.getWeakestQuestionIds(questionSetId, limit)
+        val categoryNameMap = getCategoryNameMap(questionSetId)
+        return weakResults.mapNotNull { result ->
+            questionDao.getQuestionById(result.questionId)?.let { entity ->
+                entity.toDomain(json, categoryNameMap) to result
+            }
+        }
+    }
+
+    suspend fun getUnansweredQuestions(questionSetId: String, limit: Int): List<Question> {
+        val categoryNameMap = getCategoryNameMap(questionSetId)
+        return questionDao.getUnansweredQuestions(questionSetId, limit)
+            .map { it.toDomain(json, categoryNameMap) }
+    }
+
+    fun observeWeakestQuestionCount(questionSetId: String): Flow<Int> =
+        answerHistoryDao.observeWeakestQuestionCount(questionSetId)
+
+    fun observeUnansweredQuestionCount(questionSetId: String): Flow<Int> =
+        answerHistoryDao.observeUnansweredQuestionCount(questionSetId)
+
+    suspend fun getCategoryProgress(questionSetId: String): Map<String, CategoryProgress> {
+        val totals = questionDao.getQuestionCountsByCategory(questionSetId).associate { it.categoryId to it.count }
+        val answered = answerHistoryDao.getAnsweredCountsByCategory(questionSetId).associate { it.categoryId to it.count }
+        return totals.mapValues { (categoryId, total) ->
+            CategoryProgress(totalQuestions = total, answeredQuestions = answered[categoryId] ?: 0)
+        }
+    }
+
+    suspend fun getMockTestIncorrectAnswers(mockTestResultId: Long): List<MockTestReviewAnswer> {
+        val incorrectEntities = mockTestAnswerDao.getIncorrectByMockTestResultId(mockTestResultId)
+        val categoryNameMap = getCategoryNameMap(null)
+        return incorrectEntities.mapNotNull { entity ->
+            questionDao.getQuestionById(entity.questionId)?.let { questionEntity ->
+                MockTestReviewAnswer(
+                    question = questionEntity.toDomain(json, categoryNameMap),
+                    selectedAnswerIndex = entity.selectedAnswerIndex,
+                    wasCorrect = entity.wasCorrect
+                )
+            }
+        }
     }
 }
