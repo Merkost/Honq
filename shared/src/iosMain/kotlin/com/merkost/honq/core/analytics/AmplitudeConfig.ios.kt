@@ -1,13 +1,14 @@
 package com.merkost.honq.core.analytics
 
-import com.amplitude.core.Amplitude
-import com.amplitude.core.Configuration
+import com.amplitude.kmp.Amplitude
+import com.amplitude.kmp.AutocaptureOption
+import com.amplitude.kmp.Configuration
 
 actual fun createAmplitude(apiKey: String): Amplitude {
-    return Amplitude(
-        Configuration(
-            apiKey = apiKey,
-            trackingSessionEvents = true
-        )
-    )
+    val configuration = Configuration(
+        apiKey = apiKey
+    ).apply {
+        autocapture = setOf(AutocaptureOption.SESSIONS)
+    }
+    return Amplitude(configuration)
 }

@@ -54,7 +54,7 @@ class FakeQuestionRepository : QuestionRepository {
         Category(id = "ALCOHOL_DRUGS", name = "Alcohol & Drugs")
     ).associateBy { it.id }
 
-    private val sampleQuestions = listOf(
+    val sampleQuestions = listOf(
         Question(
             id = "1",
             text = "When approaching a roundabout, you must:",
@@ -325,7 +325,15 @@ class FakeQuestionRepository : QuestionRepository {
         questionSetId: String,
         query: String
     ): Result<List<Question>> {
-        TODO("Not yet implemented")
+        val lowerQuery = query.lowercase()
+        return Result.Success(
+            sampleQuestions.filter { question ->
+                question.text.lowercase().contains(lowerQuery) ||
+                        question.explanation.lowercase().contains(lowerQuery) ||
+                        question.options.any { it.lowercase().contains(lowerQuery) } ||
+                        question.id == query
+            }
+        )
     }
 
     override suspend fun syncQuestions(): Result<Unit> {
@@ -370,7 +378,14 @@ class FakeQuestionRepository : QuestionRepository {
         Result.Success(categories.values.toList())
 
     override suspend fun getCategoryProgress(questionSetId: String): Result<Map<String, CategoryProgress>> =
-        Result.Success(emptyMap())
+        Result.Success(
+            mapOf(
+                "ROAD_RULES" to CategoryProgress(totalQuestions = 120, answeredQuestions = 98),
+                "ROAD_SIGNS" to CategoryProgress(totalQuestions = 85, answeredQuestions = 72),
+                "SAFETY" to CategoryProgress(totalQuestions = 65, answeredQuestions = 45),
+                "ALCOHOL_DRUGS" to CategoryProgress(totalQuestions = 45, answeredQuestions = 32)
+            )
+        )
 
     override fun getLastSyncTime(questionSetId: String): kotlin.time.Instant? = null
 

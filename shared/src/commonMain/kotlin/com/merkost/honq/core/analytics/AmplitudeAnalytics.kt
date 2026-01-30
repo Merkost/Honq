@@ -1,7 +1,7 @@
 package com.merkost.honq.core.analytics
 
-import com.amplitude.core.Amplitude
-import com.amplitude.core.events.Identify
+import com.amplitude.kmp.Amplitude
+import com.amplitude.kmp.Identify
 
 class AmplitudeAnalytics(
     private val amplitude: Amplitude

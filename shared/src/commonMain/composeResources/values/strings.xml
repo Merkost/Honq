@@ -5,6 +5,8 @@
     <string name="loading">Loading...</string>
     <string name="syncing">Syncing...</string>
     <string name="retry">Retry</string>
+    <string name="error_title">Unable to Load</string>
+    <string name="error_subtitle">We couldn\'t connect to load your data. Check your internet connection and try again.</string>
     <string name="select">Select</string>
     <string name="done">Done</string>
     <string name="change">Change</string>

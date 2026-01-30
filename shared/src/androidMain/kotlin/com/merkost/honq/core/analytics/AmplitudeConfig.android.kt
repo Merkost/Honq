@@ -1,9 +1,9 @@
 package com.merkost.honq.core.analytics
 
 import android.app.Application
-import com.amplitude.android.Amplitude
-import com.amplitude.android.Configuration
-import com.amplitude.core.Amplitude as AmplitudeCore
+import com.amplitude.kmp.Amplitude
+import com.amplitude.kmp.AutocaptureOption
+import com.amplitude.kmp.Configuration
 
 private var applicationContext: Application? = null
 
@@ -11,15 +11,15 @@ fun initAmplitudeContext(application: Application) {
     applicationContext = application
 }
 
-actual fun createAmplitude(apiKey: String): AmplitudeCore {
+actual fun createAmplitude(apiKey: String): Amplitude {
     val context = requireNotNull(applicationContext) {
         "Amplitude context not initialized. Call initAmplitudeContext() first."
     }
-    return Amplitude(
-        Configuration(
-            apiKey = apiKey,
-            context = context,
-            trackingSessionEvents = true
-        )
-    )
+    val configuration = Configuration(
+        apiKey = apiKey,
+        androidContext = context
+    ).apply {
+        autocapture = setOf(AutocaptureOption.SESSIONS)
+    }
+    return Amplitude(configuration)
 }

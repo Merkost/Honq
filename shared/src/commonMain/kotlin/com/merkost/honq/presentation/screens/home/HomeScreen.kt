@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.presentation.components.base.BottomActionBarVertical
 import com.merkost.honq.presentation.components.base.LicenseTypeIcon
+import com.merkost.honq.presentation.components.base.FullscreenError
 import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.HonqButtonVariant
@@ -164,25 +165,10 @@ private fun HomeContent(
                 }
 
                 state.initialLoadError != null -> {
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(HonqSizing.screenPadding),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
-                    ) {
-                        Text(
-                            text = state.initialLoadError,
-                            color = colors.incorrect,
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center
-                        )
-                        HonqButton(
-                            text = stringResource(Res.string.retry),
-                            onClick = onRetry,
-                            variant = HonqButtonVariant.Secondary
-                        )
-                    }
+                    FullscreenError(
+                        onRetry = onRetry,
+                        errorDetail = state.initialLoadError
+                    )
                 }
 
                 else -> {

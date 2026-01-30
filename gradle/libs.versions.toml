@@ -28,7 +28,7 @@ supabase = "3.3.0"
 flowmvi = "3.2.1"
 buildkonfig = "0.17.1"
 datastore = "1.1.7"
-amplitude = "1.16.8"
+amplitude = "1.0.2"
 gitlive-firebase = "2.4.0"
 google-services = "4.4.4"
 firebase-crashlytics-plugin = "3.0.6"
@@ -85,7 +85,7 @@ supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", v
 flowmvi-core = { module = "pro.respawn.flowmvi:core", version.ref = "flowmvi" }
 flowmvi-compose = { module = "pro.respawn.flowmvi:compose", version.ref = "flowmvi" }
 
-amplitude = { module = "com.amplitude:analytics-android", version.ref = "amplitude" }
+amplitude = { module = "digital.guimauve.amplitude:analytics-kmp", version.ref = "amplitude" }
 
 datastore-preferences = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
