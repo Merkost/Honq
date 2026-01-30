@@ -80,8 +80,8 @@ class QuestionLocalDataSource(
         questionDao.getRandomQuestionsByQuestionSetAndCategory(questionSetId, categoryId, count)
             .map { it.toDomain(json, getCategoryNameMap(questionSetId)) }
 
-    suspend fun getMockTestQuestions(): List<Question> =
-        questionDao.getMockTestQuestions().map { it.toDomain(json, getCategoryNameMap(null)) }
+    suspend fun getMockTestQuestions(count: Int): List<Question> =
+        questionDao.getMockTestQuestions(count).map { it.toDomain(json, getCategoryNameMap(null)) }
 
     suspend fun getMockTestQuestionsByQuestionSet(questionSetId: String, count: Int): List<Question> =
         questionDao.getMockTestQuestionsByQuestionSet(questionSetId, count)
@@ -197,8 +197,8 @@ class QuestionLocalDataSource(
     suspend fun getStates(): List<State> =
         stateDao.getStates().map { it.toDomain() }
 
-    suspend fun insertStates(states: List<StateEntity>) =
-        stateDao.insertAll(states)
+    suspend fun upsertStates(states: List<StateEntity>) =
+        stateDao.upsertStates(states)
 
     suspend fun getStateById(stateId: String): State? =
         stateDao.getStateById(stateId)?.toDomain()
@@ -306,5 +306,34 @@ class QuestionLocalDataSource(
                 )
             }
         }
+    }
+
+    suspend fun deleteStaleQuestions(questionSetId: String, retainIds: Set<String>) {
+        if (retainIds.isEmpty()) return
+        val retainList = retainIds.toList()
+        Cedar.tag("LocalData").d("deleteStaleQuestions: retaining ${retainList.size} questions for set=$questionSetId")
+        questionDao.deleteStaleQuestions(questionSetId, retainList)
+    }
+
+    suspend fun upsertAllReferenceData(
+        states: List<StateEntity>,
+        licenseTypes: List<LicenseTypeEntity>,
+        assessmentTypes: List<AssessmentTypeEntity>,
+        categories: List<CategoryEntity>,
+        questionSets: List<QuestionSetEntity>,
+        questionSetCategories: List<QuestionSetCategoryEntity>
+    ) {
+        // Order matters due to foreign keys: independent tables first, then dependent ones.
+        // Each upsert is individually atomic via REPLACE conflict strategy.
+        if (states.isNotEmpty()) stateDao.upsertStates(states)
+        if (licenseTypes.isNotEmpty()) licenseTypeDao.upsertAll(licenseTypes)
+        if (assessmentTypes.isNotEmpty()) assessmentTypeDao.upsertAll(assessmentTypes)
+        if (categories.isNotEmpty()) categoryDao.upsertCategories(categories)
+
+        // Dependent tables (have FK references to the above)
+        if (questionSets.isNotEmpty()) questionSetDao.upsertAll(questionSets)
+        if (questionSetCategories.isNotEmpty()) questionSetCategoryDao.upsertAll(questionSetCategories)
+
+        Cedar.tag("LocalData").d("upsertAllReferenceData: completed")
     }
 }

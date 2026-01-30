@@ -23,8 +23,8 @@ interface QuestionDao {
         count: Int
     ): List<QuestionEntity>
 
-    @Query("SELECT * FROM questions ORDER BY RANDOM() LIMIT 45")
-    suspend fun getMockTestQuestions(): List<QuestionEntity>
+    @Query("SELECT * FROM questions ORDER BY RANDOM() LIMIT :count")
+    suspend fun getMockTestQuestions(count: Int): List<QuestionEntity>
 
     @Query("SELECT * FROM questions WHERE questionSetId = :questionSetId AND isActive = 1 ORDER BY RANDOM() LIMIT :count")
     suspend fun getMockTestQuestionsByQuestionSet(questionSetId: String, count: Int): List<QuestionEntity>
@@ -94,4 +94,7 @@ interface QuestionDao {
 
     @Query("SELECT categoryId, COUNT(*) AS count FROM questions WHERE questionSetId = :questionSetId AND isActive = 1 GROUP BY categoryId")
     suspend fun getQuestionCountsByCategory(questionSetId: String): List<CategoryCount>
+
+    @Query("DELETE FROM questions WHERE questionSetId = :questionSetId AND id NOT IN (:retainIds)")
+    suspend fun deleteStaleQuestions(questionSetId: String, retainIds: List<String>)
 }
