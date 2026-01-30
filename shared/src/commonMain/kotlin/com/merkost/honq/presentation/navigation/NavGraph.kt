@@ -23,8 +23,11 @@ import androidx.navigation.toRoute
 import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.data.local.OnboardingPreferences
+import com.merkost.honq.domain.model.CategoryScore
 import com.merkost.honq.presentation.screens.about.AboutScreen
 import com.merkost.honq.presentation.screens.onboarding.OnboardingScreen
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 import com.merkost.honq.presentation.screens.favorites.FavoriteQuestionScreen
 import com.merkost.honq.presentation.screens.favorites.FavoritesScreen
@@ -134,6 +137,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             }
             HomeScreen(
                 onNavigateToPractice = { navController.navigate(Screen.CategorySelection) },
+                onNavigateToSmartPractice = { navController.navigate(Screen.SmartPractice) },
                 onNavigateToMockTest = { navController.navigate(Screen.MockTest) },
                 onNavigateToFavorites = { navController.navigate(Screen.Favorites) },
                 onNavigateToSearch = { navController.navigate(Screen.Search) },
@@ -171,6 +175,13 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             )
         }
 
+        composable<Screen.SmartPractice> {
+            PracticeScreen(
+                smartMode = true,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
         composable<Screen.CategorySelection> {
             CategorySelectionScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -200,8 +211,9 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         composable<Screen.MockTest> {
             MockTestScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { score, total, hasIncorrect ->
-                    navController.navigate(Screen.Results(score, total, hasIncorrect)) {
+                onNavigateToResults = { score, total, hasIncorrect, passPercentage, categoryBreakdown ->
+                    val breakdownJson = Json.encodeToString(categoryBreakdown)
+                    navController.navigate(Screen.Results(score, total, hasIncorrect, passPercentage, breakdownJson)) {
                         popUpTo<Screen.MockTest> { inclusive = true }
                     }
                 }
@@ -220,14 +232,22 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             }
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<Screen.Results>()
-            if (route.score >= (route.total * 0.9).toInt()) {
+            val passed = route.total > 0 && ((route.score.toFloat() / route.total) * 100).toInt() >= route.passPercentage
+            if (passed) {
                 LaunchedEffect(Unit) {
                     requestInAppReview("MOCK_TEST_PASSED")
                 }
             }
+            val categoryBreakdown = try {
+                Json.decodeFromString<List<CategoryScore>>(route.categoryBreakdownJson)
+            } catch (_: Exception) {
+                emptyList()
+            }
             ResultsScreen(
                 score = route.score,
                 total = route.total,
+                passPercentage = route.passPercentage,
+                categoryBreakdown = categoryBreakdown,
                 hasIncorrect = route.hasIncorrect,
                 onNavigateHome = {
                     navController.navigate(Screen.Home) {

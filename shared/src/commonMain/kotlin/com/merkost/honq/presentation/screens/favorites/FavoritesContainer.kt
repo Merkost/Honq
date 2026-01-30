@@ -4,13 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.AnalyticsEvent
-import com.merkost.honq.domain.repository.QuestionRepository
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionsUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
-import kotlinx.coroutines.flow.first
 import pro.respawn.flowmvi.api.Container
+import pro.respawn.flowmvi.api.PipelineContext
 import pro.respawn.flowmvi.dsl.store
-import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.reduce
 import pro.respawn.flowmvi.plugins.whileSubscribed
 
@@ -35,8 +33,17 @@ class FavoritesContainer(
         }
     }
 
-    private suspend fun toggleFavorite(questionId: String) {
-        analytics.track(AnalyticsEvent.FavoriteRemoved(questionId))
+    private suspend fun PipelineContext<FavoritesState, FavoritesIntent, FavoritesAction>.toggleFavorite(
+        questionId: String
+    ) {
+        withState {
+            val isCurrentlyFavorite = favorites.any { it.id == questionId }
+            if (isCurrentlyFavorite) {
+                analytics.track(AnalyticsEvent.FavoriteRemoved(questionId))
+            } else {
+                analytics.track(AnalyticsEvent.FavoriteAdded(questionId))
+            }
+        }
         toggleFavoriteQuestion(questionId)
     }
 }

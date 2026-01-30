@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.Category
+import com.merkost.honq.domain.model.CategoryProgress
 import com.merkost.honq.presentation.components.base.HonqCard
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.theme.HonqSizing
@@ -131,8 +132,7 @@ private fun CategorySelectionContent(
                             val progress = state.progressMap[category.id]
                             CategoryCard(
                                 category = category,
-                                answered = progress?.answeredQuestions ?: 0,
-                                total = progress?.totalQuestions ?: 0,
+                                progress = progress,
                                 onClick = { onIntent(CategorySelectionIntent.SelectCategory(category.id)) }
                             )
                         }
@@ -150,6 +150,7 @@ private fun AllCategoriesCard(
     onClick: () -> Unit
 ) {
     val colors = HonqTheme.colors
+    val progress = if (totalQuestions > 0) totalAnswered.toFloat() / totalQuestions else 0f
 
     HonqCard(
         onClick = onClick
@@ -161,7 +162,8 @@ private fun AllCategoriesCard(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
+                horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md),
+                modifier = Modifier.weight(1f)
             ) {
                 Box(
                     modifier = Modifier
@@ -177,18 +179,47 @@ private fun AllCategoriesCard(
                         modifier = Modifier.size(24.dp)
                     )
                 }
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "All Categories",
                         color = colors.textPrimary,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Text(
-                        text = if (totalQuestions > 0) "$totalAnswered / $totalQuestions seen" else "Practice questions from all topics",
-                        color = colors.textMuted,
-                        fontSize = 12.sp
-                    )
+                    if (totalQuestions > 0) {
+                        Spacer(modifier = Modifier.height(HonqSpacing.xs))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(colors.progressTrack)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(progress)
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(colors.progressIndicator)
+                                )
+                            }
+                            Text(
+                                text = "$totalAnswered/$totalQuestions",
+                                color = colors.textMuted,
+                                fontSize = 11.sp
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "Practice questions from all topics",
+                            color = colors.textMuted,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
             Icon(
@@ -204,11 +235,14 @@ private fun AllCategoriesCard(
 @Composable
 private fun CategoryCard(
     category: Category,
-    answered: Int,
-    total: Int,
+    progress: CategoryProgress?,
     onClick: () -> Unit
 ) {
     val colors = HonqTheme.colors
+    val answered = progress?.answeredQuestions ?: 0
+    val total = progress?.totalQuestions ?: 0
+    val completionFraction = progress?.completionPercent ?: 0f
+    val accuracy = progress?.accuracyPercent ?: 0
 
     HonqCard(
         onClick = onClick
@@ -231,12 +265,54 @@ private fun CategoryCard(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    Text(
-                        text = if (total > 0) "$answered / $total seen" else category.description,
-                        color = colors.textMuted,
-                        fontSize = 12.sp,
-                        maxLines = 2
-                    )
+                    if (total > 0 && answered > 0) {
+                        Spacer(modifier = Modifier.height(HonqSpacing.xs))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(colors.progressTrack)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(completionFraction)
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(colors.progressIndicator)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "$answered/$total seen",
+                                color = colors.textMuted,
+                                fontSize = 11.sp
+                            )
+                            Text(
+                                text = "$accuracy% accuracy",
+                                color = if (accuracy >= 80) colors.correct else if (accuracy >= 50) colors.warning else colors.incorrect,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    } else if (total > 0) {
+                        Text(
+                            text = "$total questions",
+                            color = colors.textMuted,
+                            fontSize = 12.sp
+                        )
+                    } else {
+                        Text(
+                            text = category.description,
+                            color = colors.textMuted,
+                            fontSize = 12.sp,
+                            maxLines = 2
+                        )
+                    }
                 }
             }
             Icon(

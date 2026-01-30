@@ -11,7 +11,8 @@ fun MockTestResultEntity.toDomain(): MockTestResult = MockTestResult(
     totalQuestions = totalQuestions,
     correctAnswers = correctAnswers,
     timeTaken = timeTakenSeconds.seconds,
-    completedAt = Instant.parse(completedAt)
+    completedAt = Instant.parse(completedAt),
+    passPercentage = passPercentage
 )
 
 fun MockTestResult.toEntity(): MockTestResultEntity = MockTestResultEntity(
@@ -21,5 +22,6 @@ fun MockTestResult.toEntity(): MockTestResultEntity = MockTestResultEntity(
     correctAnswers = correctAnswers,
     timeTakenSeconds = timeTaken.inWholeSeconds,
     passed = passed,
+    passPercentage = passPercentage,
     completedAt = completedAt.toString()
 )

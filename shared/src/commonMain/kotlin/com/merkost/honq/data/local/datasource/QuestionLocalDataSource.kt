@@ -12,6 +12,7 @@ import com.merkost.honq.data.local.db.QuestionSetCategoryDao
 import com.merkost.honq.data.local.db.QuestionSetDao
 import com.merkost.honq.data.local.db.StateDao
 import com.merkost.honq.data.local.entity.AnswerHistoryEntity
+import com.merkost.honq.data.local.entity.QuestionAnswerStats
 import com.merkost.honq.data.local.entity.WeakQuestionResult
 import com.merkost.honq.data.local.entity.AssessmentTypeEntity
 import com.merkost.honq.data.local.entity.CategoryEntity
@@ -289,8 +290,15 @@ class QuestionLocalDataSource(
     suspend fun getCategoryProgress(questionSetId: String): Map<String, CategoryProgress> {
         val totals = questionDao.getQuestionCountsByCategory(questionSetId).associate { it.categoryId to it.count }
         val answered = answerHistoryDao.getAnsweredCountsByCategory(questionSetId).associate { it.categoryId to it.count }
+        val correct = answerHistoryDao.getCorrectCountsByCategory(questionSetId).associate { it.categoryId to it.count }
+        val attempts = answerHistoryDao.getTotalAttemptsByCategory(questionSetId).associate { it.categoryId to it.count }
         return totals.mapValues { (categoryId, total) ->
-            CategoryProgress(totalQuestions = total, answeredQuestions = answered[categoryId] ?: 0)
+            CategoryProgress(
+                totalQuestions = total,
+                answeredQuestions = answered[categoryId] ?: 0,
+                correctAnswers = correct[categoryId] ?: 0,
+                totalAttempts = attempts[categoryId] ?: 0
+            )
         }
     }
 
@@ -306,6 +314,46 @@ class QuestionLocalDataSource(
                 )
             }
         }
+    }
+
+    suspend fun getSmartPracticeQuestions(questionSetId: String, count: Int): List<Question> {
+        val categoryNameMap = getCategoryNameMap(questionSetId)
+        val answerStats = answerHistoryDao.getQuestionAnswerStats(questionSetId)
+        val statsMap = answerStats.associateBy { it.questionId }
+
+        val allQuestions = questionDao.getActiveQuestionsByQuestionSet(questionSetId)
+        val now = Clock.System.now()
+
+        val scored = allQuestions.map { entity ->
+            val stats = statsMap[entity.id]
+            val priority = if (stats == null) {
+                // Never answered → medium-high priority
+                0.6
+            } else {
+                val errorRate = if (stats.totalAttempts > 0) {
+                    stats.wrongCount.toDouble() / stats.totalAttempts
+                } else 0.0
+
+                val lastAnswered = try {
+                    kotlin.time.Instant.parse(stats.lastAnsweredAt)
+                } catch (_: Exception) {
+                    now
+                }
+                val hoursSinceLastAnswer = (now - lastAnswered).inWholeHours.coerceAtLeast(0)
+                // Time decay: more hours = higher priority (capped at 1.0)
+                val timeFactor = (hoursSinceLastAnswer.toDouble() / 168.0).coerceAtMost(1.0) // 1 week = max
+
+                // Weighted score: error rate matters most, time matters for review scheduling
+                errorRate * 0.6 + timeFactor * 0.4
+            }
+            entity to priority
+        }
+
+        return scored
+            .sortedByDescending { it.second }
+            .take(count)
+            .shuffled() // Shuffle top-N so practice doesn't feel predictable
+            .map { it.first.toDomain(json, categoryNameMap) }
     }
 
     suspend fun deleteStaleQuestions(questionSetId: String, retainIds: Set<String>) {

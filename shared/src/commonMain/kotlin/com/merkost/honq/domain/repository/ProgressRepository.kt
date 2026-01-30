@@ -25,4 +25,5 @@ interface ProgressRepository {
     fun observeWeakestQuestionCount(): Flow<Int>
     fun observeUnansweredQuestionCount(): Flow<Int>
     suspend fun getMockTestIncorrectAnswers(mockTestResultId: Long): List<MockTestReviewAnswer>
+    suspend fun getSmartPracticeQuestions(count: Int): List<Question>
 }

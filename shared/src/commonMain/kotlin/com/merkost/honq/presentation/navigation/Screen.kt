@@ -10,10 +10,17 @@ sealed interface Screen {
     @Serializable data object Favorites : Screen
     @Serializable data class FavoriteQuestion(val questionId: String) : Screen
     @Serializable data object Practice : Screen
+    @Serializable data object SmartPractice : Screen
     @Serializable data object CategorySelection : Screen
     @Serializable data class PracticeByCategory(val categoryId: String, val categoryName: String) : Screen
     @Serializable data object MockTest : Screen
-    @Serializable data class Results(val score: Int, val total: Int, val hasIncorrect: Boolean) : Screen
+    @Serializable data class Results(
+        val score: Int,
+        val total: Int,
+        val hasIncorrect: Boolean,
+        val passPercentage: Int = 80,
+        val categoryBreakdownJson: String = "[]"
+    ) : Screen
     @Serializable data object ReviewIncorrect : Screen
     @Serializable data object Search : Screen
     @Serializable data class SearchQuestion(val questionId: String) : Screen

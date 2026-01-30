@@ -19,15 +19,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.BuildKonfig
+import com.merkost.honq.data.local.ThemePreferences
 import com.merkost.honq.domain.repository.ProgressRepository
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.theme.HonqSizing
@@ -68,6 +74,8 @@ fun AboutScreen(
 ) {
     val colors = HonqTheme.colors
     val progressRepository: ProgressRepository = koinInject()
+    val themePreferences: ThemePreferences = koinInject()
+    val isDarkTheme by themePreferences.isDarkTheme.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var showResetDialog by remember { mutableStateOf(false) }
 
@@ -147,6 +155,43 @@ fun AboutScreen(
                     label = "Contact",
                     onClick = { sendEmail(CONTACT_EMAIL, "Honq Feedback") },
                     modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(HonqSpacing.xl))
+
+            // Theme toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = HonqSizing.screenPadding)
+                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+                    .background(colors.surface)
+                    .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (isDarkTheme) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(HonqSpacing.md))
+                Text(
+                    text = "Dark Mode",
+                    fontSize = 14.sp,
+                    color = colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = { themePreferences.setDarkTheme(it) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = colors.primary,
+                        checkedTrackColor = colors.primarySurface,
+                        uncheckedThumbColor = colors.textMuted,
+                        uncheckedTrackColor = colors.surfaceVariant
+                    )
                 )
             }
 

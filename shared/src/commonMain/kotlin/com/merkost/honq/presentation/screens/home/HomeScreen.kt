@@ -87,6 +87,7 @@ private const val SLIDE_UP_PX = 40f
 @Composable
 fun HomeScreen(
     onNavigateToPractice: () -> Unit,
+    onNavigateToSmartPractice: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToSearch: () -> Unit,
@@ -104,6 +105,7 @@ fun HomeScreen(
     HomeContent(
         state = state,
         onNavigateToPractice = onNavigateToPractice,
+        onNavigateToSmartPractice = onNavigateToSmartPractice,
         onNavigateToMockTest = onNavigateToMockTest,
         onNavigateToFavorites = onNavigateToFavorites,
         onNavigateToSearch = onNavigateToSearch,
@@ -122,6 +124,7 @@ fun HomeScreen(
 private fun HomeContent(
     state: HomeState,
     onNavigateToPractice: () -> Unit,
+    onNavigateToSmartPractice: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToSearch: () -> Unit,
@@ -249,6 +252,12 @@ private fun HomeContent(
                                     HonqButton(
                                         text = stringResource(Res.string.home_start_practice),
                                         onClick = onNavigateToPractice,
+                                        enabled = state.isReady
+                                    )
+                                    HonqButton(
+                                        text = "Smart Practice",
+                                        onClick = onNavigateToSmartPractice,
+                                        variant = HonqButtonVariant.Secondary,
                                         enabled = state.isReady
                                     )
                                     HonqButton(

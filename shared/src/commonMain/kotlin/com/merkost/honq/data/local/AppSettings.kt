@@ -30,6 +30,29 @@ private val dataStoreSingleton = lazy {
 
 fun createDataStore(): DataStore<Preferences> = dataStoreSingleton.value
 
+class DataStoreThemePreferences(
+    private val dataStore: DataStore<Preferences>
+) : ThemePreferences {
+
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+    private object Keys {
+        val IS_DARK_THEME = booleanPreferencesKey("is_dark_theme")
+    }
+
+    override val isDarkTheme: StateFlow<Boolean> = dataStore.data
+        .map { preferences -> preferences[Keys.IS_DARK_THEME] ?: true }
+        .stateIn(scope, SharingStarted.Eagerly, true)
+
+    override fun setDarkTheme(isDark: Boolean) {
+        runBlocking {
+            dataStore.edit { preferences ->
+                preferences[Keys.IS_DARK_THEME] = isDark
+            }
+        }
+    }
+}
+
 class DataStoreOnboardingPreferences(
     private val dataStore: DataStore<Preferences>
 ) : OnboardingPreferences {

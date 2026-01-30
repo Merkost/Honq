@@ -18,7 +18,8 @@ data class PracticeState(
     val isLoadingNext: Boolean = false,
     val error: String? = null,
     val categoryId: String? = null,
-    val categoryName: String? = null
+    val categoryName: String? = null,
+    val smartMode: Boolean = false
 ) : MVIState {
     val isFiltered: Boolean get() = categoryId != null
 }

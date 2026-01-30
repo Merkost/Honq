@@ -15,5 +15,6 @@ data class MockTestResultEntity(
     val correctAnswers: Int,
     val timeTakenSeconds: Long,
     val passed: Boolean,
+    val passPercentage: Int = 80,
     val completedAt: String
 )

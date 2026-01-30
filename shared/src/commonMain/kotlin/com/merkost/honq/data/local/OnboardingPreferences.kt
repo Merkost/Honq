@@ -1,8 +1,20 @@
 package com.merkost.honq.data.local
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+
+interface ThemePreferences {
+    val isDarkTheme: StateFlow<Boolean>
+    fun setDarkTheme(isDark: Boolean)
+}
+
+class InMemoryThemePreferences : ThemePreferences {
+    private val _isDarkTheme = MutableStateFlow(true)
+    override val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
+    override fun setDarkTheme(isDark: Boolean) {
+        _isDarkTheme.value = isDark
+    }
+}
 
 interface OnboardingPreferences {
     val isOnboardingCompleted: StateFlow<Boolean?>

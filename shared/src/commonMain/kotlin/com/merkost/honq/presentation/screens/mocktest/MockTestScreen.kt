@@ -46,7 +46,7 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 @Composable
 fun MockTestScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToResults: (score: Int, total: Int, hasIncorrect: Boolean) -> Unit
+    onNavigateToResults: (score: Int, total: Int, hasIncorrect: Boolean, passPercentage: Int, categoryBreakdown: List<com.merkost.honq.domain.model.CategoryScore>) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val container = koinInject<MockTestContainer> { parametersOf(scope) }
@@ -54,7 +54,7 @@ fun MockTestScreen(
     val state by container.store.subscribe { action ->
         when (action) {
             MockTestAction.NavigateBack -> onNavigateBack()
-            is MockTestAction.NavigateToResults -> onNavigateToResults(action.score, action.total, action.hasIncorrect)
+            is MockTestAction.NavigateToResults -> onNavigateToResults(action.score, action.total, action.hasIncorrect, action.passPercentage, action.categoryBreakdown)
         }
     }
 
