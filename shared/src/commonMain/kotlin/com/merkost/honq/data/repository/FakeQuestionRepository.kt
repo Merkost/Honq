@@ -39,7 +39,6 @@ class FakeQuestionRepository : QuestionRepository {
         id = "nsw_car",
         stateId = defaultState.id,
         licenseTypeId = defaultLicenseType.id,
-        licenseStageId = "learner",
         assessmentTypeId = defaultAssessmentType.id,
         mockTestQuestionCount = 45,
         mockTestTimeLimitMinutes = 45,
@@ -57,6 +56,7 @@ class FakeQuestionRepository : QuestionRepository {
     val sampleQuestions = listOf(
         Question(
             id = "1",
+            code = "RR001",
             text = "When approaching a roundabout, you must:",
             imageUrl = null,
             options = listOf(
@@ -74,6 +74,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "2",
+            code = "RS001",
             text = "What is the maximum speed limit in a school zone during school hours?",
             imageUrl = null,
             options = listOf("50 km/h", "40 km/h", "60 km/h", "30 km/h"),
@@ -86,6 +87,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "3",
+            code = "RR002",
             text = "When can you use a mobile phone while driving?",
             imageUrl = null,
             options = listOf(
@@ -103,6 +105,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "4",
+            code = "RS002",
             text = "What does a yellow traffic light mean?",
             imageUrl = null,
             options = listOf(
@@ -120,6 +123,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "5",
+            code = "AD001",
             text = "What is the blood alcohol limit for learner and P1 drivers?",
             imageUrl = null,
             options = listOf("0.02", "0.05", "Zero (0.00)", "0.01"),
@@ -132,6 +136,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "6",
+            code = "RR003",
             text = "When must you indicate before changing lanes?",
             imageUrl = null,
             options = listOf(
@@ -149,6 +154,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "7",
+            code = "SF001",
             text = "What should you do when an emergency vehicle approaches with flashing lights?",
             imageUrl = null,
             options = listOf(
@@ -166,6 +172,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "8",
+            code = "SF002",
             text = "What is the minimum following distance in good conditions?",
             imageUrl = null,
             options = listOf("1 second", "2 seconds", "3 seconds", "4 seconds"),
@@ -178,6 +185,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "9",
+            code = "RR004",
             text = "When parking on a hill facing uphill with a kerb, you should:",
             imageUrl = null,
             options = listOf(
@@ -195,6 +203,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "10",
+            code = "RR005",
             text = "At a T-intersection without signs, who gives way?",
             imageUrl = null,
             options = listOf(
@@ -212,6 +221,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "11",
+            code = "RR006",
             text = "How far must you park from a fire hydrant?",
             imageUrl = null,
             options = listOf("1 metre", "2 metres", "3 metres", "No specific distance"),
@@ -224,6 +234,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "12",
+            code = "RS003",
             text = "What does a broken white line in the centre of the road mean?",
             imageUrl = null,
             options = listOf(
@@ -241,6 +252,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "13",
+            code = "RS004",
             text = "A stop sign requires you to:",
             imageUrl = null,
             options = listOf(
@@ -258,6 +270,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "14",
+            code = "SF003",
             text = "When driving in fog, you should:",
             imageUrl = null,
             options = listOf(
@@ -275,6 +288,7 @@ class FakeQuestionRepository : QuestionRepository {
         ),
         Question(
             id = "15",
+            code = "SF004",
             text = "What should you do if your vehicle starts to skid?",
             imageUrl = null,
             options = listOf(

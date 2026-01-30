@@ -20,7 +20,6 @@ class SetSelectedStateUseCase(
                 sets.firstOrNull {
                     it.isActive &&
                         it.licenseTypeId == DEFAULT_LICENSE_TYPE_ID &&
-                        it.licenseStageId == DEFAULT_LICENSE_STAGE_ID &&
                         it.assessmentTypeId == DEFAULT_ASSESSMENT_TYPE_ID
                 } ?: sets.firstOrNull { it.isActive }
             }
@@ -33,7 +32,6 @@ class SetSelectedStateUseCase(
 
     companion object {
         private const val DEFAULT_LICENSE_TYPE_ID = "car"
-        private const val DEFAULT_LICENSE_STAGE_ID = "learner"
         private const val DEFAULT_ASSESSMENT_TYPE_ID = "knowledge_test"
     }
 }

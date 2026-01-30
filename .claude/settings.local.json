@@ -30,7 +30,13 @@
       "Bash(git -C /Users/merkost/StudioProjects/Honq branch:*)",
       "mcp__supabase__deploy_edge_function",
       "mcp__supabase__search_docs",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(# Get unique NSW images \\(union of car + rider\\)\n\\(ls /Users/merkost/Downloads/dkt/nsw/dkt_extract_named/images/; ls /Users/merkost/Downloads/dkt/nsw/rider_extract/questions/\\))",
+      "Bash(supabase projects:*)",
+      "Bash(chmod:*)",
+      "Bash(open:*)",
+      "mcp__supabase__get_logs"
     ]
   },
   "enableAllProjectMcpServers": true,

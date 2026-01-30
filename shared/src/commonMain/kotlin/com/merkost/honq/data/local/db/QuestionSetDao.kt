@@ -8,10 +8,10 @@ import com.merkost.honq.data.local.entity.QuestionSetEntity
 
 @Dao
 interface QuestionSetDao {
-    @Query("SELECT * FROM question_sets WHERE isActive = 1 ORDER BY stateId, licenseTypeId, licenseStageId, assessmentTypeId")
+    @Query("SELECT * FROM question_sets WHERE isActive = 1 ORDER BY stateId, licenseTypeId, assessmentTypeId")
     suspend fun getActiveQuestionSets(): List<QuestionSetEntity>
 
-    @Query("SELECT * FROM question_sets WHERE stateId = :stateId AND isActive = 1 ORDER BY licenseTypeId, licenseStageId, assessmentTypeId")
+    @Query("SELECT * FROM question_sets WHERE stateId = :stateId AND isActive = 1 ORDER BY licenseTypeId, assessmentTypeId")
     suspend fun getQuestionSetsByState(stateId: String): List<QuestionSetEntity>
 
     @Query("SELECT * FROM question_sets WHERE id = :questionSetId")

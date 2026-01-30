@@ -357,7 +357,7 @@ private fun SearchResultCard(
                         fontSize = 12.sp
                     )
                     Text(
-                        text = "#${question.id}",
+                        text = "#${question.code}",
                         color = colors.textMuted.copy(alpha = 0.6f),
                         fontSize = 11.sp
                     )

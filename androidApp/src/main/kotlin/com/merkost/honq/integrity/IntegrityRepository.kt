@@ -2,6 +2,7 @@ package com.merkost.honq.integrity
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.functions.Functions
+import io.github.jan.supabase.functions.functions
 import io.ktor.client.call.body
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders

@@ -132,6 +132,7 @@ val isReleaseBuild = gradle.startParameter.taskNames.any {
 
 buildkonfig {
     packageName = "com.merkost.honq"
+    exposeObjectWithName = "BuildKonfig"
 
     defaultConfigs {
         buildConfigField(STRING, "SUPABASE_URL", getLocalProperty("supabase.url", ""))

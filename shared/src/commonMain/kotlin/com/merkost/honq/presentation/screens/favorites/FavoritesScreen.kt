@@ -168,7 +168,7 @@ private fun FavoriteQuestionCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(HonqSpacing.xs)) {
-                FavoriteMetaPill(text = "#${question.id}")
+                FavoriteMetaPill(text = "#${question.code}")
                 val categoryLabel = question.categoryName.ifBlank {
                     question.categoryId.formatCategoryId()
                 }

@@ -4,7 +4,6 @@ data class QuestionSet(
     val id: String,
     val stateId: String,
     val licenseTypeId: String,
-    val licenseStageId: String,
     val assessmentTypeId: String,
     val mockTestQuestionCount: Int,
     val mockTestTimeLimitMinutes: Int,

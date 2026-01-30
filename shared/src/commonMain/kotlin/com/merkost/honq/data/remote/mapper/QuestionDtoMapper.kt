@@ -30,6 +30,7 @@ import kotlinx.serialization.json.Json
 
 fun QuestionDto.toDomain(): Question = Question(
     id = id,
+    code = code,
     text = text,
     imageUrl = SupabaseConfig.getStorageUrl(imageUrl),
     options = options,
@@ -44,6 +45,7 @@ fun QuestionDto.toDomain(): Question = Question(
 
 fun QuestionDto.toEntity(json: Json): QuestionEntity = QuestionEntity(
     id = id,
+    code = code,
     text = text,
     imageUrl = SupabaseConfig.getStorageUrl(imageUrl),
     options = json.encodeToString(options),
@@ -142,7 +144,6 @@ fun QuestionSetDto.toEntity(): QuestionSetEntity = QuestionSetEntity(
     id = id,
     stateId = stateId.lowercase(),
     licenseTypeId = licenseTypeId.lowercase(),
-    licenseStageId = licenseStageId.lowercase(),
     assessmentTypeId = assessmentTypeId.lowercase(),
     mockTestQuestionCount = mockTestQuestionCount,
     mockTestTimeLimitMinutes = mockTestTimeLimitMinutes,
@@ -179,7 +180,6 @@ fun QuestionSetEntity.toDomain(): QuestionSet = QuestionSet(
     id = id,
     stateId = stateId,
     licenseTypeId = licenseTypeId,
-    licenseStageId = licenseStageId,
     assessmentTypeId = assessmentTypeId,
     mockTestQuestionCount = mockTestQuestionCount,
     mockTestTimeLimitMinutes = mockTestTimeLimitMinutes,

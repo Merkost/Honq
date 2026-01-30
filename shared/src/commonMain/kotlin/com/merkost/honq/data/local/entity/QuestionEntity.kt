@@ -13,6 +13,7 @@ import androidx.room.PrimaryKey
 )
 data class QuestionEntity(
     @PrimaryKey val id: String,
+    val code: String,
     val text: String,
     val options: String,
     val correctIndex: Int,

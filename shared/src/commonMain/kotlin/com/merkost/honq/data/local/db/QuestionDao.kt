@@ -45,7 +45,7 @@ interface QuestionDao {
         SELECT * FROM questions
         WHERE questionSetId = :questionSetId
         AND isActive = 1
-        AND (LOWER(id) LIKE :query OR LOWER(text) LIKE :query OR LOWER(explanation) LIKE :query OR LOWER(options) LIKE :query)
+        AND (LOWER(code) LIKE :query OR LOWER(text) LIKE :query OR LOWER(explanation) LIKE :query OR LOWER(options) LIKE :query)
         ORDER BY text ASC
         LIMIT 50
     """)

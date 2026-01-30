@@ -2,6 +2,7 @@ package com.merkost.honq.domain.model
 
 data class Question(
     val id: String,
+    val code: String,
     val text: String,
     val imageUrl: String?,
     val options: List<String>,

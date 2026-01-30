@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class QuestionDto(
     val id: String,
+    val code: String,
     val text: String,
     @SerialName("image_url") val imageUrl: String? = null,
     val options: List<String>,

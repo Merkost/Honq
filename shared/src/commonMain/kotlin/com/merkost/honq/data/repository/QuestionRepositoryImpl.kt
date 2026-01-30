@@ -31,7 +31,6 @@ class QuestionRepositoryImpl(
     companion object {
         private const val DEFAULT_STATE_ID = "nsw"
         private const val DEFAULT_LICENSE_TYPE_ID = "car"
-        private const val DEFAULT_LICENSE_STAGE_ID = "learner"
         private const val DEFAULT_ASSESSMENT_TYPE_ID = "knowledge_test"
         private const val DEFAULT_MOCK_TEST_COUNT = 45
     }
@@ -41,7 +40,6 @@ class QuestionRepositoryImpl(
         return questionSets.firstOrNull {
             it.isActive &&
                 it.licenseTypeId == DEFAULT_LICENSE_TYPE_ID &&
-                it.licenseStageId == DEFAULT_LICENSE_STAGE_ID &&
                 it.assessmentTypeId == DEFAULT_ASSESSMENT_TYPE_ID
         }?.id
             ?: questionSets.firstOrNull { it.isActive }?.id
@@ -182,7 +180,7 @@ class QuestionRepositoryImpl(
                         )
                     syncPreferences.setLastSyncTime(questionSetId, now)
                 } else {
-                    Cedar.tag("QuestionRepo").d("syncQuestions: no new questions to sync")
+                    Cedar.tag("QuestionRepo").w("syncQuestions: API returned 0 questions for questionSet=$questionSetId")
                 }
                 Cedar.tag("QuestionRepo").d("syncQuestions: completed for questionSet=$questionSetId")
                 Result.Success(Unit)
@@ -311,7 +309,10 @@ class QuestionRepositoryImpl(
         withContext(dispatchers.io) {
             try {
                 Cedar.tag("QuestionRepo").d("fullSync: starting (questionSetId=$questionSetId)")
-                syncStates()
+                val syncResult = syncStates()
+                if (syncResult is Result.Error) {
+                    Cedar.tag("QuestionRepo").w("fullSync: syncStates failed: ${syncResult.exception.message}")
+                }
                 if (questionSetId != null) {
                     syncQuestions(questionSetId)
                 }

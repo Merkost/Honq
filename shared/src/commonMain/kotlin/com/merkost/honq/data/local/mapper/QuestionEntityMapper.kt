@@ -10,6 +10,7 @@ fun QuestionEntity.toDomain(
     categoryNames: Map<String, String> = emptyMap()
 ): Question = Question(
     id = id,
+    code = code,
     text = text,
     imageUrl = imageUrl,
     options = json.decodeFromString(options),

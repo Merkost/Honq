@@ -30,7 +30,7 @@ import com.merkost.honq.data.local.entity.StateEntity
         QuestionSetEntity::class,
         QuestionSetCategoryEntity::class
     ],
-    version = 1,
+    version = 3,
     exportSchema = true
 )
 @ConstructedBy(HonqDatabaseConstructor::class)

@@ -57,4 +57,5 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 
     implementation(libs.play.integrity)
+    implementation(libs.supabase.functions)
 }
