@@ -1,3 +1,4 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
@@ -77,6 +78,7 @@ kotlin {
             implementation(libs.coil.network.ktor)
 
             implementation(libs.supabase.postgrest)
+            implementation(libs.supabase.functions)
 
             implementation(libs.flowmvi.core)
             implementation(libs.flowmvi.compose)
@@ -124,6 +126,10 @@ dependencies {
     add("kspIosSimulatorArm64", libs.room.compiler)
 }
 
+val isReleaseBuild = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
+
 buildkonfig {
     packageName = "com.merkost.honq"
 
@@ -132,5 +138,7 @@ buildkonfig {
         buildConfigField(STRING, "SUPABASE_KEY", getLocalProperty("supabase.key", ""))
         buildConfigField(STRING, "AMPLITUDE_API_KEY", getLocalProperty("amplitude.api.key", ""))
         buildConfigField(STRING, "APP_VERSION", "\"1.0.0\"")
+        buildConfigField(STRING, "GOOGLE_CLOUD_PROJECT_NUMBER", getLocalProperty("google.cloud.project.number", ""))
+        buildConfigField(BOOLEAN, "IS_DEBUG", "${!isReleaseBuild}")
     }
 }

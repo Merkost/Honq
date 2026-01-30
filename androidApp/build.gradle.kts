@@ -55,4 +55,6 @@ dependencies {
     implementation(libs.compose.uiToolingPreview)
     implementation(libs.androidx.core.ktx)
     debugImplementation(libs.compose.uiTooling)
+
+    implementation(libs.play.integrity)
 }

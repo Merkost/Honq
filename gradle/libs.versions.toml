@@ -36,6 +36,7 @@ amplitude = "1.0.2"
 gitlive-firebase = "2.4.0"
 google-services = "4.4.4"
 firebase-crashlytics-plugin = "3.0.6"
+play-integrity = "1.6.0"
 
 [libraries]
 cedar = { module = "org.kimplify:cedar-logging", version.ref = "cedar" }
@@ -85,6 +86,7 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
+supabase-functions = { module = "io.github.jan-tennert.supabase:functions-kt", version.ref = "supabase" }
 
 flowmvi-core = { module = "pro.respawn.flowmvi:core", version.ref = "flowmvi" }
 flowmvi-compose = { module = "pro.respawn.flowmvi:compose", version.ref = "flowmvi" }
@@ -94,6 +96,8 @@ amplitude = { module = "digital.guimauve.amplitude:analytics-kmp", version.ref =
 datastore-preferences = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
 firebase-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive-firebase" }
+
+play-integrity = { module = "com.google.android.play:integrity", version.ref = "play-integrity" }
 
 [bundles]
 koin = ["koin-core", "koin-compose",]
