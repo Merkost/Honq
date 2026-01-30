@@ -6,7 +6,7 @@
     <string name="syncing">Syncing...</string>
     <string name="retry">Retry</string>
     <string name="error_title">Unable to Load</string>
-    <string name="error_subtitle">We couldn\'t connect to load your data. Check your internet connection and try again.</string>
+    <string name="error_subtitle">We couldn't connect to load your data. Check your internet connection and try again.</string>
     <string name="select">Select</string>
     <string name="done">Done</string>
     <string name="change">Change</string>
@@ -39,10 +39,10 @@
     <string name="home_take_mock_test">Take Mock Test</string>
 
     <string name="onboarding_app_name">Honq</string>
-    <string name="onboarding_subtitle">Your driving knowledge test\nprep companion</string>
+    <string name="onboarding_subtitle">Prepare for your Australian driving test.\nNo ads, ever.</string>
     <string name="onboarding_get_started">Get Started</string>
     <string name="onboarding_select_state_title">Select your state</string>
-    <string name="onboarding_select_state_subtitle">Choose the state where you\'ll be taking your test</string>
+    <string name="onboarding_select_state_subtitle">Choose the state where you'll be taking your test</string>
     <string name="onboarding_select_license_title">Select license type</string>
     <string name="onboarding_select_license_subtitle">What type of vehicle license are you studying for?</string>
     <string name="onboarding_continue">Continue</string>

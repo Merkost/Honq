@@ -1,22 +1,30 @@
 package com.merkost.honq.core.analytics
 
 import com.amplitude.kmp.Amplitude
-import com.amplitude.kmp.Identify
+import com.amplitude.kmp.events.Identify
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 
 class AmplitudeAnalytics(
     private val amplitude: Amplitude
 ) : Analytics {
 
+    private val scope = CoroutineScope(Dispatchers.IO)
+
     override fun track(event: AnalyticsEvent) {
-        amplitude.track(event.name, event.properties)
+        scope.launch { amplitude.track(event.name, event.properties) }
     }
 
     override fun setUserId(userId: String?) {
-        amplitude.setUserId(userId)
+        scope.launch { amplitude.setUserId(userId) }
     }
 
     override fun setUserProperty(name: String, value: String) {
-        val identify = Identify().set(name, value)
-        amplitude.identify(identify)
+        scope.launch {
+            val identify = Identify().set(name, value)
+            amplitude.identify(identify)
+        }
     }
 }

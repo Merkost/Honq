@@ -18,7 +18,7 @@ actual fun shareText(text: String, title: String?) {
     )
 
     val window = UIApplication.sharedApplication.windows.firstOrNull {
-        (it as? UIWindow)?.isKeyWindow == true
+        (it as? UIWindow)?.isKeyWindow() == true
     } as? UIWindow
     window?.rootViewController?.presentViewController(
         activityController,

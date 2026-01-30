@@ -6,12 +6,17 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CDABC73C2F2CBACC00E844B9 /* AmplitudeSwift in Frameworks */ = {isa = PBXBuildFile; productRef = CDABC73B2F2CBACC00E844B9 /* AmplitudeSwift */; };
+		CDABC73F2F2CBD5100E844B9 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = CDABC73E2F2CBD5100E844B9 /* FirebaseCrashlytics */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		2725962F34C79EBF2E70EDA3 /* Honq.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Honq.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		68D229F9E917005460307994 /* Exceptions for "HonqApp" folder in "Honq" target */ = {
+		68D229F9E917005460307994 /* Exceptions for "iosApp" folder in "Honq" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -21,12 +26,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8813FD5B41B209402461C068 /* HonqApp */ = {
+		8813FD5B41B209402461C068 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				68D229F9E917005460307994 /* Exceptions for "HonqApp" folder in "Honq" target */,
+				68D229F9E917005460307994 /* Exceptions for "iosApp" folder in "Honq" target */,
 			);
-			path = HonqApp;
+			path = iosApp;
 			sourceTree = "<group>";
 		};
 		F5775A056B6678B841DF769B /* Configuration */ = {
@@ -41,6 +46,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDABC73C2F2CBACC00E844B9 /* AmplitudeSwift in Frameworks */,
+				CDABC73F2F2CBD5100E844B9 /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,7 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				F5775A056B6678B841DF769B /* Configuration */,
-				8813FD5B41B209402461C068 /* HonqApp */,
+				8813FD5B41B209402461C068 /* iosApp */,
 				44CD830414C7B277C6B99E16 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -81,10 +88,12 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				8813FD5B41B209402461C068 /* HonqApp */,
+				8813FD5B41B209402461C068 /* iosApp */,
 			);
 			name = Honq;
 			packageProductDependencies = (
+				CDABC73B2F2CBACC00E844B9 /* AmplitudeSwift */,
+				CDABC73E2F2CBD5100E844B9 /* FirebaseCrashlytics */,
 			);
 			productName = iosApp;
 			productReference = 2725962F34C79EBF2E70EDA3 /* Honq.app */;
@@ -105,7 +114,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 02E031CAF5B6D7F201B84863 /* Build configuration list for PBXProject "iosApp" */;
+			buildConfigurationList = 02E031CAF5B6D7F201B84863 /* Build configuration list for PBXProject "HonqApp" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -114,6 +123,10 @@
 			);
 			mainGroup = AF9096B443D152F9EB3B22EF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CDABC73A2F2CBACC00E844B9 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */,
+				CDABC73D2F2CBD5100E844B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 44CD830414C7B277C6B99E16 /* Products */;
 			projectDirPath = "";
@@ -203,6 +216,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -290,6 +304,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -351,7 +366,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		02E031CAF5B6D7F201B84863 /* Build configuration list for PBXProject "iosApp" */ = {
+		02E031CAF5B6D7F201B84863 /* Build configuration list for PBXProject "HonqApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A66D3EE61B877CAF3409AF22 /* Debug */,
@@ -370,6 +385,38 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CDABC73A2F2CBACC00E844B9 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/amplitude/Amplitude-Swift";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 1.17.1;
+			};
+		};
+		CDABC73D2F2CBD5100E844B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 12.8.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CDABC73B2F2CBACC00E844B9 /* AmplitudeSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CDABC73A2F2CBACC00E844B9 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */;
+			productName = AmplitudeSwift;
+		};
+		CDABC73E2F2CBD5100E844B9 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CDABC73D2F2CBD5100E844B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8866508228A2F12C3EA4CDE6 /* Project object */;
 }
