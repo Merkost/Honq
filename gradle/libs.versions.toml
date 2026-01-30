@@ -37,6 +37,7 @@ gitlive-firebase = "2.4.0"
 google-services = "4.4.4"
 firebase-crashlytics-plugin = "3.0.6"
 play-integrity = "1.6.0"
+play-review = "2.0.2"
 
 [libraries]
 cedar = { module = "org.kimplify:cedar-logging", version.ref = "cedar" }
@@ -98,6 +99,8 @@ datastore-preferences = { module = "androidx.datastore:datastore-preferences-cor
 firebase-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive-firebase" }
 
 play-integrity = { module = "com.google.android.play:integrity", version.ref = "play-integrity" }
+play-review = { module = "com.google.android.play:review", version.ref = "play-review" }
+play-review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "play-review" }
 
 [bundles]
 koin = ["koin-core", "koin-compose",]

@@ -92,6 +92,21 @@ sealed class AnalyticsEvent(
         mapOf("question_id" to questionId)
     )
 
+    data class ReviewRequested(val trigger: String) : AnalyticsEvent(
+        "review_requested",
+        mapOf("trigger" to trigger)
+    )
+
+    data class ReviewCompleted(val trigger: String) : AnalyticsEvent(
+        "review_completed",
+        mapOf("trigger" to trigger)
+    )
+
+    data class ReviewFailed(val trigger: String, val error: String?) : AnalyticsEvent(
+        "review_failed",
+        mapOf("trigger" to trigger, "error" to error)
+    )
+
     data class StatisticsViewed(
         val totalPracticed: Int,
         val accuracy: Float,

@@ -159,7 +159,8 @@ class QuestionRepositoryImpl(
                 val localCount = localDataSource.getQuestionCountByQuestionSet(questionSetId)
                 Cedar.tag("QuestionRepo").d("syncQuestions: lastSync=$lastSync, localCount=$localCount")
 
-                val remoteQuestions = if (lastSync != null && localCount > 0) {
+                val isFullFetch = lastSync == null || localCount == 0
+                val remoteQuestions = if (!isFullFetch) {
                     val lastUpdatedAt = localDataSource.getLastUpdatedAt(questionSetId)
                     if (lastUpdatedAt != null) {
                         questionApi.fetchUpdatedQuestions(questionSetId, lastUpdatedAt)
@@ -167,11 +168,13 @@ class QuestionRepositoryImpl(
                         questionApi.fetchQuestionsByQuestionSet(questionSetId)
                     }
                 } else {
-                    localDataSource.deleteQuestionsByQuestionSet(questionSetId)
                     questionApi.fetchQuestionsByQuestionSet(questionSetId)
                 }
 
                 if (remoteQuestions.isNotEmpty()) {
+                    if (isFullFetch) {
+                        localDataSource.deleteQuestionsByQuestionSet(questionSetId)
+                    }
                     Cedar.tag("QuestionRepo").d("syncQuestions: upserting ${remoteQuestions.size} questions")
                     localDataSource.upsertQuestions(remoteQuestions.map { it.toEntity(json) })
                     val now =

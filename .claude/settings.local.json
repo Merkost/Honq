@@ -36,7 +36,8 @@
       "Bash(supabase projects:*)",
       "Bash(chmod:*)",
       "Bash(open:*)",
-      "mcp__supabase__get_logs"
+      "mcp__supabase__get_logs",
+      "Bash(./gradlew androidApp:assembleDebug:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

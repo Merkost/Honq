@@ -92,6 +92,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.play.review.ktx)
         }
 
         iosMain.dependencies {

@@ -43,6 +43,8 @@ class HomeContainer(
     private val repository: QuestionRepository
 ) : Container<HomeState, HomeIntent, HomeAction>, ViewModel() {
 
+    private var pendingSyncVersion: Int? = null
+
     override val store = store(HomeState(), viewModelScope) {
         init {
             loadInitialData()
@@ -89,10 +91,9 @@ class HomeContainer(
         } else {
             val check = dataSyncManager.checkIfSyncNeeded()
             if (check.needsSync) {
-                Cedar.tag("Home").d("loadInitialData: data version changed, running full sync version=${check.remoteVersion}")
-                dataSyncManager.clearSyncTimes()
+                Cedar.tag("Home").d("loadInitialData: data version changed, syncing metadata version=${check.remoteVersion}")
                 repository.fullSync(null)
-                dataSyncManager.markSyncCompleted(check.remoteVersion)
+                pendingSyncVersion = check.remoteVersion
             }
         }
 
@@ -247,16 +248,25 @@ class HomeContainer(
         val alreadySynced = questionSetId?.let { repository.getLastSyncTime(it) } != null
         val hasQuestions = questionSetId?.let { repository.hasQuestionsForSet(it) } ?: false
 
-        if (alreadySynced && hasQuestions) {
-            Cedar.tag("Home").d("syncInBackground: skipping sync (already synced, has questions)")
+        if (alreadySynced && hasQuestions && pendingSyncVersion == null) {
+            Cedar.tag("Home").d("syncInBackground: skipping sync (already synced, has questions, no version change)")
             updateState { copy(isSyncing = false, syncError = null) }
             return
+        }
+
+        if (pendingSyncVersion != null) {
+            Cedar.tag("Home").d("syncInBackground: version changed, clearing sync times to force full re-fetch")
+            dataSyncManager.clearSyncTimes()
         }
 
         Cedar.tag("Home").d("syncInBackground: starting sync for questionSet=$questionSetId")
         updateState { copy(isSyncing = true) }
         syncQuestions()
             .onSuccess {
+                pendingSyncVersion?.let { version ->
+                    dataSyncManager.markSyncCompleted(version)
+                    pendingSyncVersion = null
+                }
                 Cedar.tag("Home").d("syncInBackground: sync completed successfully")
                 updateState { copy(isSyncing = false, syncError = null) }
             }

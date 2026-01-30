@@ -3,6 +3,7 @@ package com.merkost.honq.domain.di
 import com.merkost.honq.domain.usecase.GetCategoriesUseCase
 import com.merkost.honq.domain.usecase.GetCategoryProgressUseCase
 import com.merkost.honq.domain.usecase.GetMockTestReviewUseCase
+import com.merkost.honq.domain.usecase.ReviewEligibilityManager
 import com.merkost.honq.domain.usecase.GetStatisticsUseCase
 import com.merkost.honq.domain.usecase.GetUnansweredQuestionsUseCase
 import com.merkost.honq.domain.usecase.GetWeakestQuestionsUseCase
@@ -59,4 +60,5 @@ val domainModule = module {
     factory { GetWeakestQuestionsUseCase(get()) }
     factory { GetUnansweredQuestionsUseCase(get()) }
     factory { GetMockTestReviewUseCase(get()) }
+    single { ReviewEligibilityManager(get(), get()) }
 }

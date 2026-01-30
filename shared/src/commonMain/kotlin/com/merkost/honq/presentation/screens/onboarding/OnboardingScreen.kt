@@ -2,6 +2,7 @@ package com.merkost.honq.presentation.screens.onboarding
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -40,21 +42,24 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.LicenseType
 import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.domain.model.State
-import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.LicenseTypeIcon
 import com.merkost.honq.presentation.theme.HonqMotion
@@ -76,11 +81,17 @@ import honq.shared.generated.resources.onboarding_select_state_subtitle
 import honq.shared.generated.resources.onboarding_select_state_title
 import honq.shared.generated.resources.onboarding_start_learning
 import honq.shared.generated.resources.onboarding_subtitle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import pro.respawn.flowmvi.compose.dsl.subscribe
+
+private const val WELCOME_STAGGER_DELAY = 80L
+private const val LIST_STAGGER_DELAY = 60L
+private const val SLIDE_UP_PX = 40f
 
 @Composable
 fun OnboardingScreen(
@@ -114,53 +125,116 @@ private fun OnboardingContent(
             .background(colors.background)
             .windowInsetsPadding(WindowInsets.statusBars)
     ) {
-        if (state.isLoading) {
-            FullscreenLoading()
-        } else {
-            AnimatedContent(
-                targetState = state.currentStep,
-                transitionSpec = {
-                    val isForward = targetState.ordinal > initialState.ordinal
-                    val enterOffset = if (isForward) 1 else -1
-                    val exitOffset = if (isForward) -1 else 1
+        AnimatedContent(
+            targetState = state.isLoading,
+            transitionSpec = {
+                fadeIn(tween(HonqMotion.durationMedium)).togetherWith(
+                    fadeOut(tween(HonqMotion.durationMedium))
+                )
+            }
+        ) { isLoading ->
+            if (isLoading) {
+                BrandedSplash()
+            } else {
+                AnimatedContent(
+                    targetState = state.currentStep,
+                    transitionSpec = {
+                        val isForward = targetState.ordinal > initialState.ordinal
+                        val enterOffset = if (isForward) 1 else -1
+                        val exitOffset = if (isForward) -1 else 1
 
-                    (slideInHorizontally(
-                        animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
-                        initialOffsetX = { fullWidth -> fullWidth * enterOffset }
-                    ) + fadeIn(
-                        animationSpec = tween(HonqMotion.durationMedium)
-                    )).togetherWith(
-                        slideOutHorizontally(
+                        (slideInHorizontally(
                             animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
-                            targetOffsetX = { fullWidth -> fullWidth * exitOffset }
-                        ) + fadeOut(
-                            animationSpec = tween(HonqMotion.durationShort)
+                            initialOffsetX = { fullWidth -> fullWidth * enterOffset }
+                        ) + fadeIn(
+                            animationSpec = tween(HonqMotion.durationMedium)
+                        )).togetherWith(
+                            slideOutHorizontally(
+                                animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
+                                targetOffsetX = { fullWidth -> fullWidth * exitOffset }
+                            ) + fadeOut(
+                                animationSpec = tween(HonqMotion.durationShort)
+                            )
                         )
-                    )
-                }
-            ) { step ->
-                when (step) {
-                    OnboardingStep.Welcome -> WelcomeStep(
-                        onGetStarted = { onIntent(OnboardingIntent.GetStarted) }
-                    )
-                    OnboardingStep.StateSelection -> StateSelectionStep(
-                        states = state.states,
-                        selectedStateId = state.selectedStateId,
-                        onSelectState = { onIntent(OnboardingIntent.SelectState(it)) },
-                        onContinue = { onIntent(OnboardingIntent.ConfirmStateSelection) },
-                        onBack = { onIntent(OnboardingIntent.GoBack) },
-                        canContinue = state.canProceedFromStateSelection
-                    )
-                    OnboardingStep.LicenseTypeSelection -> LicenseTypeSelectionStep(
-                        licenseTypes = state.licenseTypes,
-                        selectedTypeId = state.selectedLicenseTypeId,
-                        onSelectType = { onIntent(OnboardingIntent.SelectLicenseType(it)) },
-                        onComplete = { onIntent(OnboardingIntent.CompleteOnboarding) },
-                        onBack = { onIntent(OnboardingIntent.GoBack) },
-                        canComplete = state.canProceedFromLicenseTypeSelection
-                    )
+                    }
+                ) { step ->
+                    when (step) {
+                        OnboardingStep.Welcome -> WelcomeStep(
+                            onGetStarted = { onIntent(OnboardingIntent.GetStarted) }
+                        )
+                        OnboardingStep.StateSelection -> StateSelectionStep(
+                            states = state.states,
+                            selectedStateId = state.selectedStateId,
+                            onSelectState = { onIntent(OnboardingIntent.SelectState(it)) },
+                            onContinue = { onIntent(OnboardingIntent.ConfirmStateSelection) },
+                            onBack = { onIntent(OnboardingIntent.GoBack) },
+                            canContinue = state.canProceedFromStateSelection
+                        )
+                        OnboardingStep.LicenseTypeSelection -> LicenseTypeSelectionStep(
+                            licenseTypes = state.licenseTypes,
+                            selectedTypeId = state.selectedLicenseTypeId,
+                            onSelectType = { onIntent(OnboardingIntent.SelectLicenseType(it)) },
+                            onComplete = { onIntent(OnboardingIntent.CompleteOnboarding) },
+                            onBack = { onIntent(OnboardingIntent.GoBack) },
+                            canComplete = state.canProceedFromLicenseTypeSelection
+                        )
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun BrandedSplash() {
+    val colors = HonqTheme.colors
+    val logoAnim = remember { Animatable(0f) }
+    val titleAnim = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        logoAnim.animateTo(
+            1f,
+            animationSpec = tween(
+                durationMillis = HonqMotion.durationEnter,
+                easing = HonqMotion.easingEmphasizedDecelerate
+            )
+        )
+        titleAnim.animateTo(
+            1f,
+            animationSpec = tween(
+                durationMillis = HonqMotion.durationEnter,
+                easing = HonqMotion.easingEmphasizedDecelerate
+            )
+        )
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.ic_honq_logo),
+                contentDescription = "Honq Logo",
+                modifier = Modifier
+                    .size(120.dp)
+                    .alpha(logoAnim.value)
+                    .scale(0.8f + 0.2f * logoAnim.value)
+            )
+
+            Spacer(modifier = Modifier.height(HonqSpacing.lg))
+
+            Text(
+                text = stringResource(Res.string.onboarding_app_name),
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Bold,
+                color = colors.primary,
+                modifier = Modifier
+                    .alpha(titleAnim.value)
+                    .offset { IntOffset(0, ((1f - titleAnim.value) * SLIDE_UP_PX).toInt()) }
+            )
         }
     }
 }
@@ -170,6 +244,29 @@ private fun WelcomeStep(
     onGetStarted: () -> Unit
 ) {
     val colors = HonqTheme.colors
+    val animProgress = remember { List(4) { Animatable(0f) } }
+
+    LaunchedEffect(Unit) {
+        animProgress.forEachIndexed { index, anim ->
+            launch {
+                delay(index * WELCOME_STAGGER_DELAY)
+                anim.animateTo(
+                    1f,
+                    animationSpec = tween(
+                        durationMillis = HonqMotion.durationEnter,
+                        easing = HonqMotion.easingEmphasizedDecelerate
+                    )
+                )
+            }
+        }
+    }
+
+    fun Modifier.staggered(index: Int): Modifier {
+        val progress = animProgress.getOrNull(index)?.value ?: 1f
+        return this
+            .alpha(progress)
+            .offset { IntOffset(0, ((1f - progress) * SLIDE_UP_PX).toInt()) }
+    }
 
     Column(
         modifier = Modifier
@@ -184,7 +281,9 @@ private fun WelcomeStep(
         Image(
             painter = painterResource(Res.drawable.ic_honq_logo),
             contentDescription = "Honq Logo",
-            modifier = Modifier.size(120.dp)
+            modifier = Modifier
+                .size(120.dp)
+                .staggered(0)
         )
 
         Spacer(modifier = Modifier.height(HonqSpacing.lg))
@@ -193,7 +292,8 @@ private fun WelcomeStep(
             text = stringResource(Res.string.onboarding_app_name),
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
-            color = colors.primary
+            color = colors.primary,
+            modifier = Modifier.staggered(1)
         )
 
         Spacer(modifier = Modifier.height(HonqSpacing.md))
@@ -203,7 +303,8 @@ private fun WelcomeStep(
             fontSize = 18.sp,
             color = colors.textSecondary,
             textAlign = TextAlign.Center,
-            lineHeight = 26.sp
+            lineHeight = 26.sp,
+            modifier = Modifier.staggered(2)
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -211,7 +312,9 @@ private fun WelcomeStep(
         HonqButton(
             text = stringResource(Res.string.onboarding_get_started),
             onClick = onGetStarted,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .staggered(3)
         )
 
         Spacer(modifier = Modifier.height(HonqSpacing.xl))
@@ -227,6 +330,23 @@ private fun StateSelectionStep(
     onBack: () -> Unit,
     canContinue: Boolean
 ) {
+    val animProgress = remember(states.size) { List(states.size) { Animatable(0f) } }
+
+    LaunchedEffect(states) {
+        animProgress.forEachIndexed { index, anim ->
+            launch {
+                delay(index * LIST_STAGGER_DELAY)
+                anim.animateTo(
+                    1f,
+                    animationSpec = tween(
+                        durationMillis = HonqMotion.durationEnter,
+                        easing = HonqMotion.easingEmphasizedDecelerate
+                    )
+                )
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -243,11 +363,15 @@ private fun StateSelectionStep(
                 .padding(horizontal = HonqSizing.screenPadding),
             verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
         ) {
-            states.forEach { state ->
+            states.forEachIndexed { index, state ->
+                val progress = animProgress.getOrNull(index)?.value ?: 1f
                 StateSelectionCard(
                     state = state,
                     selected = state.id == selectedStateId,
-                    onClick = { onSelectState(state.id) }
+                    onClick = { onSelectState(state.id) },
+                    modifier = Modifier
+                        .alpha(progress)
+                        .offset { IntOffset(0, ((1f - progress) * SLIDE_UP_PX).toInt()) }
                 )
             }
         }
@@ -269,6 +393,23 @@ private fun LicenseTypeSelectionStep(
     onBack: () -> Unit,
     canComplete: Boolean
 ) {
+    val animProgress = remember(licenseTypes.size) { List(licenseTypes.size) { Animatable(0f) } }
+
+    LaunchedEffect(licenseTypes) {
+        animProgress.forEachIndexed { index, anim ->
+            launch {
+                delay(index * LIST_STAGGER_DELAY)
+                anim.animateTo(
+                    1f,
+                    animationSpec = tween(
+                        durationMillis = HonqMotion.durationEnter,
+                        easing = HonqMotion.easingEmphasizedDecelerate
+                    )
+                )
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -285,11 +426,15 @@ private fun LicenseTypeSelectionStep(
                 .padding(horizontal = HonqSizing.screenPadding),
             verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
         ) {
-            licenseTypes.forEach { type ->
+            licenseTypes.forEachIndexed { index, type ->
+                val progress = animProgress.getOrNull(index)?.value ?: 1f
                 LicenseTypeCard(
                     type = type,
                     selected = type.id == selectedTypeId,
-                    onClick = { onSelectType(type.id) }
+                    onClick = { onSelectType(type.id) },
+                    modifier = Modifier
+                        .alpha(progress)
+                        .offset { IntOffset(0, ((1f - progress) * SLIDE_UP_PX).toInt()) }
                 )
             }
         }
@@ -368,7 +513,8 @@ private fun OnboardingFooter(
 private fun StateSelectionCard(
     state: State,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = HonqTheme.colors
     val enabled = state.isActive
@@ -393,7 +539,7 @@ private fun StateSelectionCard(
     val contentAlpha = if (enabled) 1f else 0.5f
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .alpha(contentAlpha)
             .clip(RoundedCornerShape(HonqSizing.cornerRadius))
@@ -450,7 +596,8 @@ private fun StateSelectionCard(
 private fun LicenseTypeCard(
     type: LicenseType,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = HonqTheme.colors
 
@@ -476,7 +623,7 @@ private fun LicenseTypeCard(
     )
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(HonqSizing.cornerRadius))
             .background(backgroundColor)

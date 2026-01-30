@@ -10,6 +10,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
@@ -40,6 +41,7 @@ import com.merkost.honq.presentation.screens.unanswered.UnansweredQuestionsScree
 import com.merkost.honq.presentation.screens.weakest.WeakestQuestionsScreen
 import com.merkost.honq.presentation.theme.HonqColors
 import com.merkost.honq.presentation.theme.HonqMotion
+import com.merkost.honq.presentation.util.requestInAppReview
 
 private val TRANSITION_DURATION = HonqMotion.durationMedium
 
@@ -127,6 +129,9 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             popEnterTransition = { fadeIn(animationSpec = tween(TRANSITION_DURATION)) },
             popExitTransition = { fadeOut(animationSpec = tween(TRANSITION_DURATION)) }
         ) {
+            LaunchedEffect(Unit) {
+                requestInAppReview("PRACTICE_MILESTONE")
+            }
             HomeScreen(
                 onNavigateToPractice = { navController.navigate(Screen.CategorySelection) },
                 onNavigateToMockTest = { navController.navigate(Screen.MockTest) },
@@ -215,6 +220,11 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             }
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<Screen.Results>()
+            if (route.score >= (route.total * 0.9).toInt()) {
+                LaunchedEffect(Unit) {
+                    requestInAppReview("MOCK_TEST_PASSED")
+                }
+            }
             ResultsScreen(
                 score = route.score,
                 total = route.total,
@@ -259,6 +269,9 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
         }
 
         composable<Screen.Statistics> {
+            LaunchedEffect(Unit) {
+                requestInAppReview("STATISTICS_VIEWED")
+            }
             StatisticsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToWeakestQuestions = { navController.navigate(Screen.WeakestQuestions) },

@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import com.merkost.honq.data.di.databaseModule
 import com.merkost.honq.di.sharedModules
 import com.merkost.honq.integrity.integrityModule
+import com.merkost.honq.review.reviewModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
 
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity() {
             KoinApplication(
                 application = {
                     androidContext(this@MainActivity)
-                    modules(sharedModules() + databaseModule + integrityModule)
+                    modules(sharedModules() + databaseModule + integrityModule + reviewModule)
                 }
             ) {
                 App()

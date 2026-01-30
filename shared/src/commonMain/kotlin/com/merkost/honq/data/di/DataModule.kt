@@ -1,7 +1,9 @@
 package com.merkost.honq.data.di
 
+import com.merkost.honq.data.local.DataStoreInAppReviewPreferences
 import com.merkost.honq.data.local.DataStoreOnboardingPreferences
 import com.merkost.honq.data.local.DataStoreSyncPreferences
+import com.merkost.honq.data.local.InAppReviewPreferences
 import com.merkost.honq.data.local.InMemoryQuestionSetSelectionRepository
 import com.merkost.honq.data.local.InMemoryStateSelectionRepository
 import com.merkost.honq.data.local.OnboardingPreferences
@@ -29,6 +31,7 @@ val dataModule = module {
     single { createDataStore() }
     single<SyncPreferences> { DataStoreSyncPreferences(get()) }
     single<OnboardingPreferences> { DataStoreOnboardingPreferences(get()) }
+    single<InAppReviewPreferences> { DataStoreInAppReviewPreferences(get()) }
     single<StateSelectionRepository> { InMemoryStateSelectionRepository() }
     single<QuestionSetSelectionRepository> { InMemoryQuestionSetSelectionRepository() }
 
