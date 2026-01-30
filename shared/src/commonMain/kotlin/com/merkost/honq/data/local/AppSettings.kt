@@ -37,17 +37,17 @@ class DataStoreThemePreferences(
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private object Keys {
-        val IS_DARK_THEME = booleanPreferencesKey("is_dark_theme")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
-    override val isDarkTheme: StateFlow<Boolean> = dataStore.data
-        .map { preferences -> preferences[Keys.IS_DARK_THEME] ?: true }
-        .stateIn(scope, SharingStarted.Eagerly, true)
+    override val themeMode: StateFlow<ThemeMode> = dataStore.data
+        .map { preferences -> ThemeMode.fromString(preferences[Keys.THEME_MODE]) }
+        .stateIn(scope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
 
-    override fun setDarkTheme(isDark: Boolean) {
+    override fun setThemeMode(mode: ThemeMode) {
         runBlocking {
             dataStore.edit { preferences ->
-                preferences[Keys.IS_DARK_THEME] = isDark
+                preferences[Keys.THEME_MODE] = mode.toStorageString()
             }
         }
     }

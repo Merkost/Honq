@@ -3,16 +3,34 @@ package com.merkost.honq.data.local
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+enum class ThemeMode {
+    SYSTEM, LIGHT, DARK;
+
+    companion object {
+        fun fromString(value: String?): ThemeMode = when (value) {
+            "light" -> LIGHT
+            "dark" -> DARK
+            else -> SYSTEM
+        }
+    }
+
+    fun toStorageString(): String = when (this) {
+        SYSTEM -> "system"
+        LIGHT -> "light"
+        DARK -> "dark"
+    }
+}
+
 interface ThemePreferences {
-    val isDarkTheme: StateFlow<Boolean>
-    fun setDarkTheme(isDark: Boolean)
+    val themeMode: StateFlow<ThemeMode>
+    fun setThemeMode(mode: ThemeMode)
 }
 
 class InMemoryThemePreferences : ThemePreferences {
-    private val _isDarkTheme = MutableStateFlow(true)
-    override val isDarkTheme: StateFlow<Boolean> = _isDarkTheme
-    override fun setDarkTheme(isDark: Boolean) {
-        _isDarkTheme.value = isDark
+    private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+    override val themeMode: StateFlow<ThemeMode> = _themeMode
+    override fun setThemeMode(mode: ThemeMode) {
+        _themeMode.value = mode
     }
 }
 

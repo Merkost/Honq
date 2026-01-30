@@ -1,5 +1,6 @@
 package com.merkost.honq.presentation.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -9,6 +10,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import com.merkost.honq.data.local.ThemeMode
 import com.merkost.honq.data.local.ThemePreferences
 import org.koin.compose.koinInject
 
@@ -49,10 +51,17 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun HonqTheme(content: @Composable () -> Unit) {
     val themePreferences = koinInject<ThemePreferences>()
-    val isDarkTheme by themePreferences.isDarkTheme.collectAsState()
+    val themeMode by themePreferences.themeMode.collectAsState()
+    val systemDark = isSystemInDarkTheme()
 
-    val honqColors = if (isDarkTheme) honqDarkColorScheme() else honqLightColorScheme()
-    val materialScheme = if (isDarkTheme) DarkColorScheme else LightColorScheme
+    val isDark = when (themeMode) {
+        ThemeMode.SYSTEM -> systemDark
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+    }
+
+    val honqColors = if (isDark) honqDarkColorScheme() else honqLightColorScheme()
+    val materialScheme = if (isDark) DarkColorScheme else LightColorScheme
 
     CompositionLocalProvider(
         LocalHonqColors provides honqColors
