@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.runBlocking
 import okio.Path.Companion.toPath
 
-private const val DATA_STORE_FILE_NAME = "honq_settings.preferences_pb"
+const val DATA_STORE_FILE_NAME = "honq_settings.preferences_pb"
 
 expect fun getDataStorePath(): String
 

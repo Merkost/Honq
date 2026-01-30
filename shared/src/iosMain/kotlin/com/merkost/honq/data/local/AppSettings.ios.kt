@@ -14,5 +14,5 @@ actual fun getDataStorePath(): String {
         create = false,
         error = null
     )
-    return "${documentDirectory?.path}/honq_settings.preferences_pb"
+    return "${documentDirectory?.path}/$DATA_STORE_FILE_NAME"
 }

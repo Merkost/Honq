@@ -9,5 +9,5 @@ fun initDataStore(context: Context) {
 }
 
 actual fun getDataStorePath(): String {
-    return appContext.filesDir.resolve("honq_settings.preferences_pb").absolutePath
+    return appContext.filesDir.resolve(DATA_STORE_FILE_NAME).absolutePath
 }

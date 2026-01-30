@@ -21,7 +21,13 @@
       "Bash(supabase link:*)",
       "Bash(tree:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:central.sonatype.com)"
+      "WebFetch(domain:central.sonatype.com)",
+      "Bash(gh api:*)",
+      "Bash(gh repo view:*)",
+      "Bash(git -C /Users/merkost/StudioProjects/Honq remote -v)",
+      "Bash(git -C /Users/merkost/StudioProjects/Honq log --oneline --all -- docs/)",
+      "Bash(git -C /Users/merkost/StudioProjects/Honq ls-files docs/)",
+      "Bash(git -C /Users/merkost/StudioProjects/Honq branch:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
