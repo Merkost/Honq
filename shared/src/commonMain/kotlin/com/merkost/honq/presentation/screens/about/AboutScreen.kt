@@ -57,9 +57,10 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
 private const val CONTACT_EMAIL = "merkostdev+honq@gmail.com"
-private const val SHARE_TEXT = "Check out Honq - the best way to prepare for your Australian driver's license test!"
-private const val PRIVACY_POLICY_URL = "https://honqapp.com/privacy"
-private const val TERMS_OF_SERVICE_URL = "https://honqapp.com/terms"
+private const val PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.merkost.honq"
+private const val SHARE_TEXT = "Check out Honq - the best way to prepare for your Australian driver's license test!\n$PLAY_STORE_URL"
+private const val PRIVACY_URL = "https://merkost.github.io/Honq/privacy.html"
+private const val TERMS_URL = "https://merkost.github.io/Honq/terms.html"
 
 @Composable
 fun AboutScreen(
@@ -177,7 +178,7 @@ fun AboutScreen(
             ) {
                 LegalLink(
                     title = "Privacy Policy",
-                    onClick = { openUrl(PRIVACY_POLICY_URL) }
+                    onClick = { openUrl(PRIVACY_URL) }
                 )
                 Box(
                     modifier = Modifier
@@ -188,7 +189,7 @@ fun AboutScreen(
                 )
                 LegalLink(
                     title = "Terms of Service",
-                    onClick = { openUrl(TERMS_OF_SERVICE_URL) }
+                    onClick = { openUrl(TERMS_URL) }
                 )
             }
 

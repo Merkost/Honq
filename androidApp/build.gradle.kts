@@ -23,8 +23,8 @@ android {
         applicationId = "com.merkost.honq"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = libs.versions.android.versionCode.get().toInt()
+        versionName = libs.versions.android.versionName.get()
     }
     buildFeatures {
         buildConfig = true
@@ -36,7 +36,7 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
         }
     }
     compileOptions {

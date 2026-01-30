@@ -36,7 +36,7 @@ actual fun sendEmail(email: String, subject: String, body: String) {
 }
 
 actual fun openAppStore() {
-    val appStoreUrl = "https://apps.apple.com/app/honq"
-    val nsUrl = NSURL.URLWithString(appStoreUrl) ?: return
+    val storeUrl = "https://play.google.com/store/apps/details?id=com.merkost.honq"
+    val nsUrl = NSURL.URLWithString(storeUrl) ?: return
     UIApplication.sharedApplication.openURL(nsUrl)
 }
