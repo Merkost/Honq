@@ -44,6 +44,11 @@ class DataSyncManager(
         syncPreferences.setInitialSyncCompleted(true)
     }
 
+    fun clearSyncTimes() {
+        Cedar.tag("DataSync").d("clearSyncTimes: clearing all per-question-set sync times")
+        syncPreferences.clearAllSyncTimes()
+    }
+
     fun resetSyncState() {
         Cedar.tag("DataSync").d("resetSyncState: clearing all sync times and initial sync flag")
         syncPreferences.clearAllSyncTimes()
