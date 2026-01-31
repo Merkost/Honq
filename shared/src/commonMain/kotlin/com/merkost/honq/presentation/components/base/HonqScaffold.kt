@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import honq.shared.generated.resources.Res
 import honq.shared.generated.resources.ic_honq_logo
 import org.jetbrains.compose.resources.painterResource
@@ -40,7 +40,7 @@ fun HonqScaffold(
 ) {
     Scaffold(
         modifier = modifier,
-        containerColor = HonqColors.Background,
+        containerColor = HonqTheme.colors.background,
         topBar = {
             if (title != null || onNavigateBack != null || showLogo) {
                 CenterAlignedTopAppBar(
@@ -80,9 +80,9 @@ fun HonqScaffold(
                     },
                     actions = actions,
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = HonqColors.Background,
-                        titleContentColor = HonqColors.TextPrimary,
-                        navigationIconContentColor = HonqColors.TextPrimary
+                        containerColor = HonqTheme.colors.background,
+                        titleContentColor = HonqTheme.colors.textPrimary,
+                        navigationIconContentColor = HonqTheme.colors.textPrimary
                     )
                 )
             }

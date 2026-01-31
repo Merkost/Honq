@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqSizing
 
 @Composable
@@ -35,7 +35,7 @@ fun HonqProgressBar(
             .fillMaxWidth()
             .height(HonqSizing.progressBarHeight)
             .clip(shape)
-            .background(HonqColors.SurfaceVariant)
+            .background(HonqTheme.colors.surfaceVariant)
     ) {
         Box(
             modifier = Modifier
@@ -44,7 +44,7 @@ fun HonqProgressBar(
                 .clip(shape)
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(HonqColors.Amber, HonqColors.AmberDark)
+                        colors = listOf(HonqTheme.colors.primary, HonqTheme.colors.primaryVariant)
                     )
                 )
         )

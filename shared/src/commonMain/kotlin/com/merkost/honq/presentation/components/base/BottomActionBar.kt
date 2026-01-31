@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 
@@ -31,7 +31,7 @@ fun BottomActionBar(
                     brush = Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            HonqColors.Background
+                            HonqTheme.colors.background
                         )
                     )
                 )
@@ -40,7 +40,7 @@ fun BottomActionBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(HonqColors.Background)
+                .background(HonqTheme.colors.background)
                 .padding(
                     horizontal = HonqSizing.screenPadding,
                     vertical = HonqSpacing.md
@@ -64,7 +64,7 @@ fun BottomActionBarVertical(
                     brush = Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            HonqColors.Background
+                            HonqTheme.colors.background
                         )
                     )
                 )
@@ -73,7 +73,7 @@ fun BottomActionBarVertical(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(HonqColors.Background)
+                .background(HonqTheme.colors.background)
                 .padding(
                     horizontal = HonqSizing.screenPadding,
                     vertical = HonqSpacing.sm

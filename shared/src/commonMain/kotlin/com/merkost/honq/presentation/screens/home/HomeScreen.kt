@@ -58,7 +58,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.merkost.honq.domain.model.LicenseTypeId
-import com.merkost.honq.presentation.components.base.BottomActionBarVertical
+import com.merkost.honq.presentation.components.base.BottomActionBar
 import com.merkost.honq.presentation.components.base.LicenseTypeIcon
 import com.merkost.honq.presentation.components.base.FullscreenError
 import com.merkost.honq.presentation.components.base.FullscreenLoading
@@ -225,7 +225,10 @@ private fun HomeContent(
                                 }
                             } else {
                                 Box(modifier = Modifier.staggeredEntrance(1)) {
-                                    QuestionBankCard(state)
+                                    QuestionBankCard(
+                                        state = state,
+                                        onNavigateToSmartPractice = onNavigateToSmartPractice
+                                    )
                                 }
                                 Box(modifier = Modifier.staggeredEntrance(2)) {
                                     FavoritesCard(state, onNavigateToFavorites)
@@ -248,23 +251,19 @@ private fun HomeContent(
                         if (!isExternalOnly) {
                             val bottomBarIndex = itemCount - 1
                             Box(modifier = Modifier.staggeredEntrance(bottomBarIndex)) {
-                                BottomActionBarVertical {
+                                BottomActionBar {
                                     HonqButton(
                                         text = stringResource(Res.string.home_start_practice),
                                         onClick = onNavigateToPractice,
-                                        enabled = state.isReady
-                                    )
-                                    HonqButton(
-                                        text = "Smart Practice",
-                                        onClick = onNavigateToSmartPractice,
-                                        variant = HonqButtonVariant.Secondary,
-                                        enabled = state.isReady
+                                        enabled = state.isReady,
+                                        modifier = Modifier.weight(1f)
                                     )
                                     HonqButton(
                                         text = stringResource(Res.string.home_take_mock_test),
                                         onClick = onNavigateToMockTest,
                                         variant = HonqButtonVariant.Secondary,
-                                        enabled = state.isReady
+                                        enabled = state.isReady,
+                                        modifier = Modifier.weight(1f)
                                     )
                                 }
                             }
@@ -504,7 +503,10 @@ private fun SyncIndicator(
 }
 
 @Composable
-private fun QuestionBankCard(state: HomeState) {
+private fun QuestionBankCard(
+    state: HomeState,
+    onNavigateToSmartPractice: () -> Unit
+) {
     val colors = HonqTheme.colors
     val progress = state.progress
 
@@ -564,6 +566,14 @@ private fun QuestionBankCard(state: HomeState) {
             text = stringResource(Res.string.home_percent_complete, (progress.completionProgress * 100).toInt()),
             color = colors.textMuted,
             fontSize = 12.sp
+        )
+        Spacer(modifier = Modifier.height(HonqSpacing.sm))
+        HonqButton(
+            text = "Smart Practice",
+            onClick = onNavigateToSmartPractice,
+            variant = HonqButtonVariant.Secondary,
+            enabled = state.isReady,
+            modifier = Modifier.height(36.dp)
         )
     }
 }

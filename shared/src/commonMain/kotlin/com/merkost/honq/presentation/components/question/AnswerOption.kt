@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
@@ -55,57 +55,58 @@ fun AnswerOption(
         animationSpec = spring(dampingRatio = 0.6f, stiffness = 400f)
     )
 
+    val colors = HonqTheme.colors
     val backgroundColor by animateColorAsState(
         targetValue = when (state) {
-            AnswerOptionState.Default -> HonqColors.Surface
-            AnswerOptionState.Selected -> HonqColors.AmberSurface
-            AnswerOptionState.Correct -> HonqColors.CorrectSurface
-            AnswerOptionState.Incorrect -> HonqColors.IncorrectSurface
-            AnswerOptionState.Disabled -> HonqColors.Surface
+            AnswerOptionState.Default -> colors.surface
+            AnswerOptionState.Selected -> colors.primarySurface
+            AnswerOptionState.Correct -> colors.correctSurface
+            AnswerOptionState.Incorrect -> colors.incorrectSurface
+            AnswerOptionState.Disabled -> colors.surface
         },
         animationSpec = HonqMotion.tweenMedium()
     )
 
     val borderColor by animateColorAsState(
         targetValue = when (state) {
-            AnswerOptionState.Default -> HonqColors.Border
-            AnswerOptionState.Selected -> HonqColors.Amber
-            AnswerOptionState.Correct -> HonqColors.Correct
-            AnswerOptionState.Incorrect -> HonqColors.Incorrect
-            AnswerOptionState.Disabled -> HonqColors.Border
+            AnswerOptionState.Default -> colors.border
+            AnswerOptionState.Selected -> colors.primary
+            AnswerOptionState.Correct -> colors.correct
+            AnswerOptionState.Incorrect -> colors.incorrect
+            AnswerOptionState.Disabled -> colors.border
         },
         animationSpec = HonqMotion.tweenMedium()
     )
 
     val textColor by animateColorAsState(
         targetValue = when (state) {
-            AnswerOptionState.Default -> HonqColors.TextPrimary
-            AnswerOptionState.Selected -> HonqColors.TextPrimary
-            AnswerOptionState.Correct -> HonqColors.Correct
-            AnswerOptionState.Incorrect -> HonqColors.Incorrect
-            AnswerOptionState.Disabled -> HonqColors.TextMuted
+            AnswerOptionState.Default -> colors.textPrimary
+            AnswerOptionState.Selected -> colors.textPrimary
+            AnswerOptionState.Correct -> colors.correct
+            AnswerOptionState.Incorrect -> colors.incorrect
+            AnswerOptionState.Disabled -> colors.textMuted
         },
         animationSpec = HonqMotion.tweenMedium()
     )
 
     val labelBackgroundColor by animateColorAsState(
         targetValue = when (state) {
-            AnswerOptionState.Default -> HonqColors.SurfaceVariant
-            AnswerOptionState.Selected -> HonqColors.Amber
-            AnswerOptionState.Correct -> HonqColors.Correct
-            AnswerOptionState.Incorrect -> HonqColors.Incorrect
-            AnswerOptionState.Disabled -> HonqColors.SurfaceVariant
+            AnswerOptionState.Default -> colors.surfaceVariant
+            AnswerOptionState.Selected -> colors.primary
+            AnswerOptionState.Correct -> colors.correct
+            AnswerOptionState.Incorrect -> colors.incorrect
+            AnswerOptionState.Disabled -> colors.surfaceVariant
         },
         animationSpec = HonqMotion.tweenMedium()
     )
 
     val labelTextColor by animateColorAsState(
         targetValue = when (state) {
-            AnswerOptionState.Default -> HonqColors.TextSecondary
-            AnswerOptionState.Selected -> HonqColors.Background
-            AnswerOptionState.Correct -> HonqColors.Background
-            AnswerOptionState.Incorrect -> HonqColors.Background
-            AnswerOptionState.Disabled -> HonqColors.TextMuted
+            AnswerOptionState.Default -> colors.textSecondary
+            AnswerOptionState.Selected -> colors.onPrimary
+            AnswerOptionState.Correct -> colors.onPrimary
+            AnswerOptionState.Incorrect -> colors.onPrimary
+            AnswerOptionState.Disabled -> colors.textMuted
         },
         animationSpec = HonqMotion.tweenMedium()
     )

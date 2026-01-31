@@ -42,7 +42,7 @@ import com.merkost.honq.presentation.screens.search.SearchScreen
 import com.merkost.honq.presentation.screens.statistics.StatisticsScreen
 import com.merkost.honq.presentation.screens.unanswered.UnansweredQuestionsScreen
 import com.merkost.honq.presentation.screens.weakest.WeakestQuestionsScreen
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.util.requestInAppReview
 
@@ -107,7 +107,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = Modifier.background(HonqColors.Background),
+        modifier = Modifier.background(HonqTheme.colors.background),
         enterTransition = { defaultEnterTransition() },
         exitTransition = { defaultExitTransition() },
         popEnterTransition = { defaultPopEnterTransition() },

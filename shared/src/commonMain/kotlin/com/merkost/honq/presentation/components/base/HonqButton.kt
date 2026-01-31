@@ -26,7 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 
@@ -76,8 +76,8 @@ fun HonqButton(
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
                     color = when (variant) {
-                        HonqButtonVariant.Primary -> HonqColors.Background
-                        else -> HonqColors.Amber
+                        HonqButtonVariant.Primary -> HonqTheme.colors.background
+                        else -> HonqTheme.colors.primary
                     },
                     strokeWidth = 2.dp
                 )
@@ -96,8 +96,8 @@ fun HonqButton(
                 interactionSource = interactionSource,
                 shape = RoundedCornerShape(HonqSizing.cornerRadius),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = HonqColors.Amber,
-                    contentColor = HonqColors.Background
+                    containerColor = HonqTheme.colors.primary,
+                    contentColor = HonqTheme.colors.background
                 )
             ) {
                 buttonContent()
@@ -111,7 +111,7 @@ fun HonqButton(
                 interactionSource = interactionSource,
                 shape = RoundedCornerShape(HonqSizing.cornerRadius),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = HonqColors.Amber
+                    contentColor = HonqTheme.colors.primary
                 )
             ) {
                 buttonContent()
@@ -124,7 +124,7 @@ fun HonqButton(
                 enabled = enabled && !loading,
                 interactionSource = interactionSource,
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = HonqColors.Amber
+                    contentColor = HonqTheme.colors.primary
                 )
             ) {
                 buttonContent()

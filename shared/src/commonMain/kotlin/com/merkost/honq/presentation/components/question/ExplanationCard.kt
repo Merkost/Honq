@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.presentation.components.base.HonqCard
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSpacing
 
@@ -54,7 +54,7 @@ fun ExplanationCard(
     )
 
     val icon = if (isCorrect) Icons.Rounded.CheckCircle else Icons.Rounded.Cancel
-    val iconColor = if (isCorrect) HonqColors.Correct else HonqColors.Incorrect
+    val iconColor = if (isCorrect) HonqTheme.colors.correct else HonqTheme.colors.incorrect
     val title = if (isCorrect) "Correct!" else "Incorrect"
 
     AnimatedVisibility(
@@ -91,7 +91,7 @@ fun ExplanationCard(
                 Spacer(modifier = Modifier.height(HonqSpacing.md))
                 Text(
                     text = explanation,
-                    color = HonqColors.TextSecondary,
+                    color = HonqTheme.colors.textSecondary,
                     lineHeight = 22.sp
                 )
             }
