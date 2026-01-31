@@ -40,9 +40,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.style.TextAlign
 import com.merkost.honq.BuildKonfig
 import com.merkost.honq.data.local.ThemeMode
 import com.merkost.honq.data.local.ThemePreferences
@@ -63,7 +63,8 @@ import org.koin.compose.koinInject
 
 private const val CONTACT_EMAIL = "merkostdev+honq@gmail.com"
 private const val PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.merkost.honq"
-private const val SHARE_TEXT = "Check out Honq - the best way to prepare for your Australian driver's license test!\n$PLAY_STORE_URL"
+private const val SHARE_TEXT =
+    "Check out Honq - the best way to prepare for your Australian driver's license test!\n$PLAY_STORE_URL"
 private const val PRIVACY_URL = "https://merkost.github.io/Honq/privacy.html"
 private const val TERMS_URL = "https://merkost.github.io/Honq/terms.html"
 
@@ -110,22 +111,6 @@ fun AboutScreen(
                     color = colors.textPrimary
                 )
 
-                Spacer(modifier = Modifier.height(HonqSpacing.sm))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(HonqSpacing.xs)
-                ) {
-                    Text(
-                        text = "Made with care in Sydney",
-                        fontSize = 14.sp,
-                        color = colors.textSecondary
-                    )
-                    Text(
-                        text = "\uD83C\uDDE6\uD83C\uDDFA",
-                        fontSize = 16.sp
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(HonqSpacing.md))
@@ -192,22 +177,6 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
-            Text(
-                text = "This app is not affiliated with any Australian state or territory transport authority. " +
-                    "Content is for practice purposes only. Always refer to your state's official handbook.",
-                fontSize = 12.sp,
-                color = colors.textMuted,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = HonqSizing.screenPadding)
-                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
-                    .background(colors.surface)
-                    .padding(HonqSpacing.md)
-            )
-
-            Spacer(modifier = Modifier.height(HonqSpacing.xl))
-
-            // Legal links
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -231,6 +200,21 @@ fun AboutScreen(
                     onClick = { openUrl(TERMS_URL) }
                 )
             }
+
+            Spacer(modifier = Modifier.height(HonqSpacing.xl))
+
+            Text(
+                text = "This app is not affiliated with any Australian state or territory transport authority. " +
+                        "Content is for practice purposes only. Always refer to your state's official handbook.",
+                fontSize = 12.sp,
+                color = colors.textMuted,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = HonqSizing.screenPadding)
+                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+                    .background(colors.surface)
+                    .padding(HonqSpacing.md)
+            )
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
@@ -265,6 +249,23 @@ fun AboutScreen(
             }
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(HonqSpacing.xs)
+            ) {
+                Text(
+                    text = "Made with care in Sydney",
+                    fontSize = 12.sp,
+                    color = colors.textMuted.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = "\uD83C\uDDE6\uD83C\uDDFA",
+                    fontSize = 13.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(HonqSpacing.xs))
 
             Text(
                 text = "Version ${BuildKonfig.APP_VERSION}",

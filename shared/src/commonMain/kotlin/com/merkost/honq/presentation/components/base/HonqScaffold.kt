@@ -36,11 +36,13 @@ fun HonqScaffold(
     showLogo: Boolean = false,
     onNavigateBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
+    bottomBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
         containerColor = HonqTheme.colors.background,
+        bottomBar = bottomBar,
         topBar = {
             if (title != null || onNavigateBack != null || showLogo) {
                 CenterAlignedTopAppBar(

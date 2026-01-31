@@ -8,11 +8,12 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -52,16 +54,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import com.merkost.honq.domain.model.LicenseTypeId
+import com.merkost.honq.domain.model.ResourceType
+import com.merkost.honq.domain.model.StateResource
 import com.merkost.honq.presentation.components.base.BottomActionBar
-import com.merkost.honq.presentation.components.base.LicenseTypeIcon
 import com.merkost.honq.presentation.components.base.FullscreenError
 import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqButton
@@ -69,15 +70,15 @@ import com.merkost.honq.presentation.components.base.HonqButtonVariant
 import com.merkost.honq.presentation.components.base.HonqCard
 import com.merkost.honq.presentation.components.base.HonqProgressBar
 import com.merkost.honq.presentation.components.base.HonqScaffold
-import com.merkost.honq.domain.model.ResourceType
-import com.merkost.honq.domain.model.StateResource
+import com.merkost.honq.presentation.components.base.LicenseTypeIcon
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.util.openUrl
-import honq.shared.generated.resources.Res
 import honq.shared.generated.resources.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import pro.respawn.flowmvi.compose.dsl.subscribe
@@ -139,6 +140,9 @@ private fun HomeContent(
 ) {
     val colors = HonqTheme.colors
 
+    val selectedState = state.states.firstOrNull { it.id == state.selectedStateId }
+    val isExternalOnly = selectedState?.isExternalOnly == true
+
     HonqScaffold(
         title = stringResource(Res.string.app_name),
         showLogo = true,
@@ -157,7 +161,41 @@ private fun HomeContent(
                     tint = colors.textPrimary
                 )
             }
-        }
+        },
+        bottomBar = {
+            val showBottomBar = !state.isInitialLoading && state.initialLoadError == null && !isExternalOnly
+            AnimatedVisibility(
+                visible = showBottomBar,
+                enter = slideInVertically(
+                    animationSpec = tween(
+                        durationMillis = HonqMotion.durationEnter,
+                        easing = HonqMotion.easingEmphasizedDecelerate
+                    )
+                ) { it } + fadeIn(tween(HonqMotion.durationEnter)),
+                exit = slideOutVertically(
+                    animationSpec = tween(
+                        durationMillis = HonqMotion.durationExit,
+                        easing = HonqMotion.easingEmphasizedAccelerate
+                    )
+                ) { it } + fadeOut(tween(HonqMotion.durationExit))
+            ) {
+                BottomActionBar(modifier = Modifier.navigationBarsPadding()) {
+                    HonqButton(
+                        text = stringResource(Res.string.home_start_practice),
+                        onClick = onNavigateToPractice,
+                        enabled = state.isReady,
+                        modifier = Modifier.weight(1f)
+                    )
+                    HonqButton(
+                        text = stringResource(Res.string.home_take_mock_test),
+                        onClick = onNavigateToMockTest,
+                        variant = HonqButtonVariant.Secondary,
+                        enabled = state.isReady,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        },
     ) { padding ->
         Box(
             modifier = Modifier
@@ -177,11 +215,8 @@ private fun HomeContent(
                 }
 
                 else -> {
-                    val selectedState = state.states.firstOrNull { it.id == state.selectedStateId }
-                    val isExternalOnly = selectedState?.isExternalOnly == true
-
                     val itemCount = if (isExternalOnly) 2 else {
-                        4 + (if (state.stateResources.isNotEmpty()) 1 else 0) + 1 // cards + bottom bar
+                        4 + (if (state.stateResources.isNotEmpty()) 1 else 0)
                     }
                     val animProgress = remember { List(itemCount) { Animatable(0f) } }
                     LaunchedEffect(Unit) {
@@ -206,109 +241,50 @@ private fun HomeContent(
                             .offset { IntOffset(0, ((1f - progress) * SLIDE_UP_PX).toInt()) }
                     }
 
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .verticalScroll(rememberScrollState())
-                                .padding(HonqSizing.screenPadding),
-                            verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
-                        ) {
-                            Box(modifier = Modifier.staggeredEntrance(0)) {
-                                ConfigurationCard(state, onSelectState, onSelectLicenseType, onOpenExternalLink)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(HonqSizing.screenPadding),
+                        verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
+                    ) {
+                        Box(modifier = Modifier.staggeredEntrance(0)) {
+                            ConfigurationCard(
+                                state,
+                                onSelectState,
+                                onSelectLicenseType,
+                                onOpenExternalLink
+                            )
+                        }
+
+                        if (isExternalOnly) {
+                            Box(modifier = Modifier.staggeredEntrance(1)) {
+                                ExternalResourcesCard(
+                                    state = selectedState!!,
+                                    onOpenExternalLink = onOpenExternalLink
+                                )
+                            }
+                        } else {
+                            Box(modifier = Modifier.staggeredEntrance(1)) {
+                                QuestionBankCard(
+                                    state = state,
+                                    onNavigateToSmartPractice = onNavigateToSmartPractice
+                                )
+                            }
+                            Box(modifier = Modifier.staggeredEntrance(2)) {
+                                FavoritesCard(state, onNavigateToFavorites)
+                            }
+                            Box(modifier = Modifier.staggeredEntrance(3)) {
+                                StatsRow(state, onNavigateToStatistics)
                             }
 
-                            if (isExternalOnly && selectedState != null) {
-                                Box(modifier = Modifier.staggeredEntrance(1)) {
-                                    ExternalResourcesCard(
-                                        state = selectedState,
+                            if (state.stateResources.isNotEmpty()) {
+                                Box(modifier = Modifier.staggeredEntrance(4)) {
+                                    OfficialResourcesCard(
+                                        resources = state.stateResources,
                                         onOpenExternalLink = onOpenExternalLink
                                     )
                                 }
-                            } else {
-                                Box(modifier = Modifier.staggeredEntrance(1)) {
-                                    QuestionBankCard(
-                                        state = state,
-                                        onNavigateToSmartPractice = onNavigateToSmartPractice
-                                    )
-                                }
-                                Box(modifier = Modifier.staggeredEntrance(2)) {
-                                    FavoritesCard(state, onNavigateToFavorites)
-                                }
-                                Box(modifier = Modifier.staggeredEntrance(3)) {
-                                    StatsRow(state, onNavigateToStatistics)
-                                }
-
-                                if (state.stateResources.isNotEmpty()) {
-                                    Box(modifier = Modifier.staggeredEntrance(4)) {
-                                        OfficialResourcesCard(
-                                            resources = state.stateResources,
-                                            onOpenExternalLink = onOpenExternalLink
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        if (!isExternalOnly) {
-                            var showSmartPracticeInfo by remember { mutableStateOf(false) }
-                            val bottomBarIndex = itemCount - 1
-                            Box(modifier = Modifier.staggeredEntrance(bottomBarIndex)) {
-                                BottomActionBar {
-                                    HonqButton(
-                                        text = stringResource(Res.string.home_start_practice),
-                                        onClick = onNavigateToPractice,
-                                        enabled = state.isReady,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        text = "What is Smart Practice?",
-                                        fontSize = 12.sp,
-                                        color = colors.textMuted,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
-                                            .clickable { showSmartPracticeInfo = true }
-                                            .padding(vertical = 2.dp)
-                                    )
-                                    HonqButton(
-                                        text = stringResource(Res.string.home_take_mock_test),
-                                        onClick = onNavigateToMockTest,
-                                        variant = HonqButtonVariant.Secondary,
-                                        enabled = state.isReady,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                            }
-
-                            if (showSmartPracticeInfo) {
-                                AlertDialog(
-                                    onDismissRequest = { showSmartPracticeInfo = false },
-                                    containerColor = colors.surface,
-                                    titleContentColor = colors.textPrimary,
-                                    textContentColor = colors.textSecondary,
-                                    title = {
-                                        Text(
-                                            text = "Smart Practice",
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    },
-                                    text = {
-                                        Text(
-                                            "Regular practice gives you random questions. " +
-                                            "Smart Practice uses spaced repetition to focus on questions you got wrong " +
-                                            "or haven't seen in a while, so you spend time where it matters most."
-                                        )
-                                    },
-                                    confirmButton = {
-                                        TextButton(onClick = { showSmartPracticeInfo = false }) {
-                                            Text(
-                                                text = "Got it",
-                                                color = colors.primary,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
-                                        }
-                                    }
-                                )
                             }
                         }
                     }
@@ -422,8 +398,8 @@ private fun ConfigurationCard(
                         val hasQuestionSet = state.questionSets.any { it.licenseTypeId == type.id }
                         val isSelected = type.id == state.selectedLicenseTypeId
                         val tint = if (!hasQuestionSet) colors.textMuted
-                            else if (isSelected) colors.primary
-                            else colors.textSecondary
+                        else if (isSelected) colors.primary
+                        else colors.textSecondary
                         SelectableChip(
                             text = type.name,
                             selected = isSelected,
@@ -592,6 +568,39 @@ private fun QuestionBankCard(
     val colors = HonqTheme.colors
     val progress = state.progress
 
+    var showSmartPracticeInfo by remember { mutableStateOf(false) }
+
+    if (showSmartPracticeInfo) {
+        AlertDialog(
+            onDismissRequest = { showSmartPracticeInfo = false },
+            containerColor = colors.surface,
+            titleContentColor = colors.textPrimary,
+            textContentColor = colors.textSecondary,
+            title = {
+                Text(
+                    text = "Smart Practice",
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                Text(
+                    "Regular practice gives you random questions. " +
+                            "Smart Practice uses spaced repetition to focus on questions you got wrong " +
+                            "or haven't seen in a while, so you spend time where it matters most."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showSmartPracticeInfo = false }) {
+                    Text(
+                        text = "Got it",
+                        color = colors.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        )
+    }
+
     HonqCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -645,7 +654,10 @@ private fun QuestionBankCard(
         HonqProgressBar(progress = progress.completionProgress)
         Spacer(modifier = Modifier.height(HonqSpacing.xs))
         Text(
-            text = stringResource(Res.string.home_percent_complete, (progress.completionProgress * 100).toInt()),
+            text = stringResource(
+                Res.string.home_percent_complete,
+                (progress.completionProgress * 100).toInt()
+            ),
             color = colors.textMuted,
             fontSize = 12.sp
         )
@@ -657,6 +669,15 @@ private fun QuestionBankCard(
             enabled = state.isReady,
             modifier = Modifier.height(36.dp)
         )
+//        Text(
+//            text = "What is Smart Practice?",
+//            fontSize = 12.sp,
+//            color = colors.textMuted,
+//            modifier = Modifier
+//                .align(Alignment.CenterHorizontally)
+//                .clickable { showSmartPracticeInfo = true }
+//                .padding(vertical = 2.dp)
+//        )
     }
 }
 
@@ -707,7 +728,9 @@ private fun FavoritesCard(
                 )
             }
             Text(
-                text = if (favoritesCount == 1) stringResource(Res.string.home_saved_question) else stringResource(Res.string.home_saved_questions),
+                text = if (favoritesCount == 1) stringResource(Res.string.home_saved_question) else stringResource(
+                    Res.string.home_saved_questions
+                ),
                 fontSize = 16.sp,
                 color = colors.textMuted,
                 modifier = Modifier.padding(bottom = 6.dp)
@@ -957,7 +980,9 @@ private fun OfficialResourcesCard(
                         Icons.Rounded.KeyboardArrowUp
                     else
                         Icons.Rounded.KeyboardArrowDown,
-                    contentDescription = if (isExpanded) stringResource(Res.string.collapse) else stringResource(Res.string.expand),
+                    contentDescription = if (isExpanded) stringResource(Res.string.collapse) else stringResource(
+                        Res.string.expand
+                    ),
                     tint = colors.textMuted,
                     modifier = Modifier.size(20.dp)
                 )
@@ -997,16 +1022,19 @@ private fun ResourceItem(
             colors.primarySurface,
             colors.primary
         )
+
         ResourceType.PDF -> Triple(
             Icons.Rounded.PictureAsPdf,
             colors.surfaceVariant,
             colors.incorrect
         )
+
         ResourceType.HANDBOOK -> Triple(
             Icons.Rounded.MenuBook,
             colors.surfaceVariant,
             colors.textSecondary
         )
+
         ResourceType.OTHER -> Triple(
             Icons.AutoMirrored.Rounded.OpenInNew,
             colors.surfaceVariant,

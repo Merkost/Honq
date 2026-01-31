@@ -35,7 +35,7 @@ fun BottomActionBar(
                         )
                     )
                 )
-                .padding(top = 24.dp)
+                .padding(top = 16.dp)
         )
         Row(
             modifier = Modifier
