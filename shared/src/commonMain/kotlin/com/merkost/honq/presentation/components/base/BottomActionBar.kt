@@ -68,7 +68,7 @@ fun BottomActionBarVertical(
                         )
                     )
                 )
-                .padding(top = 12.dp)
+                .padding(top = 4.dp)
         )
         Column(
             modifier = Modifier

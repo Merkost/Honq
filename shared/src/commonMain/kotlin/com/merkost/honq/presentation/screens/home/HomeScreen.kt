@@ -36,10 +36,12 @@ import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.PictureAsPdf
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -249,6 +251,7 @@ private fun HomeContent(
                         }
 
                         if (!isExternalOnly) {
+                            var showSmartPracticeInfo by remember { mutableStateOf(false) }
                             val bottomBarIndex = itemCount - 1
                             Box(modifier = Modifier.staggeredEntrance(bottomBarIndex)) {
                                 BottomActionBar {
@@ -258,6 +261,15 @@ private fun HomeContent(
                                         enabled = state.isReady,
                                         modifier = Modifier.weight(1f)
                                     )
+                                    Text(
+                                        text = "What is Smart Practice?",
+                                        fontSize = 12.sp,
+                                        color = colors.textMuted,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterHorizontally)
+                                            .clickable { showSmartPracticeInfo = true }
+                                            .padding(vertical = 2.dp)
+                                    )
                                     HonqButton(
                                         text = stringResource(Res.string.home_take_mock_test),
                                         onClick = onNavigateToMockTest,
@@ -266,6 +278,37 @@ private fun HomeContent(
                                         modifier = Modifier.weight(1f)
                                     )
                                 }
+                            }
+
+                            if (showSmartPracticeInfo) {
+                                AlertDialog(
+                                    onDismissRequest = { showSmartPracticeInfo = false },
+                                    containerColor = colors.surface,
+                                    titleContentColor = colors.textPrimary,
+                                    textContentColor = colors.textSecondary,
+                                    title = {
+                                        Text(
+                                            text = "Smart Practice",
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    },
+                                    text = {
+                                        Text(
+                                            "Regular practice gives you random questions. " +
+                                            "Smart Practice uses spaced repetition to focus on questions you got wrong " +
+                                            "or haven't seen in a while, so you spend time where it matters most."
+                                        )
+                                    },
+                                    confirmButton = {
+                                        TextButton(onClick = { showSmartPracticeInfo = false }) {
+                                            Text(
+                                                text = "Got it",
+                                                color = colors.primary,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+                                )
                             }
                         }
                     }
