@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.BuildKonfig
@@ -120,6 +121,16 @@ fun AboutScreen(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(HonqSpacing.md))
+
+            Text(
+                text = "Prepare for your Australian driving test.\nNo ads, ever.",
+                fontSize = 14.sp,
+                color = colors.textSecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = HonqSizing.screenPadding)
+            )
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
