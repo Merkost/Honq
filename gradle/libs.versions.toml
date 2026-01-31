@@ -4,6 +4,7 @@ agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
+
 android-versionCode = "1"
 android-versionName = "1.0.0"
 
