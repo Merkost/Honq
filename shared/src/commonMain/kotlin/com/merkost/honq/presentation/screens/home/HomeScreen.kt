@@ -215,7 +215,7 @@ private fun HomeContent(
                             verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
                         ) {
                             Box(modifier = Modifier.staggeredEntrance(0)) {
-                                ConfigurationCard(state, onSelectState, onSelectLicenseType)
+                                ConfigurationCard(state, onSelectState, onSelectLicenseType, onOpenExternalLink)
                             }
 
                             if (isExternalOnly && selectedState != null) {
@@ -327,7 +327,8 @@ private fun HomeContent(
 private fun ConfigurationCard(
     state: HomeState,
     onSelectState: (String) -> Unit,
-    onSelectLicenseType: (String) -> Unit
+    onSelectLicenseType: (String) -> Unit,
+    onOpenExternalLink: (linkType: String, url: String) -> Unit
 ) {
     val colors = HonqTheme.colors
     val selectedState = state.states.firstOrNull { it.id == state.selectedStateId }
@@ -445,12 +446,50 @@ private fun ConfigurationCard(
                     exit = fadeOut(HonqMotion.tweenShort()) + shrinkVertically(HonqMotion.tweenShort())
                 ) {
                     Column {
-                        Spacer(modifier = Modifier.height(HonqSpacing.sm))
-                        Text(
-                            text = stringResource(Res.string.home_no_questions_available),
-                            color = colors.incorrect,
-                            fontSize = 12.sp
-                        )
+                        Spacer(modifier = Modifier.height(HonqSpacing.md))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(HonqSizing.cornerRadiusSmall))
+                                .background(colors.surfaceVariant.copy(alpha = 0.6f))
+                                .padding(HonqSpacing.md),
+                            horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Info,
+                                contentDescription = null,
+                                tint = colors.textMuted,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Column(verticalArrangement = Arrangement.spacedBy(HonqSpacing.xs)) {
+                                Text(
+                                    text = "No in-app questions for this selection yet",
+                                    color = colors.textSecondary,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                val practiceUrl = selectedState?.externalPracticeUrl
+                                if (!practiceUrl.isNullOrBlank()) {
+                                    Text(
+                                        text = "Try the official practice test instead",
+                                        color = colors.primary,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.clickable {
+                                            onOpenExternalLink("practice_test", practiceUrl)
+                                            openUrl(practiceUrl)
+                                        }
+                                    )
+                                } else {
+                                    Text(
+                                        text = "Check the official resources for your state",
+                                        color = colors.textMuted,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
