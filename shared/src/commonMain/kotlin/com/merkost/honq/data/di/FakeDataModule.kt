@@ -21,6 +21,9 @@ import com.merkost.honq.domain.repository.QuestionSetSelectionRepository
 import com.merkost.honq.domain.repository.ReviewRepository
 import com.merkost.honq.domain.repository.StateSelectionRepository
 import io.github.jan.supabase.SupabaseClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.dsl.module
 
 /**
@@ -39,8 +42,10 @@ import org.koin.dsl.module
 val fakeDataModule = module {
     single<SyncPreferences> {
         InMemorySyncPreferences().apply {
-            setInitialSyncCompleted(true)
-            setLocalDataVersion(1)
+            CoroutineScope(Dispatchers.Main).launch {
+                setInitialSyncCompleted(true)
+                setLocalDataVersion(1)
+            }
         }
     }
     single<OnboardingPreferences> {
