@@ -22,7 +22,7 @@
     <string name="home_question_bank">Question Bank</string>
     <string name="home_questions_count">%1$d questions</string>
     <string name="home_questions_seen">/ %1$d seen</string>
-    <string name="home_percent_complete">%1$d%% complete</string>
+    <string name="home_percent_complete">%1$d% complete</string>
     <string name="home_favorites">Favorites</string>
     <string name="home_saved_question">saved question</string>
     <string name="home_saved_questions">saved questions</string>

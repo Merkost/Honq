@@ -14,7 +14,7 @@ data class OnboardingState(
     val selectedStateId: String? = null,
     val licenseTypes: List<LicenseType> = emptyList(),
     val selectedLicenseTypeId: String? = null,
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val error: String? = null
 ) : MVIState {
     val selectedState: State?

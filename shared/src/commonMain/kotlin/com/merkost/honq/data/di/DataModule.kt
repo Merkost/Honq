@@ -3,11 +3,13 @@ package com.merkost.honq.data.di
 import com.merkost.honq.data.local.DataStoreInAppReviewPreferences
 import com.merkost.honq.data.local.DataStoreOnboardingPreferences
 import com.merkost.honq.data.local.DataStoreSyncPreferences
+import com.merkost.honq.data.local.DataStoreThemePreferences
 import com.merkost.honq.data.local.InAppReviewPreferences
 import com.merkost.honq.data.local.InMemoryQuestionSetSelectionRepository
 import com.merkost.honq.data.local.InMemoryStateSelectionRepository
 import com.merkost.honq.data.local.OnboardingPreferences
 import com.merkost.honq.data.local.SyncPreferences
+import com.merkost.honq.data.local.ThemePreferences
 import com.merkost.honq.data.local.createDataStore
 import com.merkost.honq.data.local.datasource.QuestionLocalDataSource
 import com.merkost.honq.data.remote.api.AppConfigApi
@@ -31,6 +33,7 @@ val dataModule = module {
     single { createDataStore() }
     single<SyncPreferences> { DataStoreSyncPreferences(get()) }
     single<OnboardingPreferences> { DataStoreOnboardingPreferences(get()) }
+    single<ThemePreferences> { DataStoreThemePreferences(get()) }
     single<InAppReviewPreferences> { DataStoreInAppReviewPreferences(get()) }
     single<StateSelectionRepository> { InMemoryStateSelectionRepository() }
     single<QuestionSetSelectionRepository> { InMemoryQuestionSetSelectionRepository() }
@@ -57,7 +60,7 @@ val dataModule = module {
     }
 
     single<QuestionRepository> {
-        QuestionRepositoryImpl(get(), get(), get(), get(), get())
+        QuestionRepositoryImpl(get(), get(), get(), get(), get(), get())
     }
     single<ProgressRepository> { ProgressRepositoryImpl(get(), get(), get()) }
     single<FavoritesRepository> { FavoritesRepositoryImpl(get(), get()) }

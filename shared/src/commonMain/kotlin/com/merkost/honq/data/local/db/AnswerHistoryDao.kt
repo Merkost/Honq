@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import com.merkost.honq.data.local.entity.AnswerHistoryEntity
 import com.merkost.honq.data.local.entity.CategoryCount
+import com.merkost.honq.data.local.entity.QuestionAnswerStats
 import com.merkost.honq.data.local.entity.WeakQuestionResult
 import kotlinx.coroutines.flow.Flow
 
@@ -95,4 +96,34 @@ interface AnswerHistoryDao {
         GROUP BY q.categoryId
     """)
     suspend fun getAnsweredCountsByCategory(questionSetId: String): List<CategoryCount>
+
+    @Query("""
+        SELECT q.categoryId, COUNT(*) AS count
+        FROM answer_history ah
+        INNER JOIN questions q ON ah.questionId = q.id
+        WHERE q.questionSetId = :questionSetId AND ah.wasCorrect = 1
+        GROUP BY q.categoryId
+    """)
+    suspend fun getCorrectCountsByCategory(questionSetId: String): List<CategoryCount>
+
+    @Query("""
+        SELECT q.categoryId, COUNT(*) AS count
+        FROM answer_history ah
+        INNER JOIN questions q ON ah.questionId = q.id
+        WHERE q.questionSetId = :questionSetId
+        GROUP BY q.categoryId
+    """)
+    suspend fun getTotalAttemptsByCategory(questionSetId: String): List<CategoryCount>
+
+    @Query("""
+        SELECT ah.questionId,
+               COUNT(*) AS totalAttempts,
+               SUM(CASE WHEN ah.wasCorrect = 0 THEN 1 ELSE 0 END) AS wrongCount,
+               MAX(ah.answeredAt) AS lastAnsweredAt
+        FROM answer_history ah
+        INNER JOIN questions q ON ah.questionId = q.id
+        WHERE q.questionSetId = :questionSetId AND q.isActive = 1
+        GROUP BY ah.questionId
+    """)
+    suspend fun getQuestionAnswerStats(questionSetId: String): List<QuestionAnswerStats>
 }

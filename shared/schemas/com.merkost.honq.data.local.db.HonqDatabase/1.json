@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "6db338af51108ed97109f30d95afb27f",
+    "identityHash": "237428ddefa3384a76fcff8922069a83",
     "entities": [
       {
         "tableName": "questions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `text` TEXT NOT NULL, `options` TEXT NOT NULL, `correctIndex` INTEGER NOT NULL, `explanation` TEXT NOT NULL, `categoryId` TEXT NOT NULL, `questionSetId` TEXT NOT NULL, `imageUrl` TEXT, `updatedAt` TEXT NOT NULL, `stateId` TEXT NOT NULL, `difficulty` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `version` INTEGER NOT NULL, `source` TEXT NOT NULL, `createdAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `text` TEXT NOT NULL, `options` TEXT NOT NULL, `correctIndex` INTEGER NOT NULL, `explanation` TEXT NOT NULL, `categoryId` TEXT NOT NULL, `questionSetId` TEXT NOT NULL, `imageUrl` TEXT, `updatedAt` TEXT NOT NULL, `stateId` TEXT NOT NULL, `difficulty` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `version` INTEGER NOT NULL, `source` TEXT NOT NULL, `createdAt` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`questionSetId`) REFERENCES `question_sets`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`categoryId`) REFERENCES `categories`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`stateId`) REFERENCES `states`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -129,12 +129,56 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_questions_categoryId` ON `${TABLE_NAME}` (`categoryId`)"
+          },
+          {
+            "name": "index_questions_stateId",
+            "unique": false,
+            "columnNames": [
+              "stateId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_questions_stateId` ON `${TABLE_NAME}` (`stateId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "question_sets",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "questionSetId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "categories",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "categoryId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "states",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "stateId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
           }
         ]
       },
       {
         "tableName": "answer_history",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `questionId` TEXT NOT NULL, `wasCorrect` INTEGER NOT NULL, `answeredAt` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `questionId` TEXT NOT NULL, `wasCorrect` INTEGER NOT NULL, `answeredAt` TEXT NOT NULL, FOREIGN KEY(`questionId`) REFERENCES `questions`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -176,12 +220,35 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_answer_history_questionId` ON `${TABLE_NAME}` (`questionId`)"
+          },
+          {
+            "name": "index_answer_history_questionId_wasCorrect",
+            "unique": false,
+            "columnNames": [
+              "questionId",
+              "wasCorrect"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_answer_history_questionId_wasCorrect` ON `${TABLE_NAME}` (`questionId`, `wasCorrect`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "questions",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "questionId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
           }
         ]
       },
       {
         "tableName": "favorite_questions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`questionId` TEXT NOT NULL, `addedAt` TEXT NOT NULL, PRIMARY KEY(`questionId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`questionId` TEXT NOT NULL, `addedAt` TEXT NOT NULL, PRIMARY KEY(`questionId`), FOREIGN KEY(`questionId`) REFERENCES `questions`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "questionId",
@@ -201,11 +268,24 @@
           "columnNames": [
             "questionId"
           ]
-        }
+        },
+        "foreignKeys": [
+          {
+            "table": "questions",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "questionId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "mock_test_results",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `questionSetId` TEXT NOT NULL, `totalQuestions` INTEGER NOT NULL, `correctAnswers` INTEGER NOT NULL, `timeTakenSeconds` INTEGER NOT NULL, `passed` INTEGER NOT NULL, `completedAt` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `questionSetId` TEXT NOT NULL, `totalQuestions` INTEGER NOT NULL, `correctAnswers` INTEGER NOT NULL, `timeTakenSeconds` INTEGER NOT NULL, `passed` INTEGER NOT NULL, `passPercentage` INTEGER NOT NULL, `completedAt` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -244,6 +324,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "passPercentage",
+            "columnName": "passPercentage",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "completedAt",
             "columnName": "completedAt",
             "affinity": "TEXT",
@@ -255,7 +341,18 @@
           "columnNames": [
             "id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_mock_test_results_questionSetId",
+            "unique": false,
+            "columnNames": [
+              "questionSetId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mock_test_results_questionSetId` ON `${TABLE_NAME}` (`questionSetId`)"
+          }
+        ]
       },
       {
         "tableName": "mock_test_answers",
@@ -551,7 +648,7 @@
       },
       {
         "tableName": "question_sets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `stateId` TEXT NOT NULL, `licenseTypeId` TEXT NOT NULL, `assessmentTypeId` TEXT NOT NULL, `mockTestQuestionCount` INTEGER NOT NULL, `mockTestTimeLimitMinutes` INTEGER NOT NULL, `mockTestPassPercentage` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `stateId` TEXT NOT NULL, `licenseTypeId` TEXT NOT NULL, `assessmentTypeId` TEXT NOT NULL, `mockTestQuestionCount` INTEGER NOT NULL, `mockTestTimeLimitMinutes` INTEGER NOT NULL, `mockTestPassPercentage` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`stateId`) REFERENCES `states`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`licenseTypeId`) REFERENCES `license_types`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`assessmentTypeId`) REFERENCES `assessment_types`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -619,7 +716,71 @@
           "columnNames": [
             "id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_question_sets_stateId",
+            "unique": false,
+            "columnNames": [
+              "stateId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_question_sets_stateId` ON `${TABLE_NAME}` (`stateId`)"
+          },
+          {
+            "name": "index_question_sets_licenseTypeId",
+            "unique": false,
+            "columnNames": [
+              "licenseTypeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_question_sets_licenseTypeId` ON `${TABLE_NAME}` (`licenseTypeId`)"
+          },
+          {
+            "name": "index_question_sets_assessmentTypeId",
+            "unique": false,
+            "columnNames": [
+              "assessmentTypeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_question_sets_assessmentTypeId` ON `${TABLE_NAME}` (`assessmentTypeId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "states",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "stateId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "license_types",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "licenseTypeId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "assessment_types",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assessmentTypeId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "question_set_categories",
@@ -661,7 +822,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6db338af51108ed97109f30d95afb27f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '237428ddefa3384a76fcff8922069a83')"
     ]
   }
 }

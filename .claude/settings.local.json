@@ -37,7 +37,8 @@
       "Bash(chmod:*)",
       "Bash(open:*)",
       "mcp__supabase__get_logs",
-      "Bash(./gradlew androidApp:assembleDebug:*)"
+      "Bash(./gradlew androidApp:assembleDebug:*)",
+      "Bash(git -C /Users/merkost/StudioProjects/Honq log --oneline -40)"
     ]
   },
   "enableAllProjectMcpServers": true,

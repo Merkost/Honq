@@ -23,7 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 
 @Composable
 fun AnimatedFavoriteButton(
@@ -69,7 +69,7 @@ fun AnimatedFavoriteButton(
             Icon(
                 imageVector = if (favorite) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
                 contentDescription = if (favorite) "Remove from favorites" else "Save to favorites",
-                tint = if (favorite) HonqColors.Amber else HonqColors.TextMuted
+                tint = if (favorite) HonqTheme.colors.primary else HonqTheme.colors.textMuted
             )
         }
     }

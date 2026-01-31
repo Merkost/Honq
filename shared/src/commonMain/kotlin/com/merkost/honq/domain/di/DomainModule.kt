@@ -6,6 +6,7 @@ import com.merkost.honq.domain.usecase.GetMockTestReviewUseCase
 import com.merkost.honq.domain.usecase.ReviewEligibilityManager
 import com.merkost.honq.domain.usecase.GetStatisticsUseCase
 import com.merkost.honq.domain.usecase.GetUnansweredQuestionsUseCase
+import com.merkost.honq.domain.usecase.GetSmartPracticeQuestionsUseCase
 import com.merkost.honq.domain.usecase.GetWeakestQuestionsUseCase
 import com.merkost.honq.domain.usecase.SearchQuestionsUseCase
 import com.merkost.honq.domain.usecase.GetLicenseTypesUseCase
@@ -60,5 +61,6 @@ val domainModule = module {
     factory { GetWeakestQuestionsUseCase(get()) }
     factory { GetUnansweredQuestionsUseCase(get()) }
     factory { GetMockTestReviewUseCase(get()) }
+    factory { GetSmartPracticeQuestionsUseCase(get()) }
     single { ReviewEligibilityManager(get(), get()) }
 }

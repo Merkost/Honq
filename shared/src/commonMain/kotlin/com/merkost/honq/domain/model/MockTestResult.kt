@@ -9,8 +9,14 @@ data class MockTestResult(
     val totalQuestions: Int,
     val correctAnswers: Int,
     val timeTaken: Duration,
-    val completedAt: Instant
+    val completedAt: Instant,
+    val passPercentage: Int = DEFAULT_PASS_PERCENTAGE
 ) {
-    val passed: Boolean get() = correctAnswers >= (totalQuestions * 0.9).toInt()
-    val scorePercentage: Int get() = ((correctAnswers.toFloat() / totalQuestions) * 100).toInt()
+    val passed: Boolean get() = scorePercentage >= passPercentage
+    val scorePercentage: Int
+        get() = if (totalQuestions > 0) ((correctAnswers.toFloat() / totalQuestions) * 100).toInt() else 0
+
+    companion object {
+        const val DEFAULT_PASS_PERCENTAGE = 80
+    }
 }

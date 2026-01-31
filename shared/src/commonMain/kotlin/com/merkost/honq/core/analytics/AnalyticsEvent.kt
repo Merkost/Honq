@@ -23,6 +23,7 @@ sealed class AnalyticsEvent(
     )
 
     data object PracticeStarted : AnalyticsEvent("practice_started")
+    data object SmartPracticeStarted : AnalyticsEvent("smart_practice_started")
     data class QuestionAnswered(
         val questionId: String,
         val isCorrect: Boolean,

@@ -81,18 +81,17 @@ class HomeContainer(
         val dbEmpty = !dataSyncManager.needsInitialSync() && repository.isDatabaseEmpty()
         if (dbEmpty) {
             Cedar.tag("Home").d("loadInitialData: DB empty but sync flag set, resetting sync state")
-            dataSyncManager.resetSyncState()
+            dataSyncManager.resetAllSyncData()
         }
         if (dataSyncManager.needsInitialSync()) {
             Cedar.tag("Home").d("loadInitialData: first launch, running full sync")
             val remoteVersion = dataSyncManager.fetchRemoteVersion().getOrDefault(0)
-            repository.fullSync(null)
-            dataSyncManager.markSyncCompleted(remoteVersion)
+            repository.fullSync(questionSetId = null, remoteVersion = remoteVersion)
         } else {
             val check = dataSyncManager.checkIfSyncNeeded()
             if (check.needsSync) {
                 Cedar.tag("Home").d("loadInitialData: data version changed, syncing metadata version=${check.remoteVersion}")
-                repository.fullSync(null)
+                repository.fullSync(questionSetId = null, remoteVersion = check.remoteVersion)
                 pendingSyncVersion = check.remoteVersion
             }
         }
@@ -184,8 +183,8 @@ class HomeContainer(
                     )
                 }
 
+                setSelectedQuestionSet(matchingQuestionSet?.id)
                 if (matchingQuestionSet != null) {
-                    setSelectedQuestionSet(matchingQuestionSet.id)
                     syncInBackground()
                 }
             }
@@ -235,8 +234,8 @@ class HomeContainer(
             )
         }
 
-        matchingQuestionSet?.let {
-            setSelectedQuestionSet(it.id)
+        setSelectedQuestionSet(matchingQuestionSet?.id)
+        if (matchingQuestionSet != null) {
             syncInBackground()
         }
     }
@@ -256,7 +255,7 @@ class HomeContainer(
 
         if (pendingSyncVersion != null) {
             Cedar.tag("Home").d("syncInBackground: version changed, clearing sync times to force full re-fetch")
-            dataSyncManager.clearSyncTimes()
+            dataSyncManager.clearQuestionSetSyncTimestamps()
         }
 
         Cedar.tag("Home").d("syncInBackground: starting sync for questionSet=$questionSetId")

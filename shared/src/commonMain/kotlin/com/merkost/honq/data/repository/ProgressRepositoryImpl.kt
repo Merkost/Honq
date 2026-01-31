@@ -159,4 +159,16 @@ class ProgressRepositoryImpl(
         withContext(dispatchers.io) {
             localDataSource.getMockTestIncorrectAnswers(mockTestResultId)
         }
+
+    override suspend fun getSmartPracticeQuestions(count: Int): List<Question> =
+        withContext(dispatchers.io) {
+            val questionSetId = questionSetSelectionRepository.selectedQuestionSetId.value
+            if (questionSetId == null) {
+                Cedar.tag("Progress").w("getSmartPracticeQuestions: no question set selected")
+                return@withContext emptyList()
+            }
+            val result = localDataSource.getSmartPracticeQuestions(questionSetId, count)
+            Cedar.tag("Progress").d("getSmartPracticeQuestions: returned ${result.size} questions")
+            result
+        }
 }

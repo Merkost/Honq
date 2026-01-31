@@ -4,10 +4,12 @@ import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
+import com.merkost.honq.domain.model.CategoryScore
 import com.merkost.honq.domain.model.IncorrectAnswer
 import com.merkost.honq.domain.model.MockTestResult
 import com.merkost.honq.domain.model.QuizSession
 import com.merkost.honq.domain.repository.MockTestAnswer
+import com.merkost.honq.domain.repository.QuestionRepository
 import com.merkost.honq.domain.usecase.GetMockTestQuestionsUseCase
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
 import com.merkost.honq.domain.usecase.SaveIncorrectAnswersUseCase
@@ -35,6 +37,7 @@ class MockTestContainer(
     private val observeFavoriteQuestionIds: ObserveFavoriteQuestionIdsUseCase,
     private val toggleFavoriteQuestion: ToggleFavoriteQuestionUseCase,
     private val questionSetSelectionRepository: QuestionSetSelectionRepository,
+    private val questionRepository: QuestionRepository,
     private val analytics: Analytics,
     scope: CoroutineScope
 ) : Container<MockTestState, MockTestIntent, MockTestAction> {
@@ -70,12 +73,30 @@ class MockTestContainer(
     private suspend fun PipelineContext<MockTestState, MockTestIntent, MockTestAction>.loadQuestions() {
         Cedar.tag("MockTest").d("loadQuestions: loading mock test questions...")
         val startTime = clock.now()
+
+        // Fetch pass percentage from the selected question set
+        val questionSetId = questionSetSelectionRepository.selectedQuestionSetId.value
+        val passPercentage = if (questionSetId != null) {
+            questionRepository.getQuestionSetById(questionSetId)
+                .let { result ->
+                    when (result) {
+                        is com.merkost.honq.core.util.Result.Success ->
+                            result.data?.mockTestPassPercentage ?: MockTestResult.DEFAULT_PASS_PERCENTAGE
+                        is com.merkost.honq.core.util.Result.Error ->
+                            MockTestResult.DEFAULT_PASS_PERCENTAGE
+                    }
+                }
+        } else {
+            MockTestResult.DEFAULT_PASS_PERCENTAGE
+        }
+
         getMockTestQuestions()
             .onSuccess { questions ->
-                Cedar.tag("MockTest").d("loadQuestions: loaded ${questions.size} questions")
+                Cedar.tag("MockTest").d("loadQuestions: loaded ${questions.size} questions, passPercentage=$passPercentage")
                 updateState {
                     copy(
                         session = QuizSession(questions = questions, startTime = startTime),
+                        passPercentage = passPercentage,
                         isLoading = false
                     )
                 }
@@ -165,15 +186,14 @@ class MockTestContainer(
             val startTime = session.startTime ?: now
             val timeTaken = now - startTime
             val totalQuestions = session.questions.size
-            val passPercentage = 75
-            val passed = totalQuestions > 0 && (correctCount * 100 / totalQuestions) >= passPercentage
 
             val result = MockTestResult(
                 questionSetId = questionSetId,
                 totalQuestions = totalQuestions,
                 correctAnswers = correctCount,
                 timeTaken = timeTaken,
-                completedAt = now
+                completedAt = now,
+                passPercentage = passPercentage
             )
 
             val allAnswers = session.questions.mapNotNull { question ->
@@ -186,18 +206,35 @@ class MockTestContainer(
             }
 
             saveMockTestResult(result, allAnswers)
-            Cedar.tag("MockTest").d("submitTest: score=$correctCount/$totalQuestions, passed=$passed, timeTaken=${timeTaken.inWholeSeconds}s")
+
+            // Compute per-category breakdown
+            val categoryBreakdown = session.questions
+                .groupBy { it.categoryId }
+                .map { (categoryId, questions) ->
+                    val categoryCorrect = questions.count { q ->
+                        session.answers[q.id] == q.correctIndex
+                    }
+                    CategoryScore(
+                        categoryId = categoryId,
+                        categoryName = questions.first().categoryName,
+                        correct = categoryCorrect,
+                        total = questions.size
+                    )
+                }
+                .sortedByDescending { it.total }
+
+            Cedar.tag("MockTest").d("submitTest: score=$correctCount/$totalQuestions, passed=${result.passed}, passPercentage=$passPercentage, timeTaken=${timeTaken.inWholeSeconds}s")
 
             analytics.track(
                 AnalyticsEvent.MockTestCompleted(
                     score = correctCount,
                     total = totalQuestions,
-                    passed = passed,
+                    passed = result.passed,
                     timeSpentSeconds = timeTaken.inWholeSeconds
                 )
             )
 
-            action(MockTestAction.NavigateToResults(correctCount, totalQuestions, incorrectAnswers.isNotEmpty()))
+            action(MockTestAction.NavigateToResults(correctCount, totalQuestions, incorrectAnswers.isNotEmpty(), passPercentage, categoryBreakdown))
         }
     }
 

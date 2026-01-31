@@ -12,6 +12,7 @@ import com.merkost.honq.data.local.db.QuestionSetCategoryDao
 import com.merkost.honq.data.local.db.QuestionSetDao
 import com.merkost.honq.data.local.db.StateDao
 import com.merkost.honq.data.local.entity.AnswerHistoryEntity
+import com.merkost.honq.data.local.entity.QuestionAnswerStats
 import com.merkost.honq.data.local.entity.WeakQuestionResult
 import com.merkost.honq.data.local.entity.AssessmentTypeEntity
 import com.merkost.honq.data.local.entity.CategoryEntity
@@ -80,8 +81,8 @@ class QuestionLocalDataSource(
         questionDao.getRandomQuestionsByQuestionSetAndCategory(questionSetId, categoryId, count)
             .map { it.toDomain(json, getCategoryNameMap(questionSetId)) }
 
-    suspend fun getMockTestQuestions(): List<Question> =
-        questionDao.getMockTestQuestions().map { it.toDomain(json, getCategoryNameMap(null)) }
+    suspend fun getMockTestQuestions(count: Int): List<Question> =
+        questionDao.getMockTestQuestions(count).map { it.toDomain(json, getCategoryNameMap(null)) }
 
     suspend fun getMockTestQuestionsByQuestionSet(questionSetId: String, count: Int): List<Question> =
         questionDao.getMockTestQuestionsByQuestionSet(questionSetId, count)
@@ -197,8 +198,8 @@ class QuestionLocalDataSource(
     suspend fun getStates(): List<State> =
         stateDao.getStates().map { it.toDomain() }
 
-    suspend fun insertStates(states: List<StateEntity>) =
-        stateDao.insertAll(states)
+    suspend fun upsertStates(states: List<StateEntity>) =
+        stateDao.upsertStates(states)
 
     suspend fun getStateById(stateId: String): State? =
         stateDao.getStateById(stateId)?.toDomain()
@@ -289,8 +290,15 @@ class QuestionLocalDataSource(
     suspend fun getCategoryProgress(questionSetId: String): Map<String, CategoryProgress> {
         val totals = questionDao.getQuestionCountsByCategory(questionSetId).associate { it.categoryId to it.count }
         val answered = answerHistoryDao.getAnsweredCountsByCategory(questionSetId).associate { it.categoryId to it.count }
+        val correct = answerHistoryDao.getCorrectCountsByCategory(questionSetId).associate { it.categoryId to it.count }
+        val attempts = answerHistoryDao.getTotalAttemptsByCategory(questionSetId).associate { it.categoryId to it.count }
         return totals.mapValues { (categoryId, total) ->
-            CategoryProgress(totalQuestions = total, answeredQuestions = answered[categoryId] ?: 0)
+            CategoryProgress(
+                totalQuestions = total,
+                answeredQuestions = answered[categoryId] ?: 0,
+                correctAnswers = correct[categoryId] ?: 0,
+                totalAttempts = attempts[categoryId] ?: 0
+            )
         }
     }
 
@@ -306,5 +314,74 @@ class QuestionLocalDataSource(
                 )
             }
         }
+    }
+
+    suspend fun getSmartPracticeQuestions(questionSetId: String, count: Int): List<Question> {
+        val categoryNameMap = getCategoryNameMap(questionSetId)
+        val answerStats = answerHistoryDao.getQuestionAnswerStats(questionSetId)
+        val statsMap = answerStats.associateBy { it.questionId }
+
+        val allQuestions = questionDao.getActiveQuestionsByQuestionSet(questionSetId)
+        val now = Clock.System.now()
+
+        val scored = allQuestions.map { entity ->
+            val stats = statsMap[entity.id]
+            val priority = if (stats == null) {
+                // Never answered → medium-high priority
+                0.6
+            } else {
+                val errorRate = if (stats.totalAttempts > 0) {
+                    stats.wrongCount.toDouble() / stats.totalAttempts
+                } else 0.0
+
+                val lastAnswered = try {
+                    kotlin.time.Instant.parse(stats.lastAnsweredAt)
+                } catch (_: Exception) {
+                    now
+                }
+                val hoursSinceLastAnswer = (now - lastAnswered).inWholeHours.coerceAtLeast(0)
+                // Time decay: more hours = higher priority (capped at 1.0)
+                val timeFactor = (hoursSinceLastAnswer.toDouble() / 168.0).coerceAtMost(1.0) // 1 week = max
+
+                // Weighted score: error rate matters most, time matters for review scheduling
+                errorRate * 0.6 + timeFactor * 0.4
+            }
+            entity to priority
+        }
+
+        return scored
+            .sortedByDescending { it.second }
+            .take(count)
+            .shuffled() // Shuffle top-N so practice doesn't feel predictable
+            .map { it.first.toDomain(json, categoryNameMap) }
+    }
+
+    suspend fun deleteStaleQuestions(questionSetId: String, retainIds: Set<String>) {
+        if (retainIds.isEmpty()) return
+        val retainList = retainIds.toList()
+        Cedar.tag("LocalData").d("deleteStaleQuestions: retaining ${retainList.size} questions for set=$questionSetId")
+        questionDao.deleteStaleQuestions(questionSetId, retainList)
+    }
+
+    suspend fun upsertAllReferenceData(
+        states: List<StateEntity>,
+        licenseTypes: List<LicenseTypeEntity>,
+        assessmentTypes: List<AssessmentTypeEntity>,
+        categories: List<CategoryEntity>,
+        questionSets: List<QuestionSetEntity>,
+        questionSetCategories: List<QuestionSetCategoryEntity>
+    ) {
+        // Order matters due to foreign keys: independent tables first, then dependent ones.
+        // Each upsert is individually atomic via REPLACE conflict strategy.
+        if (states.isNotEmpty()) stateDao.upsertStates(states)
+        if (licenseTypes.isNotEmpty()) licenseTypeDao.upsertAll(licenseTypes)
+        if (assessmentTypes.isNotEmpty()) assessmentTypeDao.upsertAll(assessmentTypes)
+        if (categories.isNotEmpty()) categoryDao.upsertCategories(categories)
+
+        // Dependent tables (have FK references to the above)
+        if (questionSets.isNotEmpty()) questionSetDao.upsertAll(questionSets)
+        if (questionSetCategories.isNotEmpty()) questionSetCategoryDao.upsertAll(questionSetCategories)
+
+        Cedar.tag("LocalData").d("upsertAllReferenceData: completed")
     }
 }

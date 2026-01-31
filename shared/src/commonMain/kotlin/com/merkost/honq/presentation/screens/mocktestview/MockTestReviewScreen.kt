@@ -36,7 +36,7 @@ import com.merkost.honq.presentation.components.base.HonqProgressBar
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.components.question.ExplanationCard
 import com.merkost.honq.presentation.components.question.QuestionCard
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
@@ -94,13 +94,13 @@ private fun MockTestReviewContent(
                 state.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = HonqColors.Amber
+                        color = HonqTheme.colors.primary
                     )
                 }
                 state.error != null -> {
                     Text(
                         text = state.error,
-                        color = HonqColors.Incorrect,
+                        color = HonqTheme.colors.incorrect,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -182,11 +182,11 @@ private fun ReviewHeader(state: MockTestReviewState) {
     ) {
         Text(
             text = "Question ${state.currentQuestionNumber} of ${state.totalQuestions}",
-            color = HonqColors.TextSecondary
+            color = HonqTheme.colors.textSecondary
         )
         Text(
             text = "${state.totalQuestions} incorrect",
-            color = HonqColors.Incorrect,
+            color = HonqTheme.colors.incorrect,
             fontWeight = FontWeight.Medium
         )
     }
@@ -235,7 +235,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     ) {
         Text(
             text = "No incorrect answers to review",
-            color = HonqColors.TextSecondary
+            color = HonqTheme.colors.textSecondary
         )
     }
 }

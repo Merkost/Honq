@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,12 +37,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.BuildKonfig
+import com.merkost.honq.data.local.ThemeMode
+import com.merkost.honq.data.local.ThemePreferences
 import com.merkost.honq.domain.repository.ProgressRepository
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.theme.HonqSizing
@@ -59,7 +63,8 @@ import org.koin.compose.koinInject
 
 private const val CONTACT_EMAIL = "merkostdev+honq@gmail.com"
 private const val PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.merkost.honq"
-private const val SHARE_TEXT = "Check out Honq - the best way to prepare for your Australian driver's license test!\n$PLAY_STORE_URL"
+private const val SHARE_TEXT =
+    "Check out Honq - the best way to prepare for your Australian driver's license test!\n$PLAY_STORE_URL"
 private const val PRIVACY_URL = "https://merkost.github.io/Honq/privacy.html"
 private const val TERMS_URL = "https://merkost.github.io/Honq/terms.html"
 
@@ -69,6 +74,8 @@ fun AboutScreen(
 ) {
     val colors = HonqTheme.colors
     val progressRepository: ProgressRepository = koinInject()
+    val themePreferences: ThemePreferences = koinInject()
+    val themeMode by themePreferences.themeMode.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var showResetDialog by remember { mutableStateOf(false) }
 
@@ -104,22 +111,6 @@ fun AboutScreen(
                     color = colors.textPrimary
                 )
 
-                Spacer(modifier = Modifier.height(HonqSpacing.sm))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(HonqSpacing.xs)
-                ) {
-                    Text(
-                        text = "Made with care in Sydney",
-                        fontSize = 14.sp,
-                        color = colors.textSecondary
-                    )
-                    Text(
-                        text = "\uD83C\uDDE6\uD83C\uDDFA",
-                        fontSize = 16.sp
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(HonqSpacing.md))
@@ -163,23 +154,29 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
-            // Disclaimer
-            Text(
-                text = "This app is not affiliated with any Australian state or territory transport authority. " +
-                    "Content is for practice purposes only. Always refer to your state's official handbook.",
-                fontSize = 12.sp,
-                color = colors.textMuted,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = HonqSizing.screenPadding)
                     .clip(RoundedCornerShape(HonqSizing.cornerRadius))
                     .background(colors.surface)
-                    .padding(HonqSpacing.md)
-            )
+                    .padding(HonqSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
+            ) {
+                Text(
+                    text = "Appearance",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.textPrimary
+                )
+                ThemeModeSelector(
+                    selected = themeMode,
+                    onSelect = { themePreferences.setThemeMode(it) }
+                )
+            }
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
-            // Legal links
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -203,6 +200,21 @@ fun AboutScreen(
                     onClick = { openUrl(TERMS_URL) }
                 )
             }
+
+            Spacer(modifier = Modifier.height(HonqSpacing.xl))
+
+            Text(
+                text = "This app is not affiliated with any Australian state or territory transport authority. " +
+                        "Content is for practice purposes only. Always refer to your state's official handbook.",
+                fontSize = 12.sp,
+                color = colors.textMuted,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = HonqSizing.screenPadding)
+                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+                    .background(colors.surface)
+                    .padding(HonqSpacing.md)
+            )
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
@@ -237,6 +249,23 @@ fun AboutScreen(
             }
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(HonqSpacing.xs)
+            ) {
+                Text(
+                    text = "Made with care in Sydney",
+                    fontSize = 12.sp,
+                    color = colors.textMuted.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = "\uD83C\uDDE6\uD83C\uDDFA",
+                    fontSize = 13.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(HonqSpacing.xs))
 
             Text(
                 text = "Version ${BuildKonfig.APP_VERSION}",
@@ -319,6 +348,48 @@ private fun LegalLink(
             tint = colors.textMuted,
             modifier = Modifier.size(18.dp)
         )
+    }
+}
+
+@Composable
+private fun ThemeModeSelector(
+    selected: ThemeMode,
+    onSelect: (ThemeMode) -> Unit
+) {
+    val colors = HonqTheme.colors
+    val options = listOf(
+        ThemeMode.SYSTEM to "System",
+        ThemeMode.LIGHT to "Light",
+        ThemeMode.DARK to "Dark"
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+            .background(colors.surfaceVariant),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        options.forEach { (mode, label) ->
+            val isSelected = mode == selected
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+                    .background(if (isSelected) colors.primary else Color.Transparent)
+                    .clickable { onSelect(mode) }
+                    .padding(vertical = HonqSpacing.sm),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = label,
+                    fontSize = 13.sp,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (isSelected) colors.onPrimary else colors.textSecondary,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 

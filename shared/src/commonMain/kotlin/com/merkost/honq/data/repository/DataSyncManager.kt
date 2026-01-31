@@ -10,7 +10,7 @@ class DataSyncManager(
     private val appConfigApi: AppConfigApi,
     private val syncPreferences: SyncPreferences
 ) {
-    fun needsInitialSync(): Boolean {
+    suspend fun needsInitialSync(): Boolean {
         val needs = !syncPreferences.hasCompletedInitialSync()
         Cedar.tag("DataSync").d("needsInitialSync=$needs")
         return needs
@@ -38,19 +38,19 @@ class DataSyncManager(
         Result.failure(e)
     }
 
-    fun markSyncCompleted(remoteVersion: Int) {
+    suspend fun markSyncCompleted(remoteVersion: Int) {
         Cedar.tag("DataSync").d("markSyncCompleted: version=$remoteVersion")
         syncPreferences.setLocalDataVersion(remoteVersion)
         syncPreferences.setInitialSyncCompleted(true)
     }
 
-    fun clearSyncTimes() {
-        Cedar.tag("DataSync").d("clearSyncTimes: clearing all per-question-set sync times")
+    suspend fun clearQuestionSetSyncTimestamps() {
+        Cedar.tag("DataSync").d("clearQuestionSetSyncTimestamps: clearing all per-question-set sync times")
         syncPreferences.clearAllSyncTimes()
     }
 
-    fun resetSyncState() {
-        Cedar.tag("DataSync").d("resetSyncState: clearing all sync times and initial sync flag")
+    suspend fun resetAllSyncData() {
+        Cedar.tag("DataSync").d("resetAllSyncData: clearing all sync times and initial sync flag")
         syncPreferences.clearAllSyncTimes()
         syncPreferences.setInitialSyncCompleted(false)
         syncPreferences.setLocalDataVersion(0)

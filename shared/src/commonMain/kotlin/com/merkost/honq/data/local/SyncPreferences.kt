@@ -2,14 +2,14 @@ package com.merkost.honq.data.local
 
 
 interface SyncPreferences {
-    fun getLastSyncTime(questionSetId: String): kotlin.time.Instant?
-    fun setLastSyncTime(questionSetId: String, time: kotlin.time.Instant)
-    fun clearSyncTime(questionSetId: String)
-    fun clearAllSyncTimes()
-    fun getLocalDataVersion(): Int
-    fun setLocalDataVersion(version: Int)
-    fun hasCompletedInitialSync(): Boolean
-    fun setInitialSyncCompleted(completed: Boolean)
+    suspend fun getLastSyncTime(questionSetId: String): kotlin.time.Instant?
+    suspend fun setLastSyncTime(questionSetId: String, time: kotlin.time.Instant)
+    suspend fun clearSyncTime(questionSetId: String)
+    suspend fun clearAllSyncTimes()
+    suspend fun getLocalDataVersion(): Int
+    suspend fun setLocalDataVersion(version: Int)
+    suspend fun hasCompletedInitialSync(): Boolean
+    suspend fun setInitialSyncCompleted(completed: Boolean)
 }
 
 class InMemorySyncPreferences : SyncPreferences {
@@ -17,29 +17,29 @@ class InMemorySyncPreferences : SyncPreferences {
     private var localDataVersion: Int = 0
     private var initialSyncCompleted: Boolean = false
 
-    override fun getLastSyncTime(questionSetId: String): kotlin.time.Instant? = syncTimes[questionSetId]
+    override suspend fun getLastSyncTime(questionSetId: String): kotlin.time.Instant? = syncTimes[questionSetId]
 
-    override fun setLastSyncTime(questionSetId: String, time: kotlin.time.Instant) {
+    override suspend fun setLastSyncTime(questionSetId: String, time: kotlin.time.Instant) {
         syncTimes[questionSetId] = time
     }
 
-    override fun clearSyncTime(questionSetId: String) {
+    override suspend fun clearSyncTime(questionSetId: String) {
         syncTimes.remove(questionSetId)
     }
 
-    override fun clearAllSyncTimes() {
+    override suspend fun clearAllSyncTimes() {
         syncTimes.clear()
     }
 
-    override fun getLocalDataVersion(): Int = localDataVersion
+    override suspend fun getLocalDataVersion(): Int = localDataVersion
 
-    override fun setLocalDataVersion(version: Int) {
+    override suspend fun setLocalDataVersion(version: Int) {
         localDataVersion = version
     }
 
-    override fun hasCompletedInitialSync(): Boolean = initialSyncCompleted
+    override suspend fun hasCompletedInitialSync(): Boolean = initialSyncCompleted
 
-    override fun setInitialSyncCompleted(completed: Boolean) {
+    override suspend fun setInitialSyncCompleted(completed: Boolean) {
         initialSyncCompleted = completed
     }
 }

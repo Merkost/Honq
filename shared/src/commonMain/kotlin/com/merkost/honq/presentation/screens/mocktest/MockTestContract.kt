@@ -1,6 +1,8 @@
 package com.merkost.honq.presentation.screens.mocktest
 
 import androidx.compose.runtime.Immutable
+import com.merkost.honq.domain.model.CategoryScore
+import com.merkost.honq.domain.model.MockTestResult
 import com.merkost.honq.domain.model.QuizSession
 import pro.respawn.flowmvi.api.MVIAction
 import pro.respawn.flowmvi.api.MVIIntent
@@ -13,6 +15,7 @@ data class MockTestState(
     val session: QuizSession = QuizSession(emptyList()),
     val selectedAnswer: Int? = null,
     val timeRemaining: Duration = 30.minutes,
+    val passPercentage: Int = MockTestResult.DEFAULT_PASS_PERCENTAGE,
     val favoriteQuestionIds: Set<String> = emptySet(),
     val isLoading: Boolean = true,
     val isSubmitting: Boolean = false,
@@ -38,5 +41,11 @@ sealed interface MockTestIntent : MVIIntent {
 
 sealed interface MockTestAction : MVIAction {
     data object NavigateBack : MockTestAction
-    data class NavigateToResults(val score: Int, val total: Int, val hasIncorrect: Boolean) : MockTestAction
+    data class NavigateToResults(
+        val score: Int,
+        val total: Int,
+        val hasIncorrect: Boolean,
+        val passPercentage: Int,
+        val categoryBreakdown: List<CategoryScore>
+    ) : MockTestAction
 }

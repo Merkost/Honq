@@ -16,7 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import com.merkost.honq.presentation.theme.HonqColors
+import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqSizing
 
 @Composable
@@ -45,7 +45,7 @@ fun HonqCard(
             interactionSource = interactionSource,
             shape = RoundedCornerShape(HonqSizing.cornerRadius),
             colors = CardDefaults.cardColors(
-                containerColor = HonqColors.Surface
+                containerColor = HonqTheme.colors.surface
             )
         ) {
             Column(
@@ -58,7 +58,7 @@ fun HonqCard(
             modifier = modifier.fillMaxWidth(),
             shape = RoundedCornerShape(HonqSizing.cornerRadius),
             colors = CardDefaults.cardColors(
-                containerColor = HonqColors.Surface
+                containerColor = HonqTheme.colors.surface
             )
         ) {
             Column(

@@ -50,6 +50,8 @@ val presentationModule = module {
         PracticeContainer(
             params.getOrNull<String>(),
             params.getOrNull<String>(),
+            params.getOrNull<Boolean>() ?: false,
+            get(),
             get(),
             get(),
             get(),
@@ -68,6 +70,7 @@ val presentationModule = module {
     }
     factory { params ->
         MockTestContainer(
+            get(),
             get(),
             get(),
             get(),

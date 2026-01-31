@@ -386,7 +386,7 @@ class FakeQuestionRepository : QuestionRepository {
         return Result.Success(categories.values.toList())
     }
 
-    override suspend fun fullSync(questionSetId: String?): Result<Unit> = Result.Success(Unit)
+    override suspend fun fullSync(questionSetId: String?, remoteVersion: Int?): Result<Unit> = Result.Success(Unit)
 
     override suspend fun getAllActiveCategories(): Result<List<Category>> =
         Result.Success(categories.values.toList())
@@ -401,7 +401,7 @@ class FakeQuestionRepository : QuestionRepository {
             )
         )
 
-    override fun getLastSyncTime(questionSetId: String): kotlin.time.Instant? = null
+    override suspend fun getLastSyncTime(questionSetId: String): kotlin.time.Instant? = null
 
     override suspend fun isDatabaseEmpty(): Boolean = false
 

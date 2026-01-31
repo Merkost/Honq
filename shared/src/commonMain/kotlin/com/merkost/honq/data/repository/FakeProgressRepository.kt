@@ -136,6 +136,10 @@ class FakeProgressRepository(
 
     override fun observeUnansweredQuestionCount(): Flow<Int> = flowOf(68)
 
+    override suspend fun getSmartPracticeQuestions(count: Int): List<Question> {
+        return questionsProvider().shuffled().take(count)
+    }
+
     override suspend fun getMockTestIncorrectAnswers(mockTestResultId: Long): List<MockTestReviewAnswer> {
         val questions = questionsProvider()
         return questions.take(3).mapIndexed { index, question ->

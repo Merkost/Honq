@@ -5,6 +5,7 @@ import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.domain.usecase.GetRandomQuestionsUseCase
+import com.merkost.honq.domain.usecase.GetSmartPracticeQuestionsUseCase
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
 import com.merkost.honq.domain.usecase.RecordAnswerUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
@@ -20,7 +21,9 @@ import pro.respawn.flowmvi.plugins.whileSubscribed
 class PracticeContainer(
     private val categoryId: String?,
     private val categoryName: String?,
+    private val smartMode: Boolean,
     private val getRandomQuestions: GetRandomQuestionsUseCase,
+    private val getSmartPracticeQuestions: GetSmartPracticeQuestionsUseCase,
     private val recordAnswer: RecordAnswerUseCase,
     private val observeFavoriteQuestionIds: ObserveFavoriteQuestionIdsUseCase,
     private val toggleFavoriteQuestion: ToggleFavoriteQuestionUseCase,
@@ -28,9 +31,13 @@ class PracticeContainer(
     scope: CoroutineScope
 ) : Container<PracticeState, PracticeIntent, PracticeAction> {
 
-    override val store = store(PracticeState(categoryId = categoryId, categoryName = categoryName), scope) {
+    private var smartQueue: MutableList<com.merkost.honq.domain.model.Question> = mutableListOf()
+
+    override val store = store(PracticeState(categoryId = categoryId, categoryName = categoryName, smartMode = smartMode), scope) {
         init {
-            if (categoryId != null) {
+            if (smartMode) {
+                analytics.track(AnalyticsEvent.SmartPracticeStarted)
+            } else if (categoryId != null) {
                 analytics.track(AnalyticsEvent.CategoryPracticeStarted(categoryId))
             } else {
                 analytics.track(AnalyticsEvent.PracticeStarted)
@@ -89,6 +96,42 @@ class PracticeContainer(
             }
         }
 
+        if (smartMode) {
+            loadSmartQuestion()
+        } else {
+            loadRandomQuestion()
+        }
+    }
+
+    private suspend fun PipelineContext<PracticeState, PracticeIntent, PracticeAction>.loadSmartQuestion() {
+        try {
+            if (smartQueue.isEmpty()) {
+                val batch = getSmartPracticeQuestions(SMART_BATCH_SIZE)
+                smartQueue.addAll(batch)
+            }
+
+            val nextQuestion = smartQueue.removeFirstOrNull()
+            if (nextQuestion == null) {
+                Cedar.tag("Practice").w("loadSmartQuestion: no questions available")
+            }
+            updateState {
+                copy(
+                    currentQuestion = nextQuestion,
+                    selectedAnswer = null,
+                    answerRevealed = false,
+                    isLoading = false,
+                    isLoadingNext = false,
+                    questionsAnswered = questionsAnswered + 1,
+                    error = null
+                )
+            }
+        } catch (e: Exception) {
+            Cedar.tag("Practice").e("loadSmartQuestion: failed: ${e.message}", e)
+            updateState { copy(error = e.message, isLoading = false, isLoadingNext = false) }
+        }
+    }
+
+    private suspend fun PipelineContext<PracticeState, PracticeIntent, PracticeAction>.loadRandomQuestion() {
         getRandomQuestions(1, categoryId)
             .onSuccess { questions ->
                 if (questions.isEmpty()) {
@@ -110,6 +153,10 @@ class PracticeContainer(
                 Cedar.tag("Practice").e("loadNextQuestion: failed: ${e.message}", e)
                 updateState { copy(error = e.message, isLoading = false, isLoadingNext = false) }
             }
+    }
+
+    companion object {
+        private const val SMART_BATCH_SIZE = 20
     }
 
     private suspend fun PipelineContext<PracticeState, PracticeIntent, PracticeAction>.toggleFavorite(
