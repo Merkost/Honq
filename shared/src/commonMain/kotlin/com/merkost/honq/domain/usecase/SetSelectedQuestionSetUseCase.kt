@@ -5,7 +5,7 @@ import com.merkost.honq.domain.repository.QuestionSetSelectionRepository
 class SetSelectedQuestionSetUseCase(
     private val repository: QuestionSetSelectionRepository
 ) {
-    operator fun invoke(questionSetId: String) {
+    operator fun invoke(questionSetId: String?) {
         repository.setSelectedQuestionSetId(questionSetId)
     }
 }

@@ -9,7 +9,7 @@ class InMemoryQuestionSetSelectionRepository : QuestionSetSelectionRepository {
 
     override val selectedQuestionSetId: StateFlow<String?> = selectedQuestionSet
 
-    override fun setSelectedQuestionSetId(questionSetId: String) {
+    override fun setSelectedQuestionSetId(questionSetId: String?) {
         selectedQuestionSet.value = questionSetId
     }
 }

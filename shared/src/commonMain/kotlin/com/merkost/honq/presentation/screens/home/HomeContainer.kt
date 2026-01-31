@@ -183,8 +183,8 @@ class HomeContainer(
                     )
                 }
 
+                setSelectedQuestionSet(matchingQuestionSet?.id)
                 if (matchingQuestionSet != null) {
-                    setSelectedQuestionSet(matchingQuestionSet.id)
                     syncInBackground()
                 }
             }
@@ -234,8 +234,8 @@ class HomeContainer(
             )
         }
 
-        matchingQuestionSet?.let {
-            setSelectedQuestionSet(it.id)
+        setSelectedQuestionSet(matchingQuestionSet?.id)
+        if (matchingQuestionSet != null) {
             syncInBackground()
         }
     }
