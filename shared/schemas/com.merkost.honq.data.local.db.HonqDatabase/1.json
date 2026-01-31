@@ -2,15 +2,21 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fcfad9428d9b125cbe68ae0ec98ae12e",
+    "identityHash": "6db338af51108ed97109f30d95afb27f",
     "entities": [
       {
         "tableName": "questions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `text` TEXT NOT NULL, `options` TEXT NOT NULL, `correctIndex` INTEGER NOT NULL, `explanation` TEXT NOT NULL, `categoryId` TEXT NOT NULL, `questionSetId` TEXT NOT NULL, `imageUrl` TEXT, `updatedAt` TEXT NOT NULL, `stateId` TEXT NOT NULL, `difficulty` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `version` INTEGER NOT NULL, `source` TEXT NOT NULL, `createdAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `text` TEXT NOT NULL, `options` TEXT NOT NULL, `correctIndex` INTEGER NOT NULL, `explanation` TEXT NOT NULL, `categoryId` TEXT NOT NULL, `questionSetId` TEXT NOT NULL, `imageUrl` TEXT, `updatedAt` TEXT NOT NULL, `stateId` TEXT NOT NULL, `difficulty` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `version` INTEGER NOT NULL, `source` TEXT NOT NULL, `createdAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "code",
+            "columnName": "code",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -545,7 +551,7 @@
       },
       {
         "tableName": "question_sets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `stateId` TEXT NOT NULL, `licenseTypeId` TEXT NOT NULL, `licenseStageId` TEXT NOT NULL, `assessmentTypeId` TEXT NOT NULL, `mockTestQuestionCount` INTEGER NOT NULL, `mockTestTimeLimitMinutes` INTEGER NOT NULL, `mockTestPassPercentage` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `stateId` TEXT NOT NULL, `licenseTypeId` TEXT NOT NULL, `assessmentTypeId` TEXT NOT NULL, `mockTestQuestionCount` INTEGER NOT NULL, `mockTestTimeLimitMinutes` INTEGER NOT NULL, `mockTestPassPercentage` INTEGER NOT NULL, `isActive` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -562,12 +568,6 @@
           {
             "fieldPath": "licenseTypeId",
             "columnName": "licenseTypeId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "licenseStageId",
-            "columnName": "licenseStageId",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -661,7 +661,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fcfad9428d9b125cbe68ae0ec98ae12e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6db338af51108ed97109f30d95afb27f')"
     ]
   }
 }
