@@ -12,6 +12,13 @@ private object AndroidPlatformActions : KoinComponent {
 
 actual val storeUrl: String = "https://play.google.com/store/apps/details?id=com.merkost.honq"
 
+actual val appVersion: String
+    get() {
+        val context = AndroidPlatformActions.context
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        return packageInfo.versionName ?: "Unknown"
+    }
+
 actual fun openUrl(url: String) {
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

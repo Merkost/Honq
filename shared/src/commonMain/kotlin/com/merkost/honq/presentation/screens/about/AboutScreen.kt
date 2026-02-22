@@ -43,7 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.merkost.honq.BuildKonfig
 import com.merkost.honq.data.local.ThemeMode
 import com.merkost.honq.data.local.ThemePreferences
 import com.merkost.honq.domain.repository.ProgressRepository
@@ -54,6 +53,7 @@ import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.util.openAppStore
 import com.merkost.honq.presentation.util.openUrl
 import com.merkost.honq.presentation.util.sendEmail
+import com.merkost.honq.presentation.util.appVersion
 import com.merkost.honq.presentation.util.shareText
 import com.merkost.honq.presentation.util.storeUrl
 import honq.shared.generated.resources.Res
@@ -268,7 +268,7 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(HonqSpacing.xs))
 
             Text(
-                text = "Version ${BuildKonfig.APP_VERSION}",
+                text = "Version $appVersion",
                 fontSize = 12.sp,
                 color = colors.textMuted.copy(alpha = 0.6f)
             )

@@ -1,5 +1,6 @@
 package com.merkost.honq.presentation.util
 
+import platform.Foundation.NSBundle
 import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.NSCharacterSet
@@ -43,6 +44,13 @@ actual fun sendEmail(email: String, subject: String, body: String) {
 }
 
 actual val storeUrl: String = "https://apps.apple.com/app/id6759510354"
+
+actual val appVersion: String
+    get() {
+        val version = NSBundle.mainBundle.infoDictionary?.get("CFBundleShortVersionString") as? String ?: "Unknown"
+        val build = NSBundle.mainBundle.infoDictionary?.get("CFBundleVersion") as? String
+        return if (build != null) "$version ($build)" else version
+    }
 
 actual fun openAppStore() {
     val appStoreUrl = "itms-apps://itunes.apple.com/app/id6759510354"
