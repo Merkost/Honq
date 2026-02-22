@@ -5,13 +5,14 @@ import com.merkost.honq.core.logging.initCedar
 import com.merkost.honq.data.di.databaseModule
 import com.merkost.honq.di.sharedModules
 import org.koin.compose.KoinApplication
+import platform.UIKit.UIViewController
 
-fun MainViewController(): androidx.compose.ui.window.UIViewController {
+fun MainViewController(): UIViewController {
     initCedar()
     return ComposeUIViewController {
         KoinApplication(
             application = {
-                modules(sharedModules() + databaseModule)
+                modules(databaseModule + sharedModules())
             }
         ) {
             App()
