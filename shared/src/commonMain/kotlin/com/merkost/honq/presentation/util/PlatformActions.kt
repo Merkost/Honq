@@ -7,3 +7,5 @@ expect fun shareText(text: String, title: String? = null)
 expect fun sendEmail(email: String, subject: String = "", body: String = "")
 
 expect fun openAppStore()
+
+expect val storeUrl: String

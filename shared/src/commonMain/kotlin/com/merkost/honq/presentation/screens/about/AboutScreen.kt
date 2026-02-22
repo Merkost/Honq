@@ -55,6 +55,7 @@ import com.merkost.honq.presentation.util.openAppStore
 import com.merkost.honq.presentation.util.openUrl
 import com.merkost.honq.presentation.util.sendEmail
 import com.merkost.honq.presentation.util.shareText
+import com.merkost.honq.presentation.util.storeUrl
 import honq.shared.generated.resources.Res
 import honq.shared.generated.resources.ic_honq_logo
 import kotlinx.coroutines.launch
@@ -62,9 +63,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 
 private const val CONTACT_EMAIL = "merkostdev+honq@gmail.com"
-private const val PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.merkost.honq"
-private const val SHARE_TEXT =
-    "Check out Honq - the best way to prepare for your Australian driver's license test!\n$PLAY_STORE_URL"
+private val SHARE_TEXT
+    get() = "Check out Honq - the best way to prepare for your Australian driver's license test!\n$storeUrl"
 private const val PRIVACY_URL = "https://merkost.github.io/Honq/privacy.html"
 private const val TERMS_URL = "https://merkost.github.io/Honq/terms.html"
 
