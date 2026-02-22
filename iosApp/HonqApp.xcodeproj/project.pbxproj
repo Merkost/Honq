@@ -82,6 +82,7 @@
 				9274A08FF48B1B23B24DA3B5 /* Sources */,
 				FB85ED02DE481F936018FF70 /* Frameworks */,
 				E9CDF7367B7D11A68972AA26 /* Resources */,
+				C0D5E4A1F8B3D2E9A7C6F012 /* Upload Crashlytics dSYMs */,
 			);
 			buildRules = (
 			);
@@ -166,6 +167,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+		};
+		C0D5E4A1F8B3D2E9A7C6F012 /* Upload Crashlytics dSYMs */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)",
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(PRODUCT_NAME)",
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Info.plist",
+				"$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME).app/GoogleService-Info.plist",
+			);
+			name = "Upload Crashlytics dSYMs";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\nset -eu\nif [ \"$ACTION\" != \"install\" ]; then\n  echo \"⏩ Not archiving; skipping dSYM upload.\"\n  exit 0\nfi\nif [ \"${CI:-}\" = \"true\" ]; then\n  echo \"[Crashlytics] Skipped on CI\"\n  exit 0\nfi\nUPLOAD=\"\"\nif [ -n \"${UPLOAD_SYMBOLS_PATH:-}\" ] && [ -x \"${UPLOAD_SYMBOLS_PATH}\" ]; then\n  UPLOAD=\"${UPLOAD_SYMBOLS_PATH}\"\nelif [ -n \"${PODS_ROOT:-}\" ] && [ -x \"${PODS_ROOT}/FirebaseCrashlytics/upload-symbols\" ]; then\n  UPLOAD=\"${PODS_ROOT}/FirebaseCrashlytics/upload-symbols\"\nelse\n  SPM_CHECKOUT=\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk\"\n  if [ -x \"${SPM_CHECKOUT}/Crashlytics/upload-symbols\" ]; then\n    UPLOAD=\"${SPM_CHECKOUT}/Crashlytics/upload-symbols\"\n  fi\nfi\nif [ -z \"$UPLOAD\" ] || [ ! -x \"$UPLOAD\" ]; then\n  echo \"[Crashlytics] upload-symbols not found\"\n  exit 0\nfi\nAPP_PATH=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app\"\nGSP=\"${APP_PATH}/GoogleService-Info.plist\"\nif [ ! -f \"$GSP\" ]; then\n  echo \"[Crashlytics] GoogleService-Info.plist missing\"\n  exit 0\nfi\nif [ -z \"${DWARF_DSYM_FOLDER_PATH:-}\" ] || [ ! -d \"${DWARF_DSYM_FOLDER_PATH}\" ]; then\n  echo \"[Crashlytics] No dSYM folder\"\n  exit 0\nfi\necho \"[Crashlytics] Uploading dSYMs from ${DWARF_DSYM_FOLDER_PATH}\"\n\"$UPLOAD\" -gsp \"$GSP\" -p ios \"${DWARF_DSYM_FOLDER_PATH}\"\necho \"[Crashlytics] Done\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
