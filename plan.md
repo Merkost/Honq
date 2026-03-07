@@ -40,42 +40,78 @@ Convert Honq from a paid app to **freemium** with a one-time $4.99 "Honq Pro" un
   - `freeMockTestsUsed: Int` (tracks how many free tests taken)
 - Similar pattern to existing `OnboardingPreferences`, `ThemePreferences`
 
-**Step 1.3: Create `PremiumManagerImpl`**
-- File: `shared/.../data/premium/PremiumManagerImpl.kt`
-- Implements `PremiumManager`
-- Combines DataStore state with platform billing verification
-- Logic: `isPremium = isPremiumPurchased || platformBillingConfirmed`
-- Free mock test logic: user gets 1 free, after that `freeTrialMockTestsRemaining = 0`
+**Step 1.3: Implementation moved to Phase 2**
+- `RevenueCatPremiumManager` (see Phase 2, Step 2.4) implements this interface
+- Combines RevenueCat entitlement check with local DataStore for free mock test tracking
 
 **Step 1.4: Register in DI**
 - Add `PremiumPreferences` to `DataModule.kt`
 - Add `PremiumManager` singleton to `DataModule.kt`
 
-### Phase 2: Platform Billing Integration
+### Phase 2: RevenueCat Integration (purchases-kmp)
 
-**Step 2.1: Create `expect/actual BillingService`**
-- File: `shared/.../data/premium/BillingService.kt` (expect)
-- Interface:
-  - `suspend fun purchase(productId: String): PurchaseResult`
-  - `suspend fun restorePurchases(): Boolean`
-  - `fun isAvailable(): Boolean`
-- Product ID constant: `"honq_pro_lifetime"`
+Using RevenueCat's official KMP SDK — single shared codebase for both Android & iOS billing.
 
-**Step 2.2: Android actual — Google Play Billing**
-- File: `shared/src/androidMain/.../data/premium/BillingService.android.kt`
-- Add dependency: `com.android.billingclient:billing-ktx:7.1.1` to `shared/build.gradle.kts`
-- Implement using `BillingClient`:
-  - Connect to Play Store
-  - Query product details for `"honq_pro_lifetime"` (in-app product, not subscription)
-  - Launch purchase flow
-  - Acknowledge purchase
-  - Query existing purchases for restore
+**Step 2.1: Add `purchases-kmp` dependency**
+- Add to `gradle/libs.versions.toml`:
+  ```toml
+  [versions]
+  purchases-kmp = "2.7.1+17.42.0"
 
-**Step 2.3: iOS actual — StoreKit 2**
-- File: `shared/src/iosMain/.../data/premium/BillingService.ios.kt`
-- Use StoreKit 2 via Kotlin/Native interop
-- Implement purchase, restore, and entitlement check
-- Non-consumable product type
+  [libraries]
+  purchases-core = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "purchases-kmp" }
+  ```
+- Add to `shared/build.gradle.kts` commonMain dependencies:
+  ```kotlin
+  implementation(libs.purchases.core)
+  ```
+- iOS: opt-in to `ExperimentalForeignApi` in iOS source sets
+- iOS: link `PurchasesHybridCommon` framework via SPM or CocoaPods
+
+**Step 2.2: Configure RevenueCat SDK**
+- File: `shared/.../core/RevenueCatConfig.kt`
+- Use `expect/actual` only for the API key (different per platform):
+  ```kotlin
+  // expect
+  expect val revenueCatApiKey: String
+
+  // androidMain actual
+  actual val revenueCatApiKey = "goog_xxxxx"
+
+  // iosMain actual
+  actual val revenueCatApiKey = "appl_xxxxx"
+  ```
+- Initialize in app startup (Android: `Application.onCreate`, iOS: app delegate):
+  ```kotlin
+  Purchases.logLevel = LogLevel.DEBUG  // remove in production
+  Purchases.configure(apiKey = revenueCatApiKey)
+  ```
+
+**Step 2.3: RevenueCat Dashboard Setup (manual, outside code)**
+- Create RevenueCat project at dashboard.revenuecat.com
+- Create entitlement: `"pro"`
+- Create offering with `"honq_pro_lifetime"` product ($4.99 non-consumable)
+- Link Google Play and App Store Connect products
+- Get API keys for Android (`goog_xxx`) and iOS (`appl_xxx`)
+
+**Step 2.4: Create `RevenueCatPremiumManager` (implements PremiumManager)**
+- File: `shared/.../data/premium/RevenueCatPremiumManager.kt`
+- All billing logic in `commonMain` — no platform-specific code needed!
+- Uses RevenueCat SDK directly:
+  ```kotlin
+  // Check entitlement
+  val customerInfo = Purchases.sharedInstance.awaitCustomerInfo()
+  val isPro = customerInfo.entitlements["pro"]?.isActive == true
+
+  // Purchase
+  val offerings = Purchases.sharedInstance.awaitOfferings()
+  val package = offerings.current?.lifetime  // or availablePackages.first()
+  val (_, customerInfo) = Purchases.sharedInstance.awaitPurchase(package)
+
+  // Restore
+  val customerInfo = Purchases.sharedInstance.awaitRestorePurchases()
+  ```
+- Combines RevenueCat entitlement state with local DataStore for free mock test tracking
 
 ### Phase 3: Feature Gating
 
@@ -181,22 +217,23 @@ Convert Honq from a paid app to **freemium** with a one-time $4.99 "Honq Pro" un
 
 ## File Impact Summary
 
-### New Files (7)
+### New Files (6)
 1. `shared/.../domain/premium/PremiumManager.kt` — interface
-2. `shared/.../data/local/PremiumPreferences.kt` — DataStore persistence
-3. `shared/.../data/premium/PremiumManagerImpl.kt` — implementation
-4. `shared/.../data/premium/BillingService.kt` — expect declaration
-5. `shared/src/androidMain/.../data/premium/BillingService.android.kt` — Google Play Billing
-6. `shared/src/iosMain/.../data/premium/BillingService.ios.kt` — StoreKit 2
-7. `shared/.../presentation/screens/paywall/ProPaywallBottomSheet.kt` — paywall UI + contract
+2. `shared/.../data/local/PremiumPreferences.kt` — DataStore persistence (free mock test counter)
+3. `shared/.../data/premium/RevenueCatPremiumManager.kt` — implementation using RevenueCat SDK
+4. `shared/.../core/RevenueCatConfig.kt` — expect declaration for API key
+5. `shared/src/androidMain/.../core/RevenueCatConfig.android.kt` — Android API key
+6. `shared/src/iosMain/.../core/RevenueCatConfig.ios.kt` — iOS API key
+7. `shared/.../presentation/screens/paywall/ProPaywallBottomSheet.kt` — paywall bottom sheet UI
 
-### Modified Files (6)
-1. `shared/build.gradle.kts` — add billing dependency
-2. `shared/.../data/di/DataModule.kt` — register PremiumPreferences, PremiumManager, BillingService
-3. `shared/.../presentation/di/PresentationModule.kt` — code fixes (unused params)
-4. `shared/.../presentation/screens/home/HomeScreen.kt` — PRO badges, gating logic, bottom sheet, code fixes
-5. `shared/.../presentation/screens/mocktest/MockTestContainer.kt` — consume free test on completion
-6. `shared/.../presentation/screens/about/AboutScreen.kt` — add "Restore Purchase" + Pro status
+### Modified Files (7)
+1. `gradle/libs.versions.toml` — add purchases-kmp version & library
+2. `shared/build.gradle.kts` — add purchases-kmp-core dependency + iOS ExperimentalForeignApi opt-in
+3. `shared/.../data/di/DataModule.kt` — register PremiumPreferences, PremiumManager
+4. `shared/.../presentation/di/PresentationModule.kt` — code fixes (unused params)
+5. `shared/.../presentation/screens/home/HomeScreen.kt` — PRO badges, gating logic, bottom sheet, code fixes
+6. `shared/.../presentation/screens/mocktest/MockTestContainer.kt` — consume free test on completion
+7. `shared/.../presentation/screens/about/AboutScreen.kt` — add "Restore Purchase" + Pro status
 
 ---
 
