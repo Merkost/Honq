@@ -100,10 +100,7 @@ fun ProPaywallBottomSheet(
             val features = listOf(
                 "Unlimited mock tests",
                 "Practice by category",
-                "Smart Practice (spaced repetition)",
-                "Detailed statistics & analytics",
-                "Weakest questions review",
-                "Track unanswered questions"
+                "Smart Practice (spaced repetition)"
             )
 
             Column(

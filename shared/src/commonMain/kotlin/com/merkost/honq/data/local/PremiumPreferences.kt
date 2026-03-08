@@ -21,7 +21,7 @@ interface PremiumPreferences {
     suspend fun incrementFreeMockTestsUsed()
 }
 
-const val FREE_MOCK_TEST_LIMIT = 1
+const val FREE_MOCK_TEST_LIMIT = 3
 
 class DataStorePremiumPreferences(
     private val dataStore: DataStore<Preferences>

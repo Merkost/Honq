@@ -38,12 +38,12 @@ import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.PictureAsPdf
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.AlertDialog
+
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -155,9 +155,7 @@ fun HomeScreen(
         },
         onNavigateToFavorites = onNavigateToFavorites,
         onNavigateToSearch = onNavigateToSearch,
-        onNavigateToStatistics = {
-            gatedNavigation(isPremium, onNavigateToStatistics)
-        },
+        onNavigateToStatistics = onNavigateToStatistics,
         onNavigateToAbout = onNavigateToAbout,
         onSelectState = { stateId -> container.intent(HomeIntent.SelectState(stateId)) },
         onSelectLicenseType = { typeId -> container.intent(HomeIntent.SelectLicenseType(typeId)) },
@@ -359,7 +357,7 @@ private fun HomeContent(
                                 FavoritesCard(state, onNavigateToFavorites)
                             }
                             Box(modifier = Modifier.staggeredEntrance(3)) {
-                                StatsRow(state, isPremium, onNavigateToStatistics)
+                                StatsRow(state, onNavigateToStatistics)
                             }
 
                             if (state.stateResources.isNotEmpty()) {
@@ -653,39 +651,6 @@ private fun QuestionBankCard(
     val colors = HonqTheme.colors
     val progress = state.progress
 
-    var showSmartPracticeInfo by remember { mutableStateOf(false) }
-
-    if (showSmartPracticeInfo) {
-        AlertDialog(
-            onDismissRequest = { showSmartPracticeInfo = false },
-            containerColor = colors.surface,
-            titleContentColor = colors.textPrimary,
-            textContentColor = colors.textSecondary,
-            title = {
-                Text(
-                    text = "Smart Practice",
-                    fontWeight = FontWeight.SemiBold
-                )
-            },
-            text = {
-                Text(
-                    "Regular practice gives you random questions. " +
-                            "Smart Practice uses spaced repetition to focus on questions you got wrong " +
-                            "or haven't seen in a while, so you spend time where it matters most."
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { showSmartPracticeInfo = false }) {
-                    Text(
-                        text = "Got it",
-                        color = colors.primary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        )
-    }
-
     HonqCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -762,6 +727,14 @@ private fun QuestionBankCard(
                 ProBadge()
             }
         }
+        if (!isPremium) {
+            Text(
+                text = "Focuses on your weak spots using spaced repetition",
+                color = colors.textMuted,
+                fontSize = 11.sp,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
     }
 }
 
@@ -826,7 +799,6 @@ private fun FavoritesCard(
 @Composable
 private fun StatsRow(
     state: HomeState,
-    isPremium: Boolean,
     onNavigateToStatistics: () -> Unit
 ) {
     val colors = HonqTheme.colors
@@ -850,16 +822,12 @@ private fun StatsRow(
                     color = colors.textSecondary,
                     fontSize = 12.sp
                 )
-                if (isPremium) {
-                    Text(
-                        text = "Stats",
-                        color = colors.primary,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                } else {
-                    ProBadge()
-                }
+                Text(
+                    text = "Stats",
+                    color = colors.primary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
             Spacer(modifier = Modifier.height(HonqSpacing.xs))
             AnimatedContent(
@@ -896,16 +864,12 @@ private fun StatsRow(
                     color = colors.textSecondary,
                     fontSize = 12.sp
                 )
-                if (isPremium) {
-                    Text(
-                        text = "Stats",
-                        color = colors.primary,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                } else {
-                    ProBadge()
-                }
+                Text(
+                    text = "Stats",
+                    color = colors.primary,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
             Spacer(modifier = Modifier.height(HonqSpacing.xs))
             AnimatedContent(
