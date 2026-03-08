@@ -21,8 +21,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -45,11 +47,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.data.local.ThemeMode
 import com.merkost.honq.data.local.ThemePreferences
+import com.merkost.honq.domain.premium.PremiumManager
+import com.revenuecat.purchases.kmp.ui.revenuecatui.CustomerCenter
 import com.merkost.honq.domain.repository.ProgressRepository
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqTheme
+import androidx.compose.ui.tooling.preview.Preview
 import com.merkost.honq.presentation.util.openAppStore
 import com.merkost.honq.presentation.util.openUrl
 import com.merkost.honq.presentation.util.sendEmail
@@ -75,9 +81,14 @@ fun AboutScreen(
     val colors = HonqTheme.colors
     val progressRepository: ProgressRepository = koinInject()
     val themePreferences: ThemePreferences = koinInject()
+    val premiumManager: PremiumManager = koinInject()
     val themeMode by themePreferences.themeMode.collectAsState()
+    val isPremium by premiumManager.isPremium.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var showResetDialog by remember { mutableStateOf(false) }
+    var isRestoring by remember { mutableStateOf(false) }
+    var restoreMessage by remember { mutableStateOf<String?>(null) }
+    var showCustomerCenter by remember { mutableStateOf(false) }
 
     HonqScaffold(
         title = "About",
@@ -174,6 +185,30 @@ fun AboutScreen(
                     onSelect = { themePreferences.setThemeMode(it) }
                 )
             }
+
+            Spacer(modifier = Modifier.height(HonqSpacing.xl))
+
+            HonqProSection(
+                isPremium = isPremium,
+                isRestoring = isRestoring,
+                restoreMessage = restoreMessage,
+                onRestorePurchase = {
+                    isRestoring = true
+                    restoreMessage = null
+                    coroutineScope.launch {
+                        premiumManager.restorePurchase()
+                            .onSuccess { restored ->
+                                isRestoring = false
+                                restoreMessage = if (restored) "Purchase restored!" else "No previous purchase found"
+                            }
+                            .onFailure { e ->
+                                isRestoring = false
+                                restoreMessage = e.message ?: "Restore failed"
+                            }
+                    }
+                },
+                onManageSubscription = { showCustomerCenter = true }
+            )
 
             Spacer(modifier = Modifier.height(HonqSpacing.xl))
 
@@ -320,6 +355,12 @@ fun AboutScreen(
             }
         )
     }
+
+    if (showCustomerCenter) {
+        CustomerCenter(
+            onDismiss = { showCustomerCenter = false }
+        )
+    }
 }
 
 @Composable
@@ -425,4 +466,214 @@ private fun ActionPill(
         )
     }
 }
+
+@Composable
+private fun HonqProSection(
+    isPremium: Boolean,
+    isRestoring: Boolean,
+    restoreMessage: String?,
+    onRestorePurchase: () -> Unit,
+    onManageSubscription: () -> Unit
+) {
+    val colors = HonqTheme.colors
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = HonqSizing.screenPadding)
+            .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+            .background(colors.surface)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm + 2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.WorkspacePremium,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(HonqSpacing.sm))
+            Text(
+                text = "Honq Pro",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = colors.textPrimary,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = if (isPremium) "Active" else "Free",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = if (isPremium) colors.correct else colors.textMuted
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = HonqSpacing.md)
+                .height(0.5.dp)
+                .background(colors.border.copy(alpha = 0.5f))
+        )
+
+        if (!isPremium) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = !isRestoring, onClick = onRestorePurchase)
+                    .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm + 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Restore,
+                    contentDescription = null,
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(HonqSpacing.sm))
+                Text(
+                    text = if (isRestoring) "Restoring..." else "Restore Purchase",
+                    fontSize = 14.sp,
+                    color = colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = colors.textMuted,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            if (restoreMessage != null) {
+                Text(
+                    text = restoreMessage,
+                    fontSize = 12.sp,
+                    color = colors.textMuted,
+                    modifier = Modifier.padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.xs)
+                )
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onManageSubscription)
+                    .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm + 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Restore,
+                    contentDescription = null,
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(HonqSpacing.sm))
+                Text(
+                    text = "Manage Purchase",
+                    fontSize = 14.sp,
+                    color = colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = colors.textMuted,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+}
+
+// region Previews
+
+@Preview
+@Composable
+private fun HonqProSectionFreePreview() {
+    HonqPreviewTheme {
+        HonqProSection(
+            isPremium = false,
+            isRestoring = false,
+            restoreMessage = null,
+            onRestorePurchase = {},
+            onManageSubscription = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HonqProSectionRestoringPreview() {
+    HonqPreviewTheme {
+        HonqProSection(
+            isPremium = false,
+            isRestoring = true,
+            restoreMessage = null,
+            onRestorePurchase = {},
+            onManageSubscription = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HonqProSectionRestoreFailedPreview() {
+    HonqPreviewTheme {
+        HonqProSection(
+            isPremium = false,
+            isRestoring = false,
+            restoreMessage = "No previous purchase found",
+            onRestorePurchase = {},
+            onManageSubscription = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HonqProSectionPremiumPreview() {
+    HonqPreviewTheme {
+        HonqProSection(
+            isPremium = true,
+            isRestoring = false,
+            restoreMessage = null,
+            onRestorePurchase = {},
+            onManageSubscription = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HonqProSectionFreePreviewLight() {
+    HonqPreviewTheme(darkTheme = false) {
+        HonqProSection(
+            isPremium = false,
+            isRestoring = false,
+            restoreMessage = null,
+            onRestorePurchase = {},
+            onManageSubscription = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun HonqProSectionPremiumPreviewLight() {
+    HonqPreviewTheme(darkTheme = false) {
+        HonqProSection(
+            isPremium = true,
+            isRestoring = false,
+            restoreMessage = null,
+            onRestorePurchase = {},
+            onManageSubscription = {}
+        )
+    }
+}
+
+// endregion
 

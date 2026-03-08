@@ -43,6 +43,12 @@ kotlin {
     }
 
     sourceSets {
+        named { it.lowercase().startsWith("ios") }.configureEach {
+            languageSettings {
+                optIn("kotlinx.cinterop.ExperimentalForeignApi")
+            }
+        }
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -86,6 +92,12 @@ kotlin {
             implementation(libs.amplitude)
 
             implementation(libs.datastore.preferences)
+
+            implementation(libs.purchases.kmp.core)
+            implementation(libs.purchases.kmp.ui)
+
+            implementation(libs.compottie)
+            implementation(libs.compottie.resources)
 
             api(libs.firebase.crashlytics)
         }

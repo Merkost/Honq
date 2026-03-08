@@ -15,6 +15,7 @@ import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionIdsUseCase
 import com.merkost.honq.domain.usecase.SaveIncorrectAnswersUseCase
 import com.merkost.honq.domain.usecase.SaveMockTestResultUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
+import com.merkost.honq.domain.premium.PremiumManager
 import com.merkost.honq.domain.repository.QuestionSetSelectionRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -38,6 +39,7 @@ class MockTestContainer(
     private val toggleFavoriteQuestion: ToggleFavoriteQuestionUseCase,
     private val questionSetSelectionRepository: QuestionSetSelectionRepository,
     private val questionRepository: QuestionRepository,
+    private val premiumManager: PremiumManager,
     private val analytics: Analytics,
     scope: CoroutineScope
 ) : Container<MockTestState, MockTestIntent, MockTestAction> {
@@ -206,6 +208,10 @@ class MockTestContainer(
             }
 
             saveMockTestResult(result, allAnswers)
+
+            if (!premiumManager.isPremium.value) {
+                premiumManager.consumeFreeMockTest()
+            }
 
             // Compute per-category breakdown
             val categoryBreakdown = session.questions

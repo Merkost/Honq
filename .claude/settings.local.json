@@ -42,7 +42,21 @@
       "mcp__plugin_supabase_supabase__list_projects",
       "mcp__plugin_supabase_supabase__execute_sql",
       "mcp__plugin_supabase_supabase__apply_migration",
-      "mcp__plugin_supabase_supabase__get_advisors"
+      "mcp__plugin_supabase_supabase__get_advisors",
+      "Bash(./gradlew :shared:compileKotlinIosSimulatorArm64:*)",
+      "Bash(jar tf:*)",
+      "Bash(jar xf ~/.gradle/caches/modules-2/files-2.1/com.revenuecat.purchases/purchases-kmp-core-android/2.7.1+17.42.0/c253c659d9f2aca6c62eca9512c3d8b11577d675/core-android-2.7.1+17.42.0-sources.jar commonMain/com/revenuecat/purchases/kmp/Purchases.kt -d /tmp/rc_sources)",
+      "Read(//tmp/rc_sources/commonMain/com/revenuecat/purchases/kmp/**)",
+      "Read(//private/tmp/**)",
+      "Bash(unzip -o ~/.gradle/caches/modules-2/files-2.1/com.revenuecat.purchases/purchases-kmp-core-android/2.7.1+17.42.0/c253c659d9f2aca6c62eca9512c3d8b11577d675/core-android-2.7.1+17.42.0-sources.jar -d rc_sources)",
+      "Bash(unzip -o ~/.gradle/caches/modules-2/files-2.1/com.revenuecat.purchases/purchases-kmp-models-android/2.7.1+17.42.0/83fc51d400eab8dcf82d9fe59e8039d329ea798e/models-android-2.7.1+17.42.0-sources.jar -d rc_models)",
+      "Bash(./gradlew :shared:compileDebugKotlinAndroid:*)",
+      "WebFetch(domain:www.revenuecat.com)",
+      "Bash(grep:*)",
+      "Bash(mkdir -p rc_ui_sources)",
+      "Bash(unzip -o ~/.gradle/caches/modules-2/files-2.1/com.revenuecat.purchases/purchases-kmp-ui/2.7.0+17.41.0/1381252a64b28e944ffd369e5fbbfd0e9df1dac1/purchases-kmp-ui-2.7.0+17.41.0-sources.jar -d rc_ui_sources)",
+      "Bash(./gradlew :shared:compileDebugKotlin:*)",
+      "Bash(./gradlew :shared:compileKotlinIosArm64:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

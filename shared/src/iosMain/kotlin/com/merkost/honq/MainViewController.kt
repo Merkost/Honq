@@ -1,6 +1,7 @@
 package com.merkost.honq
 
 import androidx.compose.ui.window.ComposeUIViewController
+import com.merkost.honq.core.initRevenueCat
 import com.merkost.honq.core.logging.initCedar
 import com.merkost.honq.data.di.databaseModule
 import com.merkost.honq.di.sharedModules
@@ -12,6 +13,9 @@ import platform.UIKit.UIViewController
 fun MainViewController(): UIViewController {
     Firebase.initialize()
     initCedar()
+
+    initRevenueCat()
+
     return ComposeUIViewController {
         KoinApplication(
             application = {

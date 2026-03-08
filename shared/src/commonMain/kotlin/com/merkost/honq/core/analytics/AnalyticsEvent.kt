@@ -103,6 +103,8 @@ sealed class AnalyticsEvent(
         mapOf("trigger" to trigger)
     )
 
+    data object PurchaseSuccessViewed : AnalyticsEvent("purchase_success_viewed")
+
     data class ReviewFailed(val trigger: String, val error: String?) : AnalyticsEvent(
         "review_failed",
         mapOf("trigger" to trigger, "error" to error)

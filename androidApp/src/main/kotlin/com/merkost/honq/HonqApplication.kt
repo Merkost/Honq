@@ -2,6 +2,7 @@ package com.merkost.honq
 
 import android.app.Application
 import com.merkost.honq.core.analytics.initAmplitudeContext
+import com.merkost.honq.core.initRevenueCat
 import com.merkost.honq.core.logging.initCedar
 import com.merkost.honq.data.local.initDataStore
 import dev.gitlive.firebase.Firebase
@@ -16,6 +17,8 @@ class HonqApplication : Application() {
 
         initDataStore(this)
         initAmplitudeContext(this)
+
+        initRevenueCat()
     }
 
 }

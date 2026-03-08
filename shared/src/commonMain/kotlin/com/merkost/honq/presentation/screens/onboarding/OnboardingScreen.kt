@@ -555,15 +555,20 @@ private fun StateSelectionCard(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = state.name,
+                fontSize = 16.sp,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                color = textColor
+            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
             ) {
                 Text(
-                    text = state.name,
-                    fontSize = 16.sp,
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                    color = textColor
+                    text = if (!enabled) stringResource(Res.string.onboarding_coming_soon, state.shortName) else state.shortName,
+                    fontSize = 14.sp,
+                    color = colors.textMuted
                 )
                 if (state.isExternalOnly) {
                     Box(
@@ -581,11 +586,6 @@ private fun StateSelectionCard(
                     }
                 }
             }
-            Text(
-                text = if (!enabled) stringResource(Res.string.onboarding_coming_soon, state.shortName) else state.shortName,
-                fontSize = 14.sp,
-                color = colors.textMuted
-            )
         }
 
         AnimatedCheckmark(selected = selected)

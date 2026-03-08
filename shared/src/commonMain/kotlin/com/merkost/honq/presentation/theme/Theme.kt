@@ -80,3 +80,22 @@ object HonqTheme {
         @ReadOnlyComposable
         get() = LocalHonqColors.current
 }
+
+@Composable
+fun HonqPreviewTheme(
+    darkTheme: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    val honqColors = if (darkTheme) honqDarkColorScheme() else honqLightColorScheme()
+    val materialScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
+    CompositionLocalProvider(
+        LocalHonqColors provides honqColors
+    ) {
+        MaterialTheme(
+            colorScheme = materialScheme,
+            typography = HonqTypography,
+            content = content
+        )
+    }
+}
