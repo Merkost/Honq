@@ -573,7 +573,7 @@ private fun HonqProSection(
                 )
                 Spacer(modifier = Modifier.width(HonqSpacing.sm))
                 Text(
-                    text = "Manage Subscription",
+                    text = "Manage Purchase",
                     fontSize = 14.sp,
                     color = colors.textPrimary,
                     modifier = Modifier.weight(1f)
