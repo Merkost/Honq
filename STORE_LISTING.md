@@ -7,28 +7,33 @@ Prepare for your Australian driving test. Clean, focused, distraction-free.
 ## Full description
 
 Get ready for your L's.
-Honq is the clean, focused way to prepare for your Driver Knowledge Test. No ads, no subscriptions, no distractions. Just you and the questions.
+Honq is the clean, focused way to prepare for your Driver Knowledge Test. No ads, no distractions. Just you and the questions.
 
 Honq is an independent study app. It is not affiliated with, endorsed by, or representing any Australian government department, agency, authority, or licensing office. This app is for study and practice only. Always check the official sources below for the latest information.
 
 Practice your way
-Work through questions at your own pace with instant answer explanations. Filter by category to focus on what matters, or let the app surface your weakest areas automatically.
+Work through questions at your own pace with instant answer explanations. Filter by category to focus on what matters, or let Smart Practice surface your weakest areas using spaced repetition.
 
 Mock tests that mirror the real thing
-Take timed, full-length practice tests with pass marks aligned to your state's knowledge test format where available. Review every mistake with clear explanations so you don't repeat it.
+Take timed, full-length practice tests with pass marks aligned to your state's knowledge test format. Review every mistake with clear explanations so you don't repeat it.
 
 Track your progress
 See your accuracy trends, mock test history, and completion stats at a glance. Know exactly where you stand before test day.
 
 Features
-· Practice mode with explanations
-· Timed mock tests
+· Unlimited practice with detailed explanations
+· Timed mock tests (3 free, unlimited with Pro)
 · Progress dashboard with accuracy trends
-· Weakest questions & unanswered questions
+· Statistics & analytics
+· Smart Practice — spaced repetition for your weak spots
+· Practice by category
+· Weakest questions & unanswered questions review
 · Search any question by keyword or ID
 · Bookmark questions for later
 · Dark theme, lightweight
 · Offline-ready where available (official links require internet)
+
+Optional one-time Pro upgrade unlocks unlimited mock tests, category practice, and Smart Practice. No subscriptions.
 
 All states supported
 In-app practice question banks for NSW and NT (based on the official question banks linked below).
@@ -54,7 +59,7 @@ Driving Test Prep, All States
 
 ## App Store (iOS) — Promotional Text
 
-Practice for your Australian Driver Knowledge Test. No ads, no subscriptions — just clean, focused prep for your L's. All states supported.
+Practice for your Australian Driver Knowledge Test. No ads — just clean, focused prep for your L's. 3 free mock tests, full stats, and unlimited practice.
 
 ## App Store (iOS) — Keywords
 
