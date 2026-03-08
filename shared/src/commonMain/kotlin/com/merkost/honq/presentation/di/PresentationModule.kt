@@ -78,10 +78,11 @@ val presentationModule = module {
             get(),
             get(),
             get(),
+            get(),
             params.get<CoroutineScope>()
         )
     }
-    factory { params -> FavoritesContainer(get(), get(), get()) }
+    factory { _ -> FavoritesContainer(get(), get(), get()) }
     factory { params ->
         FavoriteQuestionContainer(
             params.get<String>(),

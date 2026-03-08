@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -24,8 +26,10 @@ import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.data.local.OnboardingPreferences
 import com.merkost.honq.domain.model.CategoryScore
+import com.merkost.honq.domain.premium.PremiumManager
 import com.merkost.honq.presentation.screens.about.AboutScreen
 import com.merkost.honq.presentation.screens.onboarding.OnboardingScreen
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
@@ -80,7 +84,16 @@ private fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultPopExitTran
 fun NavGraph(navController: NavHostController = rememberNavController()) {
     val onboardingPreferences = koinInject<OnboardingPreferences>()
     val analytics = koinInject<Analytics>()
+    val premiumManager = koinInject<PremiumManager>()
+    val coroutineScope = rememberCoroutineScope()
     val isOnboardingCompleted = onboardingPreferences.isOnboardingCompleted.collectAsState()
+
+    LifecycleResumeEffect(Unit) {
+        coroutineScope.launch {
+            premiumManager.syncPremiumStatus()
+        }
+        onPauseOrDispose { }
+    }
 
     val startDestination: Screen = when (isOnboardingCompleted.value) {
         true -> Screen.Home
@@ -137,6 +150,7 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
             }
             HomeScreen(
                 onNavigateToPractice = { navController.navigate(Screen.CategorySelection) },
+                onNavigateToRandomPractice = { navController.navigate(Screen.Practice) },
                 onNavigateToSmartPractice = { navController.navigate(Screen.SmartPractice) },
                 onNavigateToMockTest = { navController.navigate(Screen.MockTest) },
                 onNavigateToFavorites = { navController.navigate(Screen.Favorites) },

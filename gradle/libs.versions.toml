@@ -1,11 +1,11 @@
 [versions]
-agp = "9.0.1"
+agp = "9.1.0"
 
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
 
-android-versionCode = "1"
+android-versionCode = "2"
 android-versionName = "1.0.0"
 
 androidx-activity = "1.12.4"
@@ -14,22 +14,22 @@ androidx-core = "1.17.0"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.9.6"
 androidx-testExt = "1.3.0"
-composeMultiplatform = "1.10.1"
+composeMultiplatform = "1.10.2"
 junit = "4.13.2"
-kotlin = "2.3.20-RC"
+kotlin = "2.3.20-RC2"
 material3 = "1.10.0-alpha05"
 
 navigation = "2.9.2"
 cedar = "0.2.2"
 koin = "4.1.1"
 room = "2.8.4"
-ksp = "2.3.5"
+ksp = "2.3.6"
 sqlite = "2.6.2"
-ktor = "3.4.0"
+ktor = "3.4.1"
 kotlinx-serialization = "1.10.0"
 kotlinx-datetime = "0.7.1"
-coil = "3.3.0"
-supabase = "3.3.0"
+coil = "3.4.0"
+supabase = "3.4.1"
 flowmvi = "3.2.1"
 buildkonfig = "0.17.1"
 datastore = "1.2.0"
@@ -39,6 +39,8 @@ google-services = "4.4.4"
 firebase-crashlytics-plugin = "3.0.6"
 play-integrity = "1.6.0"
 play-review = "2.0.2"
+purchases-kmp = "2.7.1+17.42.0"
+compottie = "2.1.0"
 
 [libraries]
 cedar = { module = "org.kimplify:cedar-logging", version.ref = "cedar" }
@@ -102,6 +104,12 @@ firebase-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.re
 play-integrity = { module = "com.google.android.play:integrity", version.ref = "play-integrity" }
 play-review = { module = "com.google.android.play:review", version.ref = "play-review" }
 play-review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "play-review" }
+
+purchases-kmp-core = { module = "com.revenuecat.purchases:purchases-kmp-core", version.ref = "purchases-kmp" }
+purchases-kmp-ui = { module = "com.revenuecat.purchases:purchases-kmp-ui", version.ref = "purchases-kmp" }
+
+compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
+compottie-resources = { module = "io.github.alexzhirkevich:compottie-resources", version.ref = "compottie" }
 
 [bundles]
 koin = ["koin-core", "koin-compose",]

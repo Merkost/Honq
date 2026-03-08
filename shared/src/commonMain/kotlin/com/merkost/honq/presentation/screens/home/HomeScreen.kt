@@ -46,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.domain.model.ResourceType
 import com.merkost.honq.domain.model.StateResource
+import com.merkost.honq.domain.premium.PremiumManager
 import com.merkost.honq.presentation.components.base.BottomActionBar
 import com.merkost.honq.presentation.components.base.FullscreenError
 import com.merkost.honq.presentation.components.base.FullscreenLoading
@@ -71,15 +73,25 @@ import com.merkost.honq.presentation.components.base.HonqCard
 import com.merkost.honq.presentation.components.base.HonqProgressBar
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.components.base.LicenseTypeIcon
+import com.merkost.honq.presentation.components.base.ProBadge
+import com.merkost.honq.presentation.screens.paywall.PurchaseSuccessScreen
+import com.revenuecat.purchases.kmp.models.CustomerInfo
+import com.revenuecat.purchases.kmp.models.StoreTransaction
+import com.revenuecat.purchases.kmp.ui.revenuecatui.Paywall
+import com.revenuecat.purchases.kmp.ui.revenuecatui.PaywallListener
+import com.revenuecat.purchases.kmp.ui.revenuecatui.PaywallOptions
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqTheme
+import androidx.compose.ui.tooling.preview.Preview
 import com.merkost.honq.presentation.util.openUrl
 import honq.shared.generated.resources.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import pro.respawn.flowmvi.compose.dsl.subscribe
 import pro.respawn.flowmvi.dsl.intent
@@ -90,6 +102,7 @@ private const val SLIDE_UP_PX = 40f
 @Composable
 fun HomeScreen(
     onNavigateToPractice: () -> Unit,
+    onNavigateToRandomPractice: () -> Unit,
     onNavigateToSmartPractice: () -> Unit,
     onNavigateToMockTest: () -> Unit,
     onNavigateToFavorites: () -> Unit,
@@ -98,6 +111,10 @@ fun HomeScreen(
     onNavigateToAbout: () -> Unit
 ) {
     val container = koinViewModel<HomeContainer>()
+    val premiumManager: PremiumManager = koinInject()
+    val isPremium by premiumManager.isPremium.collectAsState()
+    val freeTestsRemaining by premiumManager.freeTrialMockTestsRemaining.collectAsState()
+
     val state by container.store.subscribe { action ->
         when (action) {
             HomeAction.NavigateToPractice -> onNavigateToPractice()
@@ -105,14 +122,42 @@ fun HomeScreen(
         }
     }
 
+    var showPaywall by remember { mutableStateOf(false) }
+    var showPurchaseSuccess by remember { mutableStateOf(false) }
+    var pendingNavigation by remember { mutableStateOf<(() -> Unit)?>(null) }
+
+    fun gatedNavigation(isPro: Boolean, navigate: () -> Unit) {
+        if (isPro) {
+            navigate()
+        } else {
+            pendingNavigation = navigate
+            showPaywall = true
+        }
+    }
+
     HomeContent(
         state = state,
-        onNavigateToPractice = onNavigateToPractice,
-        onNavigateToSmartPractice = onNavigateToSmartPractice,
-        onNavigateToMockTest = onNavigateToMockTest,
+        isPremium = isPremium,
+        freeTestsRemaining = freeTestsRemaining,
+        onNavigateToPractice = {
+            if (isPremium) onNavigateToPractice() else onNavigateToRandomPractice()
+        },
+        onNavigateToSmartPractice = {
+            gatedNavigation(isPremium, onNavigateToSmartPractice)
+        },
+        onNavigateToMockTest = {
+            if (isPremium || freeTestsRemaining > 0) {
+                onNavigateToMockTest()
+            } else {
+                pendingNavigation = onNavigateToMockTest
+                showPaywall = true
+            }
+        },
         onNavigateToFavorites = onNavigateToFavorites,
         onNavigateToSearch = onNavigateToSearch,
-        onNavigateToStatistics = onNavigateToStatistics,
+        onNavigateToStatistics = {
+            gatedNavigation(isPremium, onNavigateToStatistics)
+        },
         onNavigateToAbout = onNavigateToAbout,
         onSelectState = { stateId -> container.intent(HomeIntent.SelectState(stateId)) },
         onSelectLicenseType = { typeId -> container.intent(HomeIntent.SelectLicenseType(typeId)) },
@@ -121,11 +166,49 @@ fun HomeScreen(
             container.intent(HomeIntent.OpenExternalLink(linkType, url))
         }
     )
+
+    if (showPaywall) {
+        Paywall(
+            options = PaywallOptions(
+                dismissRequest = {
+                    showPaywall = false
+                    pendingNavigation = null
+                }
+            ) {
+                shouldDisplayDismissButton = true
+                listener = object : PaywallListener {
+                    override fun onPurchaseCompleted(
+                        customerInfo: CustomerInfo,
+                        storeTransaction: StoreTransaction
+                    ) {
+                        showPaywall = false
+                        showPurchaseSuccess = true
+                    }
+                }
+            }
+        )
+    }
+
+    AnimatedVisibility(
+        visible = showPurchaseSuccess,
+        enter = fadeIn(animationSpec = tween(HonqMotion.durationMedium)),
+        exit = fadeOut(animationSpec = tween(HonqMotion.durationMedium))
+    ) {
+        PurchaseSuccessScreen(
+            onContinue = {
+                showPurchaseSuccess = false
+                pendingNavigation?.invoke()
+                pendingNavigation = null
+            }
+        )
+    }
 }
 
 @Composable
 private fun HomeContent(
     state: HomeState,
+    isPremium: Boolean,
+    freeTestsRemaining: Int,
     onNavigateToPractice: () -> Unit,
     onNavigateToSmartPractice: () -> Unit,
     onNavigateToMockTest: () -> Unit,
@@ -181,7 +264,7 @@ private fun HomeContent(
             ) {
                 BottomActionBar(modifier = Modifier.navigationBarsPadding()) {
                     HonqButton(
-                        text = stringResource(Res.string.home_start_practice),
+                        text = if (isPremium) stringResource(Res.string.home_start_practice) else "Random Practice",
                         onClick = onNavigateToPractice,
                         enabled = state.isReady,
                         modifier = Modifier.weight(1f)
@@ -268,6 +351,7 @@ private fun HomeContent(
                             Box(modifier = Modifier.staggeredEntrance(1)) {
                                 QuestionBankCard(
                                     state = state,
+                                    isPremium = isPremium,
                                     onNavigateToSmartPractice = onNavigateToSmartPractice
                                 )
                             }
@@ -275,7 +359,7 @@ private fun HomeContent(
                                 FavoritesCard(state, onNavigateToFavorites)
                             }
                             Box(modifier = Modifier.staggeredEntrance(3)) {
-                                StatsRow(state, onNavigateToStatistics)
+                                StatsRow(state, isPremium, onNavigateToStatistics)
                             }
 
                             if (state.stateResources.isNotEmpty()) {
@@ -563,6 +647,7 @@ private fun SyncIndicator(
 @Composable
 private fun QuestionBankCard(
     state: HomeState,
+    isPremium: Boolean,
     onNavigateToSmartPractice: () -> Unit
 ) {
     val colors = HonqTheme.colors
@@ -662,22 +747,21 @@ private fun QuestionBankCard(
             fontSize = 12.sp
         )
         Spacer(modifier = Modifier.height(HonqSpacing.sm))
-        HonqButton(
-            text = "Smart Practice",
-            onClick = onNavigateToSmartPractice,
-            variant = HonqButtonVariant.Secondary,
-            enabled = state.isReady,
-            modifier = Modifier.height(36.dp)
-        )
-//        Text(
-//            text = "What is Smart Practice?",
-//            fontSize = 12.sp,
-//            color = colors.textMuted,
-//            modifier = Modifier
-//                .align(Alignment.CenterHorizontally)
-//                .clickable { showSmartPracticeInfo = true }
-//                .padding(vertical = 2.dp)
-//        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
+        ) {
+            HonqButton(
+                text = "Smart Practice",
+                onClick = onNavigateToSmartPractice,
+                variant = HonqButtonVariant.Secondary,
+                enabled = state.isReady,
+                modifier = Modifier.weight(1f).height(36.dp)
+            )
+            if (!isPremium) {
+                ProBadge()
+            }
+        }
     }
 }
 
@@ -742,6 +826,7 @@ private fun FavoritesCard(
 @Composable
 private fun StatsRow(
     state: HomeState,
+    isPremium: Boolean,
     onNavigateToStatistics: () -> Unit
 ) {
     val colors = HonqTheme.colors
@@ -765,12 +850,16 @@ private fun StatsRow(
                     color = colors.textSecondary,
                     fontSize = 12.sp
                 )
-                Text(
-                    text = "Stats",
-                    color = colors.primary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                if (isPremium) {
+                    Text(
+                        text = "Stats",
+                        color = colors.primary,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                } else {
+                    ProBadge()
+                }
             }
             Spacer(modifier = Modifier.height(HonqSpacing.xs))
             AnimatedContent(
@@ -807,12 +896,16 @@ private fun StatsRow(
                     color = colors.textSecondary,
                     fontSize = 12.sp
                 )
-                Text(
-                    text = "Stats",
-                    color = colors.primary,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                if (isPremium) {
+                    Text(
+                        text = "Stats",
+                        color = colors.primary,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                } else {
+                    ProBadge()
+                }
             }
             Spacer(modifier = Modifier.height(HonqSpacing.xs))
             AnimatedContent(
@@ -1084,3 +1177,7 @@ private fun ResourceItem(
         )
     }
 }
+
+// region Previews
+
+// endregion
