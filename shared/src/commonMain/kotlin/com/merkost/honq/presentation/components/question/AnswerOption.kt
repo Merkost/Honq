@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
@@ -140,6 +140,7 @@ fun AnswerOption(
             Text(
                 text = text,
                 color = textColor,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (state != AnswerOptionState.Default) FontWeight.Medium else FontWeight.Normal
             )
         }
@@ -154,7 +155,7 @@ private fun OptionLabel(
 ) {
     Box(
         modifier = Modifier
-            .size(36.dp)
+            .size(HonqSizing.answerOptionLabelSize)
             .clip(CircleShape)
             .background(backgroundColor),
         contentAlignment = Alignment.Center
@@ -162,8 +163,8 @@ private fun OptionLabel(
         Text(
             text = label,
             color = textColor,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold
         )
     }
 }

@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.SubcomposeAsyncImage
+import com.merkost.honq.presentation.theme.HonqSizing
+import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 import honq.shared.generated.resources.Res
 import honq.shared.generated.resources.ic_image_broken
@@ -53,7 +55,7 @@ fun QuestionImage(
         contentDescription = contentDescription,
         modifier = modifier
             .heightIn(max = 200.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(HonqSizing.cornerRadiusSmall))
             .clickable { showFullscreen = true },
         contentScale = ContentScale.Fit,
         loading = {
@@ -120,7 +122,7 @@ private fun FullscreenImageDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(HonqSizing.minTapTarget),
                             color = Color.White,
                             strokeWidth = 3.dp
                         )
@@ -132,7 +134,7 @@ private fun FullscreenImageDialog(
                 onClick = onDismiss,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
+                    .padding(HonqSpacing.md)
                     .background(Color.Black.copy(alpha = 0.5f), CircleShape)
             ) {
                 Icon(
@@ -158,13 +160,13 @@ private fun ImagePlaceholder(
             .aspectRatio(16f / 9f)
             .background(
                 color = colors.imagePlaceholder,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(HonqSizing.cornerRadiusSmall)
             ),
         contentAlignment = Alignment.Center
     ) {
         if (showLoading) {
             CircularProgressIndicator(
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(HonqSizing.iconBadgeSize),
                 color = colors.loadingIndicator,
                 strokeWidth = 3.dp
             )
@@ -172,7 +174,7 @@ private fun ImagePlaceholder(
             Icon(
                 painter = painterResource(Res.drawable.ic_image_broken),
                 contentDescription = "Failed to load image",
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(HonqSizing.minTapTarget),
                 tint = colors.imagePlaceholderIcon
             )
         }

@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Immutable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,18 +21,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import com.merkost.honq.domain.model.Question
-import com.merkost.honq.presentation.components.base.AnimatedAppear
 import com.merkost.honq.presentation.components.base.AnimatedFavoriteButton
 import com.merkost.honq.presentation.components.base.BottomActionBarVertical
 import com.merkost.honq.presentation.components.base.HonqButton
+import com.merkost.honq.presentation.components.base.HonqButtonVariant
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.components.question.ExplanationCard
 import com.merkost.honq.presentation.components.question.QuestionCard
@@ -112,7 +117,30 @@ private fun PracticeContent(
                     )
                 }
                 state.currentQuestion != null -> {
-                    Column(modifier = Modifier.fillMaxSize()) {
+                    val swipeThreshold = 100f
+                    val dragAccumulator = remember { mutableFloatStateOf(0f) }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(state.currentIndex, state.answerRevealed) {
+                                detectHorizontalDragGestures(
+                                    onDragStart = { dragAccumulator.floatValue = 0f },
+                                    onDragEnd = {
+                                        val drag = dragAccumulator.floatValue
+                                        when {
+                                            drag > swipeThreshold && !state.isFirstQuestion ->
+                                                onIntent(PracticeIntent.PreviousQuestion)
+                                            drag < -swipeThreshold && state.answerRevealed ->
+                                                onIntent(PracticeIntent.NextQuestion)
+                                        }
+                                    },
+                                    onHorizontalDrag = { _, dragAmount ->
+                                        dragAccumulator.floatValue += dragAmount
+                                    }
+                                )
+                            }
+                    ) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -127,18 +155,23 @@ private fun PracticeContent(
                                     question = state.currentQuestion!!,
                                     selectedAnswer = state.selectedAnswer,
                                     answerRevealed = state.answerRevealed,
-                                    questionIndex = state.questionsAnswered
+                                    questionIndex = state.currentIndex,
+                                    navigationDirection = state.navigationDirection
                                 ),
                                 transitionSpec = {
+                                    val isForward = targetState.navigationDirection == PracticeNavigationDirection.Forward
+                                    val enterOffset = if (isForward) 1 else -1
+                                    val exitOffset = if (isForward) -1 else 1
+
                                     (slideInHorizontally(
                                         animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
-                                        initialOffsetX = { fullWidth -> fullWidth }
+                                        initialOffsetX = { fullWidth -> fullWidth * enterOffset }
                                     ) + fadeIn(
                                         animationSpec = tween(HonqMotion.durationMedium)
                                     )).togetherWith(
                                         slideOutHorizontally(
                                             animationSpec = tween(HonqMotion.durationMedium, easing = HonqMotion.easingStandard),
-                                            targetOffsetX = { fullWidth -> -fullWidth }
+                                            targetOffsetX = { fullWidth -> fullWidth * exitOffset }
                                         ) + fadeOut(
                                             animationSpec = tween(HonqMotion.durationShort)
                                         )
@@ -164,12 +197,24 @@ private fun PracticeContent(
                             }
                         }
 
-                        AnimatedAppear(visible = state.answerRevealed) {
-                            BottomActionBarVertical {
+                        BottomActionBarVertical {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
+                            ) {
+                                HonqButton(
+                                    text = "Previous",
+                                    onClick = { onIntent(PracticeIntent.PreviousQuestion) },
+                                    variant = HonqButtonVariant.Secondary,
+                                    enabled = !state.isFirstQuestion,
+                                    modifier = Modifier.weight(1f)
+                                )
                                 HonqButton(
                                     text = "Next Question",
                                     onClick = { onIntent(PracticeIntent.NextQuestion) },
-                                    loading = state.isLoadingNext
+                                    enabled = state.answerRevealed,
+                                    loading = state.isLoadingNext,
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
                         }
@@ -187,11 +232,13 @@ private fun ScoreHeader(state: PracticeState) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Question ${state.questionsAnswered}",
+            text = "Question ${state.currentQuestionNumber}",
+            style = MaterialTheme.typography.bodyMedium,
             color = HonqTheme.colors.textSecondary
         )
         Text(
             text = "${state.correctAnswers} correct",
+            style = MaterialTheme.typography.labelMedium,
             color = HonqTheme.colors.correct,
             fontWeight = FontWeight.Medium
         )
@@ -203,5 +250,6 @@ private data class QuestionSnapshot(
     val question: Question,
     val selectedAnswer: Int?,
     val answerRevealed: Boolean,
-    val questionIndex: Int
+    val questionIndex: Int,
+    val navigationDirection: PracticeNavigationDirection
 )

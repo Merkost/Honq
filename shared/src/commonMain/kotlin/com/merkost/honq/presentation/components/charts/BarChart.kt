@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -13,12 +14,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.presentation.theme.HonqTheme
 
 data class BarChartData(
@@ -40,6 +39,7 @@ fun BarChart(
 ) {
     val colors = HonqTheme.colors
     val textMeasurer = rememberTextMeasurer()
+    val labelStyle = MaterialTheme.typography.labelSmall.copy(color = labelColor)
     val animationProgress = remember { Animatable(0f) }
 
     LaunchedEffect(data) {
@@ -85,7 +85,7 @@ fun BarChart(
             // Label
             val textLayoutResult = textMeasurer.measure(
                 text = item.label,
-                style = TextStyle(color = labelColor, fontSize = 10.sp)
+                style = labelStyle
             )
             val textX = x + (barWidth - textLayoutResult.size.width) / 2
             val textY = chartHeight + 8.dp.toPx()

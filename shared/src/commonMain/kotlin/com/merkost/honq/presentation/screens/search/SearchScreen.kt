@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,12 +28,12 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,12 +41,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.Question
 import com.merkost.honq.presentation.components.base.AnimatedFavoriteButton
 import com.merkost.honq.presentation.components.base.HonqCard
@@ -56,9 +52,7 @@ import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
@@ -174,7 +168,7 @@ private fun SearchContent(
                             Text(
                                 text = "Type at least 2 characters to search",
                                 color = colors.textMuted,
-                                fontSize = 14.sp,
+                                style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier
                                     .align(Alignment.TopCenter)
                                     .padding(top = HonqSpacing.lg)
@@ -212,7 +206,7 @@ private fun SearchBar(
             imageVector = Icons.Rounded.Search,
             contentDescription = null,
             tint = colors.textMuted,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(HonqSizing.iconSizeSmall)
         )
 
         BasicTextField(
@@ -221,9 +215,8 @@ private fun SearchBar(
             modifier = Modifier
                 .weight(1f)
                 .focusRequester(focusRequester),
-            textStyle = TextStyle(
-                color = colors.textPrimary,
-                fontSize = 16.sp
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = colors.textPrimary
             ),
             cursorBrush = SolidColor(colors.primary),
             singleLine = true,
@@ -235,7 +228,7 @@ private fun SearchBar(
                         Text(
                             text = "Search by keyword or question ID...",
                             color = colors.textMuted,
-                            fontSize = 16.sp
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                     innerTextField()
@@ -249,25 +242,25 @@ private fun SearchBar(
             exit = fadeOut()
         ) {
             Box(
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(HonqSizing.iconSizeMedium),
                 contentAlignment = Alignment.Center
             ) {
                 if (isSearching) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(HonqSizing.iconSizeSmall),
                         color = colors.loadingIndicator,
                         strokeWidth = 2.dp
                     )
                 } else {
                     IconButton(
                         onClick = onClear,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(HonqSizing.iconSizeMedium)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
                             contentDescription = "Clear",
                             tint = colors.textMuted,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(HonqSizing.iconSizeSmall)
                         )
                     }
                 }
@@ -295,7 +288,7 @@ private fun SearchResults(
             Text(
                 text = "${results.size} result${if (results.size != 1) "s" else ""} found",
                 color = colors.textMuted,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(bottom = HonqSpacing.xs)
             )
         }
@@ -336,7 +329,7 @@ private fun SearchResultCard(
                 Text(
                     text = question.text,
                     color = colors.textPrimary,
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -348,25 +341,24 @@ private fun SearchResultCard(
                     Text(
                         text = question.categoryName,
                         color = colors.textMuted,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.labelSmall
                     )
                     Text(
                         text = "•",
                         color = colors.textMuted,
-                        fontSize = 12.sp
+                        style = MaterialTheme.typography.labelSmall
                     )
                     Text(
                         text = "#${question.code}",
                         color = colors.textMuted.copy(alpha = 0.6f),
-                        fontSize = 11.sp
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
             }
             AnimatedFavoriteButton(
                 isFavorite = isFavorite,
                 onClick = onToggleFavorite,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(HonqSizing.iconSizeLarge)
             )
         }
     }
@@ -386,20 +378,19 @@ private fun SearchPrompt(modifier: Modifier = Modifier) {
             imageVector = Icons.Rounded.Search,
             contentDescription = null,
             tint = colors.textMuted,
-            modifier = Modifier.size(36.dp)
+            modifier = Modifier.size(HonqSizing.iconSizeLarge)
         )
         Spacer(modifier = Modifier.height(HonqSpacing.sm))
         Text(
             text = "Search for questions",
             color = colors.textSecondary,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.titleSmall
         )
         Spacer(modifier = Modifier.height(HonqSpacing.xs))
         Text(
             text = "Find questions by keywords, question ID, or answer text",
             color = colors.textMuted,
-            fontSize = 13.sp,
+            style = MaterialTheme.typography.labelMedium,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }
@@ -425,14 +416,13 @@ private fun EmptySearchState(
         Text(
             text = "No results found",
             color = colors.textSecondary,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.titleSmall
         )
         Spacer(modifier = Modifier.height(HonqSpacing.xs))
         Text(
             text = "No questions match \"$query\". Try a different search term.",
             color = colors.textMuted,
-            fontSize = 13.sp,
+            style = MaterialTheme.typography.labelMedium,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }

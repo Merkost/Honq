@@ -42,7 +42,7 @@ class PracticeContainer(
             } else {
                 analytics.track(AnalyticsEvent.PracticeStarted)
             }
-            loadNextQuestion()
+            loadNewQuestion()
         }
 
         whileSubscribed {
@@ -55,7 +55,8 @@ class PracticeContainer(
             when (intent) {
                 is PracticeIntent.AnswerSelected -> handleAnswerSelected(intent.index)
                 is PracticeIntent.ToggleFavorite -> toggleFavorite(intent.questionId)
-                PracticeIntent.NextQuestion -> loadNextQuestion()
+                PracticeIntent.NextQuestion -> handleNextQuestion()
+                PracticeIntent.PreviousQuestion -> goToPreviousQuestion()
                 PracticeIntent.Exit -> action(PracticeAction.NavigateBack)
             }
         }
@@ -65,7 +66,10 @@ class PracticeContainer(
         index: Int
     ) {
         withState {
-            val question = currentQuestion ?: return@withState
+            val entry = questionHistory.getOrNull(currentIndex) ?: return@withState
+            if (entry.answerRevealed) return@withState
+
+            val question = entry.question
             val isCorrect = index == question.correctIndex
 
             recordAnswer(question.id, isCorrect)
@@ -78,24 +82,51 @@ class PracticeContainer(
             )
 
             updateState {
-                copy(
+                val updatedHistory = questionHistory.toMutableList()
+                updatedHistory[currentIndex] = entry.copy(
                     selectedAnswer = index,
-                    answerRevealed = true,
+                    answerRevealed = true
+                )
+                copy(
+                    questionHistory = updatedHistory,
                     correctAnswers = if (isCorrect) correctAnswers + 1 else correctAnswers
                 )
             }
         }
     }
 
-    private suspend fun PipelineContext<PracticeState, PracticeIntent, PracticeAction>.loadNextQuestion() {
+    private suspend fun PipelineContext<PracticeState, PracticeIntent, PracticeAction>.handleNextQuestion() {
+        var needsNewQuestion = false
+
         withState {
-            if (currentQuestion == null) {
-                updateState { copy(isLoading = true) }
+            if (currentIndex < questionHistory.lastIndex) {
+                updateState {
+                    copy(
+                        currentIndex = currentIndex + 1,
+                        navigationDirection = PracticeNavigationDirection.Forward
+                    )
+                }
             } else {
+                needsNewQuestion = true
                 updateState { copy(isLoadingNext = true) }
             }
         }
 
+        if (needsNewQuestion) {
+            loadNewQuestion()
+        }
+    }
+
+    private suspend fun PipelineContext<PracticeState, PracticeIntent, PracticeAction>.goToPreviousQuestion() {
+        updateState {
+            copy(
+                currentIndex = (currentIndex - 1).coerceAtLeast(0),
+                navigationDirection = PracticeNavigationDirection.Backward
+            )
+        }
+    }
+
+    private suspend fun PipelineContext<PracticeState, PracticeIntent, PracticeAction>.loadNewQuestion() {
         if (smartMode) {
             loadSmartQuestion()
         } else {
@@ -113,15 +144,17 @@ class PracticeContainer(
             val nextQuestion = smartQueue.removeFirstOrNull()
             if (nextQuestion == null) {
                 Cedar.tag("Practice").w("loadSmartQuestion: no questions available")
+                updateState { copy(isLoading = false, isLoadingNext = false) }
+                return
             }
             updateState {
+                val newEntry = PracticeHistoryEntry(question = nextQuestion)
                 copy(
-                    currentQuestion = nextQuestion,
-                    selectedAnswer = null,
-                    answerRevealed = false,
+                    questionHistory = questionHistory + newEntry,
+                    currentIndex = questionHistory.size,
+                    navigationDirection = PracticeNavigationDirection.Forward,
                     isLoading = false,
                     isLoadingNext = false,
-                    questionsAnswered = questionsAnswered + 1,
                     error = null
                 )
             }
@@ -134,17 +167,20 @@ class PracticeContainer(
     private suspend fun PipelineContext<PracticeState, PracticeIntent, PracticeAction>.loadRandomQuestion() {
         getRandomQuestions(1, categoryId)
             .onSuccess { questions ->
-                if (questions.isEmpty()) {
+                val newQuestion = questions.firstOrNull()
+                if (newQuestion == null) {
                     Cedar.tag("Practice").w("loadNextQuestion: no questions returned for category=$categoryId")
+                    updateState { copy(isLoading = false, isLoadingNext = false) }
+                    return@onSuccess
                 }
                 updateState {
+                    val newEntry = PracticeHistoryEntry(question = newQuestion)
                     copy(
-                        currentQuestion = questions.firstOrNull(),
-                        selectedAnswer = null,
-                        answerRevealed = false,
+                        questionHistory = questionHistory + newEntry,
+                        currentIndex = questionHistory.size,
+                        navigationDirection = PracticeNavigationDirection.Forward,
                         isLoading = false,
                         isLoadingNext = false,
-                        questionsAnswered = questionsAnswered + 1,
                         error = null
                     )
                 }

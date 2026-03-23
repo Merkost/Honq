@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.MockTestResult
 import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqCard
@@ -102,14 +102,14 @@ private fun StatisticsContent(
                         Text(
                             text = "No statistics yet",
                             color = colors.textSecondary,
-                            fontSize = 18.sp,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(HonqSpacing.sm))
                         Text(
                             text = "Start practicing to see your progress here!",
                             color = colors.textMuted,
-                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -143,7 +143,7 @@ private fun OverviewSection(state: StatisticsState) {
         Text(
             text = "Overview",
             color = colors.textSecondary,
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium
         )
 
@@ -167,12 +167,12 @@ private fun OverviewSection(state: StatisticsState) {
                 Text(
                     text = "${state.progress.uniqueQuestionsAnswered}/${state.progress.totalQuestions}",
                     color = colors.textMuted,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Text(
                     text = "Questions seen",
                     color = colors.textMuted,
-                    fontSize = 11.sp
+                    style = MaterialTheme.typography.labelSmall
                 )
             }
 
@@ -196,12 +196,12 @@ private fun OverviewSection(state: StatisticsState) {
                 Text(
                     text = "${state.progress.correctAnswers}/${state.progress.totalPracticed}",
                     color = colors.textMuted,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Text(
                     text = "Correct answers",
                     color = colors.textMuted,
-                    fontSize = 11.sp
+                    style = MaterialTheme.typography.labelSmall
                 )
             }
         }
@@ -216,7 +216,7 @@ private fun PracticeAccuracySection(state: StatisticsState) {
         Text(
             text = "Practice Summary",
             color = colors.textSecondary,
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium
         )
 
@@ -254,7 +254,7 @@ private fun MockTestPerformanceSection(state: StatisticsState, onIntent: (Statis
         Text(
             text = "Mock Test Performance",
             color = colors.textSecondary,
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium
         )
 
@@ -264,7 +264,7 @@ private fun MockTestPerformanceSection(state: StatisticsState, onIntent: (Statis
             Text(
                 text = "Take a mock test to track your performance",
                 color = colors.textMuted,
-                fontSize = 13.sp,
+                style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(vertical = HonqSpacing.md)
             )
         } else {
@@ -295,7 +295,7 @@ private fun MockTestPerformanceSection(state: StatisticsState, onIntent: (Statis
                 Text(
                     text = "Recent Test Scores",
                     color = colors.textMuted,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Spacer(modifier = Modifier.height(HonqSpacing.sm))
 
@@ -321,7 +321,7 @@ private fun MockTestPerformanceSection(state: StatisticsState, onIntent: (Statis
                 Text(
                     text = "90% = passing score",
                     color = colors.textMuted,
-                    fontSize = 10.sp,
+                    style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.End
                 )
@@ -333,7 +333,7 @@ private fun MockTestPerformanceSection(state: StatisticsState, onIntent: (Statis
                 Text(
                     text = "Recent Tests",
                     color = colors.textMuted,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Spacer(modifier = Modifier.height(HonqSpacing.sm))
 
@@ -370,25 +370,25 @@ private fun MockTestResultItem(result: MockTestResult, onClick: () -> Unit) {
             Text(
                 text = formatTestDateFull(result),
                 color = colors.textPrimary,
-                fontSize = 13.sp
+                style = MaterialTheme.typography.labelMedium
             )
             Text(
                 text = "${result.correctAnswers}/${result.totalQuestions} correct",
                 color = colors.textMuted,
-                fontSize = 11.sp
+                style = MaterialTheme.typography.labelSmall
             )
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = "${result.scorePercentage}%",
                 color = if (result.passed) colors.correct else colors.incorrect,
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = if (result.passed) "PASSED" else "FAILED",
                 color = if (result.passed) colors.correct else colors.incorrect,
-                fontSize = 10.sp,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -406,7 +406,7 @@ private fun InsightsSection(
         Text(
             text = "Insights",
             color = colors.textSecondary,
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Medium
         )
 
@@ -422,13 +422,13 @@ private fun InsightsSection(
                             text = "Weakest Questions",
                             color = colors.textPrimary,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 15.sp
+                            style = MaterialTheme.typography.titleSmall
                         )
                         Spacer(modifier = Modifier.height(HonqSpacing.xs))
                         Text(
                             text = "${state.weakestQuestionCount} questions you got wrong",
                             color = colors.textMuted,
-                            fontSize = 12.sp
+                            style = MaterialTheme.typography.labelSmall
                         )
                     }
                     Icon(
@@ -451,13 +451,13 @@ private fun InsightsSection(
                         text = "Unanswered Questions",
                         color = colors.textPrimary,
                         fontWeight = FontWeight.Medium,
-                        fontSize = 15.sp
+                        style = MaterialTheme.typography.titleSmall
                     )
                     Spacer(modifier = Modifier.height(HonqSpacing.xs))
                     Text(
                         text = "${state.unansweredQuestionCount} questions not yet attempted",
                         color = colors.textMuted,
-                        fontSize = 12.sp
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
                 Icon(
@@ -482,13 +482,13 @@ private fun StatItem(
         Text(
             text = value,
             color = color,
-            fontSize = 24.sp,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = label,
             color = colors.textMuted,
-            fontSize = 11.sp
+            style = MaterialTheme.typography.labelSmall
         )
     }
 }

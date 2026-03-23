@@ -14,6 +14,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -21,8 +22,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.merkost.honq.presentation.theme.HonqSizing
+import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 import honq.shared.generated.resources.Res
 import honq.shared.generated.resources.ic_honq_logo
@@ -55,14 +56,14 @@ fun HonqScaffold(
                                 Image(
                                     painter = painterResource(Res.drawable.ic_honq_logo),
                                     contentDescription = "Honq Logo",
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.size(HonqSizing.iconSizeLarge)
                                 )
                                 title?.let {
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(HonqSpacing.sm))
                                     Text(
                                         text = it,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 20.sp
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
                             }

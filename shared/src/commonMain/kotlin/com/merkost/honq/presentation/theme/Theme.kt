@@ -10,6 +10,7 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
+import com.merkost.honq.data.local.FontScale
 import com.merkost.honq.data.local.ThemeMode
 import com.merkost.honq.data.local.ThemePreferences
 import org.koin.compose.koinInject
@@ -52,6 +53,7 @@ private val LightColorScheme = lightColorScheme(
 fun HonqTheme(content: @Composable () -> Unit) {
     val themePreferences = koinInject<ThemePreferences>()
     val themeMode by themePreferences.themeMode.collectAsState()
+    val fontScale by themePreferences.fontScale.collectAsState()
     val systemDark = isSystemInDarkTheme()
 
     val isDark = when (themeMode) {
@@ -68,7 +70,7 @@ fun HonqTheme(content: @Composable () -> Unit) {
     ) {
         MaterialTheme(
             colorScheme = materialScheme,
-            typography = HonqTypography,
+            typography = honqTypography(fontScale = fontScale.scale),
             content = content
         )
     }
@@ -94,7 +96,7 @@ fun HonqPreviewTheme(
     ) {
         MaterialTheme(
             colorScheme = materialScheme,
-            typography = HonqTypography,
+            typography = honqTypography(),
             content = content
         )
     }

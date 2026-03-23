@@ -56,7 +56,15 @@
       "Bash(mkdir -p rc_ui_sources)",
       "Bash(unzip -o ~/.gradle/caches/modules-2/files-2.1/com.revenuecat.purchases/purchases-kmp-ui/2.7.0+17.41.0/1381252a64b28e944ffd369e5fbbfd0e9df1dac1/purchases-kmp-ui-2.7.0+17.41.0-sources.jar -d rc_ui_sources)",
       "Bash(./gradlew :shared:compileDebugKotlin:*)",
-      "Bash(./gradlew :shared:compileKotlinIosArm64:*)"
+      "Bash(./gradlew :shared:compileKotlinIosArm64:*)",
+      "Bash(./gradlew :androidApp:compileDebugKotlin)",
+      "Bash(grep -E \"\\\\.\\(kt\\)$\")",
+      "Bash(cat:*)",
+      "Bash(curl -sL \"https://fonts.google.com/download?family=DM+Sans\" -o dm_sans.zip)",
+      "Bash(unzip -o dm_sans.zip -d dm_sans_extracted)",
+      "Bash(curl -sL -o dm_sans.zip \"https://github.com/google/fonts/archive/refs/heads/main.zip\")",
+      "Bash(pip3 show:*)",
+      "Bash(./gradlew :androidApp:installDebug)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -74,7 +74,7 @@ fun HonqButton(
         ) { isLoading ->
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(HonqSizing.iconSizeMedium),
                     color = when (variant) {
                         HonqButtonVariant.Primary -> HonqTheme.colors.background
                         else -> HonqTheme.colors.primary

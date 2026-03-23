@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -200,10 +201,12 @@ private fun TestHeader(state: MockTestState) {
     ) {
         Text(
             text = "Question ${state.currentQuestionNumber}/${state.totalQuestions}",
+            style = MaterialTheme.typography.bodyMedium,
             color = colors.textSecondary
         )
         Text(
             text = formatTime(state.timeRemaining.inWholeSeconds),
+            style = MaterialTheme.typography.bodyMedium,
             color = if (state.timeRemaining.inWholeMinutes < 5) colors.incorrect else colors.textSecondary,
             fontWeight = FontWeight.Medium
         )

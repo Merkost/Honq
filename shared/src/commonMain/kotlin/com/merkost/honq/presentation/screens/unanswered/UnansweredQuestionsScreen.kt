@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.Question
 import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqCard
@@ -114,14 +114,14 @@ private fun UnansweredQuestionsList(
                 Text(
                     text = "All questions answered",
                     color = colors.textPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(HonqSpacing.xs))
                 Text(
                     text = "You've attempted every question. Great job!",
                     color = colors.textMuted,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelSmall
                 )
             }
         } else {
@@ -177,7 +177,7 @@ private fun CategoryPill(text: String) {
         Text(
             text = text,
             color = colors.textSecondary,
-            fontSize = 12.sp
+            style = MaterialTheme.typography.labelSmall
         )
     }
 }
