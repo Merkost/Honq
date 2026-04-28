@@ -428,7 +428,7 @@ Then in `QuestionRepositoryImpl.kt` and any other site that referenced `data.rem
 - [ ] **Step 6: Build and verify**
 
 ```bash
-./gradlew :shared:compileKotlinMetadata :composeApp:compileDebugKotlinAndroid 2>&1 | tail -40
+./gradlew :shared:compileKotlinMetadata :androidApp:compileDebugKotlinAndroid 2>&1 | tail -40
 ```
 
 Expected: BUILD SUCCESSFUL. If there are compile errors about a missing `QuestionDto.toDomain` or `CategoryDto.toDomain`, those call sites are inside the soon-to-be-deleted `data/remote/api/QuestionApi.kt` — leave them broken for now if Gradle tolerates it, or delete that one specific function call temporarily; otherwise just keep the missing-mapper symbol commented out. (Re-check: the dropped `toDomain` mappers from the old file are NOT referenced from outside `data/remote/`, so this should compile cleanly.)
@@ -961,7 +961,7 @@ If `Json` is not provided, add: `single { Json { ignoreUnknownKeys = true } }` t
 - [ ] **Step 2: Build**
 
 ```bash
-./gradlew :shared:compileKotlinMetadata :composeApp:compileDebugKotlinAndroid 2>&1 | tail -20
+./gradlew :shared:compileKotlinMetadata :androidApp:compileDebugKotlinAndroid 2>&1 | tail -20
 ```
 
 Expected: BUILD SUCCESSFUL.
@@ -1062,7 +1062,7 @@ In `shared/src/commonMain/kotlin/com/merkost/honq/presentation/di/PresentationMo
 - [ ] **Step 4: Build**
 
 ```bash
-./gradlew :composeApp:assembleDebug 2>&1 | tail -30
+./gradlew :androidApp:assembleDebug 2>&1 | tail -30
 ```
 
 Expected: BUILD SUCCESSFUL.
@@ -1070,7 +1070,7 @@ Expected: BUILD SUCCESSFUL.
 - [ ] **Step 5: Manual smoke (Android)**
 
 ```bash
-./gradlew :composeApp:installDebug
+./gradlew :androidApp:installDebug
 adb shell am start -n com.merkost.honq/.MainActivity
 ```
 
@@ -1136,7 +1136,7 @@ In `shared/src/commonMain/kotlin/com/merkost/honq/domain/di/DomainModule.kt`, fi
 - [ ] **Step 3: Build**
 
 ```bash
-./gradlew :composeApp:assembleDebug 2>&1 | tail -20
+./gradlew :androidApp:assembleDebug 2>&1 | tail -20
 ```
 
 Expected: BUILD SUCCESSFUL.
@@ -1192,7 +1192,7 @@ The return shape stays a nullable `String?`, so downstream Coil-loading logic wo
 - [ ] **Step 3: Build**
 
 ```bash
-./gradlew :composeApp:assembleDebug 2>&1 | tail -20
+./gradlew :androidApp:assembleDebug 2>&1 | tail -20
 ```
 
 Expected: BUILD SUCCESSFUL. There should be NO remaining `SupabaseConfig` references outside the `data/remote/api/` package — verify:
@@ -1276,7 +1276,7 @@ single<QuestionRepository> {
 - [ ] **Step 4: Build**
 
 ```bash
-./gradlew :composeApp:assembleDebug 2>&1 | tail -30
+./gradlew :androidApp:assembleDebug 2>&1 | tail -30
 ```
 
 Expected: BUILD SUCCESSFUL. If compile errors remain, they point at additional callers of removed methods — most likely in `SyncQuestionsUseCase`, which is deleted in Task 11. To keep this task compiling on its own, also delete `SyncQuestionsUseCase.kt` here:
@@ -1355,7 +1355,7 @@ Expected: empty.
 - [ ] **Step 4: Build**
 
 ```bash
-./gradlew :composeApp:assembleDebug 2>&1 | tail -30
+./gradlew :androidApp:assembleDebug 2>&1 | tail -30
 ```
 
 Expected: BUILD SUCCESSFUL. If something still imports from the deleted package, fix it (likely a stale Koin registration in some module file).
@@ -1419,7 +1419,7 @@ supabase.key=sb_publishable_K8uMTcyDnAY_6hImstx37Q_f3JVI4zn
 - [ ] **Step 4: Build clean**
 
 ```bash
-./gradlew clean :composeApp:assembleDebug 2>&1 | tail -30
+./gradlew clean :androidApp:assembleDebug 2>&1 | tail -30
 ```
 
 Expected: BUILD SUCCESSFUL with no Supabase artifacts pulled.
@@ -1499,7 +1499,7 @@ Verifies the migration on real devices. No automated test covers the full Coil-l
 adb uninstall com.merkost.honq 2>/dev/null
 adb shell svc wifi disable
 adb shell svc data disable
-./gradlew :composeApp:installDebug
+./gradlew :androidApp:installDebug
 adb shell am start -n com.merkost.honq/.MainActivity
 ```
 
@@ -1554,7 +1554,7 @@ After implementing all tasks, verify:
 - [ ] `grep -rn 'io\.github\.jan\.supabase' shared/ androidApp/` returns empty.
 - [ ] `grep -rn 'SupabaseConfig\|QuestionApi\|AppConfigApi\|DataSyncManager\|SyncQuestionsUseCase' shared/ androidApp/` returns empty.
 - [ ] `grep -i supabase local.properties` returns empty.
-- [ ] `./gradlew clean :composeApp:assembleDebug :composeApp:assembleRelease` BUILD SUCCESSFUL.
+- [ ] `./gradlew clean :androidApp:assembleDebug :androidApp:assembleRelease` BUILD SUCCESSFUL.
 - [ ] All unit tests pass: `./gradlew :shared:testDebugUnitTest`.
 - [ ] App boots in airplane mode on a fresh install (Android + iOS).
 - [ ] Question images render.
