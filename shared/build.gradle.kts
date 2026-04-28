@@ -100,6 +100,7 @@ kotlin {
             implementation(libs.compottie.resources)
 
             api(libs.firebase.crashlytics)
+            api(libs.firebase.firestore)
         }
 
         androidMain.dependencies {

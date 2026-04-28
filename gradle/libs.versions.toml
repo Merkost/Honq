@@ -100,6 +100,7 @@ amplitude = { module = "digital.guimauve.amplitude:analytics-kmp", version.ref =
 datastore-preferences = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
 firebase-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive-firebase" }
+firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "gitlive-firebase" }
 
 play-integrity = { module = "com.google.android.play:integrity", version.ref = "play-integrity" }
 play-review = { module = "com.google.android.play:review", version.ref = "play-review" }
