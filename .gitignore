@@ -33,3 +33,10 @@ firebase-adminsdk-*.json
 # Local build artifacts.
 androidApp/release/
 scripts/__pycache__/
+
+# Local development tooling — not for public consumption.
+.claude/
+.mcp.json
+docs/superpowers/
+firebase-debug.log
+*-firebase-debug.log
