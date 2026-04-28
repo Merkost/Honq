@@ -1,5 +1,11 @@
 # Supabase Database Schema
 
+> **Archived 2026-04-28.** This schema describes the Supabase backend the
+> Honq app used for content delivery from launch through April 2026. The
+> backend was retired in favor of bundled offline content; see
+> `docs/superpowers/specs/2026-04-28-supabase-removal-design.md` for the
+> migration plan. Kept here for historical reference only.
+
 ## Overview
 Flexible schema designed to support driving knowledge tests for all Australian states/territories, starting with NSW.
 Questions are organized by `question_sets` (state + license type), while categories remain global.
