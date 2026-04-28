@@ -39,7 +39,6 @@ val dataModule = module {
     single<StateSelectionRepository> { InMemoryStateSelectionRepository() }
     single<QuestionSetSelectionRepository> { InMemoryQuestionSetSelectionRepository() }
 
-    // Bundled-content seeding (replacing Supabase sync over the next several commits)
     single {
         com.merkost.honq.data.local.seed.StateResourcesProvider(
             json = get(),
