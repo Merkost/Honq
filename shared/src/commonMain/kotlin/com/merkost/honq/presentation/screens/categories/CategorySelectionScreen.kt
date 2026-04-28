@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.Category
 import com.merkost.honq.domain.model.CategoryProgress
 import com.merkost.honq.presentation.components.base.HonqCard
@@ -122,7 +122,7 @@ private fun CategorySelectionContent(
                             Text(
                                 text = "Or choose a specific topic",
                                 color = colors.textMuted,
-                                fontSize = 12.sp,
+                                style = MaterialTheme.typography.labelSmall,
                                 modifier = Modifier.padding(horizontal = HonqSpacing.xs)
                             )
                             Spacer(modifier = Modifier.height(HonqSpacing.sm))
@@ -167,7 +167,7 @@ private fun AllCategoriesCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(HonqSpacing.xxl)
                         .clip(RoundedCornerShape(HonqSizing.cornerRadiusSmall))
                         .background(colors.primarySurface),
                     contentAlignment = Alignment.Center
@@ -176,14 +176,14 @@ private fun AllCategoriesCard(
                         imageVector = Icons.Rounded.Apps,
                         contentDescription = null,
                         tint = colors.primary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(HonqSizing.iconSizeMedium)
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "All Categories",
                         color = colors.textPrimary,
-                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
                     if (totalQuestions > 0) {
@@ -195,29 +195,29 @@ private fun AllCategoriesCard(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
+                                    .height(HonqSizing.progressBarHeightSmall)
+                                    .clip(RoundedCornerShape(HonqSizing.progressBarHeightSmall / 2))
                                     .background(colors.progressTrack)
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth(progress)
-                                        .height(4.dp)
-                                        .clip(RoundedCornerShape(2.dp))
+                                        .height(HonqSizing.progressBarHeightSmall)
+                                        .clip(RoundedCornerShape(HonqSizing.progressBarHeightSmall / 2))
                                         .background(colors.progressIndicator)
                                 )
                             }
                             Text(
                                 text = "$totalAnswered/$totalQuestions",
                                 color = colors.textMuted,
-                                fontSize = 11.sp
+                                style = MaterialTheme.typography.labelSmall
                             )
                         }
                     } else {
                         Text(
                             text = "Practice questions from all topics",
                             color = colors.textMuted,
-                            fontSize = 12.sp
+                            style = MaterialTheme.typography.labelSmall
                         )
                     }
                 }
@@ -226,7 +226,7 @@ private fun AllCategoriesCard(
                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = null,
                 tint = colors.textMuted,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(HonqSizing.iconSizeMedium)
             )
         }
     }
@@ -262,23 +262,22 @@ private fun CategoryCard(
                     Text(
                         text = category.name,
                         color = colors.textPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                        style = MaterialTheme.typography.titleSmall
                     )
                     if (total > 0 && answered > 0) {
                         Spacer(modifier = Modifier.height(HonqSpacing.xs))
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
+                                .height(HonqSizing.progressBarHeightSmall)
+                                .clip(RoundedCornerShape(HonqSizing.progressBarHeightSmall / 2))
                                 .background(colors.progressTrack)
                         ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth(completionFraction)
-                                    .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
+                                    .height(HonqSizing.progressBarHeightSmall)
+                                    .clip(RoundedCornerShape(HonqSizing.progressBarHeightSmall / 2))
                                     .background(colors.progressIndicator)
                             )
                         }
@@ -290,26 +289,25 @@ private fun CategoryCard(
                             Text(
                                 text = "$answered/$total seen",
                                 color = colors.textMuted,
-                                fontSize = 11.sp
+                                style = MaterialTheme.typography.labelSmall
                             )
                             Text(
                                 text = "$accuracy% accuracy",
                                 color = if (accuracy >= 80) colors.correct else if (accuracy >= 50) colors.warning else colors.incorrect,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium
+                                style = MaterialTheme.typography.labelSmall
                             )
                         }
                     } else if (total > 0) {
                         Text(
                             text = "$total questions",
                             color = colors.textMuted,
-                            fontSize = 12.sp
+                            style = MaterialTheme.typography.labelSmall
                         )
                     } else {
                         Text(
                             text = category.description,
                             color = colors.textMuted,
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelSmall,
                             maxLines = 2
                         )
                     }
@@ -319,7 +317,7 @@ private fun CategoryCard(
                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = null,
                 tint = colors.textMuted,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(HonqSizing.iconSizeMedium)
             )
         }
     }
@@ -331,14 +329,14 @@ private fun CategoryIcon(categoryId: String, iconName: String) {
 
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(HonqSpacing.xxl)
             .clip(RoundedCornerShape(HonqSizing.cornerRadiusSmall))
             .background(colors.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = getCategoryEmoji(categoryId, iconName),
-            fontSize = 24.sp
+            style = MaterialTheme.typography.headlineSmall
         )
     }
 }

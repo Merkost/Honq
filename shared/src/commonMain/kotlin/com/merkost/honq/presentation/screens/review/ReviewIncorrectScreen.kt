@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -181,10 +182,12 @@ private fun ReviewHeader(state: ReviewIncorrectState) {
     ) {
         Text(
             text = "Question ${state.currentQuestionNumber} of ${state.totalQuestions}",
+            style = MaterialTheme.typography.bodyMedium,
             color = HonqTheme.colors.textSecondary
         )
         Text(
             text = "${state.totalQuestions} incorrect",
+            style = MaterialTheme.typography.labelMedium,
             color = HonqTheme.colors.incorrect,
             fontWeight = FontWeight.Medium
         )
@@ -234,6 +237,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     ) {
         Text(
             text = "No incorrect answers to review",
+            style = MaterialTheme.typography.bodyMedium,
             color = HonqTheme.colors.textSecondary
         )
     }

@@ -42,7 +42,7 @@ fun honqDarkColorScheme(): HonqColorScheme {
     val surface = Color(0xFF2C2C2E)
     val surfaceVariant = Color(0xFF3A3A3C)
     val textPrimary = Color(0xFFF5F5F7)
-    val textSecondary = Color(0xFF8E8E93)
+    val textSecondary = Color(0xFF9A9A9F)
     val amber = Color(0xFFFFD60A)
     val amberDark = Color(0xFFCC9900)
 
@@ -53,7 +53,7 @@ fun honqDarkColorScheme(): HonqColorScheme {
         border = Color(0xFF3A3A3C),
         textPrimary = textPrimary,
         textSecondary = textSecondary,
-        textMuted = Color(0xFF636366),
+        textMuted = Color(0xFF7C7C80),
 
         primary = amber,
         primaryVariant = amberDark,
@@ -80,7 +80,7 @@ fun honqLightColorScheme(): HonqColorScheme {
     val surface = Color(0xFFFFFFFF)
     val surfaceVariant = Color(0xFFE5E5EA)
     val textPrimary = Color(0xFF1C1C1E)
-    val textSecondary = Color(0xFF636366)
+    val textSecondary = Color(0xFF58585C)
     val amber = Color(0xFFCC8800)
     val amberDark = Color(0xFF996600)
 
@@ -91,7 +91,7 @@ fun honqLightColorScheme(): HonqColorScheme {
         border = Color(0xFFD1D1D6),
         textPrimary = textPrimary,
         textSecondary = textSecondary,
-        textMuted = Color(0xFF8E8E93),
+        textMuted = Color(0xFF6C6C70),
 
         primary = amber,
         primaryVariant = amberDark,
@@ -119,8 +119,8 @@ object HonqColors {
     val SurfaceVariant = Color(0xFF3A3A3C)
     val Border = Color(0xFF3A3A3C)
     val TextPrimary = Color(0xFFF5F5F7)
-    val TextSecondary = Color(0xFF8E8E93)
-    val TextMuted = Color(0xFF636366)
+    val TextSecondary = Color(0xFF9A9A9F)
+    val TextMuted = Color(0xFF7C7C80)
     val Amber = Color(0xFFFFD60A)
     val AmberDark = Color(0xFFCC9900)
     val AmberSurface = Color(0xFF3D3A1A)

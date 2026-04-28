@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.LocalShipping
 import androidx.compose.material.icons.rounded.TwoWheeler
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -228,7 +229,7 @@ private fun BrandedSplash() {
 
             Text(
                 text = stringResource(Res.string.onboarding_app_name),
-                fontSize = 48.sp,
+                style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp),
                 fontWeight = FontWeight.Bold,
                 color = colors.primary,
                 modifier = Modifier
@@ -290,7 +291,7 @@ private fun WelcomeStep(
 
         Text(
             text = stringResource(Res.string.onboarding_app_name),
-            fontSize = 48.sp,
+            style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp),
             fontWeight = FontWeight.Bold,
             color = colors.primary,
             modifier = Modifier.staggered(1)
@@ -300,7 +301,7 @@ private fun WelcomeStep(
 
         Text(
             text = stringResource(Res.string.onboarding_subtitle),
-            fontSize = 18.sp,
+            style = MaterialTheme.typography.titleMedium,
             color = colors.textSecondary,
             textAlign = TextAlign.Center,
             lineHeight = 26.sp,
@@ -471,7 +472,7 @@ private fun OnboardingHeader(
 
         Text(
             text = title,
-            fontSize = 28.sp,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = colors.textPrimary
         )
@@ -480,7 +481,7 @@ private fun OnboardingHeader(
 
         Text(
             text = subtitle,
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyMedium,
             color = colors.textSecondary
         )
 
@@ -557,7 +558,7 @@ private fun StateSelectionCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = state.name,
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                 color = textColor
             )
@@ -567,19 +568,19 @@ private fun StateSelectionCard(
             ) {
                 Text(
                     text = if (!enabled) stringResource(Res.string.onboarding_coming_soon, state.shortName) else state.shortName,
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = colors.textMuted
                 )
                 if (state.isExternalOnly) {
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(HonqSizing.progressBarHeightSmall))
                             .background(colors.surfaceVariant)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .padding(horizontal = HonqSpacing.xs, vertical = 2.dp)
                     ) {
                         Text(
                             text = stringResource(Res.string.onboarding_resources_only),
-                            fontSize = 10.sp,
+                            style = MaterialTheme.typography.labelSmall,
                             color = colors.textMuted,
                             fontWeight = FontWeight.Medium
                         )
@@ -645,13 +646,13 @@ private fun LicenseTypeCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = type.name,
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                 color = textColor
             )
             Text(
                 text = getLicenseTypeDescription(type.typeId),
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodySmall,
                 color = colors.textMuted
             )
         }
@@ -683,22 +684,22 @@ private fun AnimatedCheckmark(selected: Boolean) {
         if (isSelected) {
             Box(
                 modifier = Modifier
-                    .size(24.dp)
-                    .background(colors.primary, RoundedCornerShape(12.dp)),
+                    .size(HonqSizing.checkmarkSize)
+                    .background(colors.primary, RoundedCornerShape(HonqSizing.cornerRadiusSmall)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Check,
                     contentDescription = "Selected",
                     tint = colors.onPrimary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(HonqSizing.iconSize16)
                 )
             }
         } else {
             Box(
                 modifier = Modifier
-                    .size(24.dp)
-                    .border(1.dp, colors.border, RoundedCornerShape(12.dp))
+                    .size(HonqSizing.checkmarkSize)
+                    .border(1.dp, colors.border, RoundedCornerShape(HonqSizing.cornerRadiusSmall))
             )
         }
     }

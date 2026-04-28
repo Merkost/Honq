@@ -6,9 +6,8 @@ import com.merkost.honq.data.local.InMemoryStateSelectionRepository
 import com.merkost.honq.data.local.InMemorySyncPreferences
 import com.merkost.honq.data.local.OnboardingPreferences
 import com.merkost.honq.data.local.SyncPreferences
-import com.merkost.honq.data.remote.api.AppConfigApi
-import com.merkost.honq.data.remote.api.QuestionApi
-import com.merkost.honq.data.remote.api.SupabaseConfig
+import com.merkost.honq.data.remote.api.FirebaseAppConfigApi
+import com.merkost.honq.data.remote.api.FirestoreContentApi
 import com.merkost.honq.data.repository.DataSyncManager
 import com.merkost.honq.data.repository.FakeFavoritesRepository
 import com.merkost.honq.data.repository.FakeProgressRepository
@@ -20,7 +19,8 @@ import com.merkost.honq.domain.repository.QuestionRepository
 import com.merkost.honq.domain.repository.QuestionSetSelectionRepository
 import com.merkost.honq.domain.repository.ReviewRepository
 import com.merkost.honq.domain.repository.StateSelectionRepository
-import io.github.jan.supabase.SupabaseClient
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,9 +62,9 @@ val fakeDataModule = module {
         }
     }
 
-    single<SupabaseClient> { SupabaseConfig.createClient() }
-    single { QuestionApi(get()) }
-    single { AppConfigApi(get()) }
+    single { Firebase.firestore }
+    single { FirestoreContentApi(get()) }
+    single { FirebaseAppConfigApi(get()) }
     single { DataSyncManager(get(), get()) }
 
     single<QuestionRepository> { FakeQuestionRepository() }

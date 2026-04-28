@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,7 +45,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.merkost.honq.data.local.FontScale
 import com.merkost.honq.data.local.ThemeMode
 import com.merkost.honq.data.local.ThemePreferences
 import com.merkost.honq.domain.premium.PremiumManager
@@ -83,6 +84,7 @@ fun AboutScreen(
     val themePreferences: ThemePreferences = koinInject()
     val premiumManager: PremiumManager = koinInject()
     val themeMode by themePreferences.themeMode.collectAsState()
+    val fontScale by themePreferences.fontScale.collectAsState()
     val isPremium by premiumManager.isPremium.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var showResetDialog by remember { mutableStateOf(false) }
@@ -117,8 +119,7 @@ fun AboutScreen(
 
                 Text(
                     text = "Honq",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium,
                     color = colors.textPrimary
                 )
 
@@ -128,7 +129,7 @@ fun AboutScreen(
 
             Text(
                 text = "Prepare for your Australian driving test.\nNo ads, ever.",
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodySmall,
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = HonqSizing.screenPadding)
@@ -176,13 +177,24 @@ fun AboutScreen(
             ) {
                 Text(
                     text = "Appearance",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = MaterialTheme.typography.labelMedium,
                     color = colors.textPrimary
                 )
                 ThemeModeSelector(
                     selected = themeMode,
                     onSelect = { themePreferences.setThemeMode(it) }
+                )
+
+                Spacer(modifier = Modifier.height(HonqSpacing.md))
+
+                Text(
+                    text = "Font Size",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.textPrimary
+                )
+                FontScaleSelector(
+                    selected = fontScale,
+                    onSelect = { themePreferences.setFontScale(it) }
                 )
             }
 
@@ -241,7 +253,7 @@ fun AboutScreen(
             Text(
                 text = "This app is not affiliated with any Australian state or territory transport authority. " +
                         "Content is for practice purposes only. Always refer to your state's official handbook.",
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelSmall,
                 color = colors.textMuted,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -271,13 +283,12 @@ fun AboutScreen(
                         imageVector = Icons.Rounded.DeleteForever,
                         contentDescription = null,
                         tint = colors.incorrect.copy(alpha = 0.8f),
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(HonqSizing.iconSize18)
                     )
                     Spacer(modifier = Modifier.width(HonqSpacing.sm))
                     Text(
                         text = "Reset All Progress",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
+                        style = MaterialTheme.typography.labelMedium,
                         color = colors.incorrect.copy(alpha = 0.8f)
                     )
                 }
@@ -291,12 +302,12 @@ fun AboutScreen(
             ) {
                 Text(
                     text = "Made with care in Sydney",
-                    fontSize = 12.sp,
+                    style = MaterialTheme.typography.labelSmall,
                     color = colors.textMuted.copy(alpha = 0.6f)
                 )
                 Text(
                     text = "\uD83C\uDDE6\uD83C\uDDFA",
-                    fontSize = 13.sp
+                    style = MaterialTheme.typography.labelMedium
                 )
             }
 
@@ -304,7 +315,7 @@ fun AboutScreen(
 
             Text(
                 text = "Version $appVersion",
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelSmall,
                 color = colors.textMuted.copy(alpha = 0.6f)
             )
 
@@ -379,7 +390,7 @@ private fun LegalLink(
     ) {
         Text(
             text = title,
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodySmall,
             color = colors.textPrimary,
             modifier = Modifier.weight(1f)
         )
@@ -387,7 +398,7 @@ private fun LegalLink(
             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
             contentDescription = null,
             tint = colors.textMuted,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(HonqSizing.iconSize18)
         )
     }
 }
@@ -424,7 +435,44 @@ private fun ThemeModeSelector(
             ) {
                 Text(
                     text = label,
-                    fontSize = 13.sp,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (isSelected) colors.onPrimary else colors.textSecondary,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FontScaleSelector(
+    selected: FontScale,
+    onSelect: (FontScale) -> Unit
+) {
+    val colors = HonqTheme.colors
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+            .background(colors.surfaceVariant),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        FontScale.entries.forEach { scale ->
+            val isSelected = scale == selected
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+                    .background(if (isSelected) colors.primary else Color.Transparent)
+                    .clickable { onSelect(scale) }
+                    .padding(vertical = HonqSpacing.sm),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = scale.label,
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                     color = if (isSelected) colors.onPrimary else colors.textSecondary,
                     textAlign = TextAlign.Center
@@ -455,13 +503,12 @@ private fun ActionPill(
             imageVector = icon,
             contentDescription = label,
             tint = colors.primary,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(HonqSizing.iconSizeMedium)
         )
         Spacer(modifier = Modifier.height(HonqSpacing.xs))
         Text(
             text = label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.labelSmall,
             color = colors.textSecondary
         )
     }
@@ -494,19 +541,18 @@ private fun HonqProSection(
                 imageVector = Icons.Rounded.WorkspacePremium,
                 contentDescription = null,
                 tint = colors.primary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(HonqSizing.iconSizeSmall)
             )
             Spacer(modifier = Modifier.width(HonqSpacing.sm))
             Text(
                 text = "Honq Pro",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.labelMedium,
                 color = colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
             Text(
                 text = if (isPremium) "Active" else "Free",
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = if (isPremium) colors.correct else colors.textMuted
             )
@@ -532,12 +578,12 @@ private fun HonqProSection(
                     imageVector = Icons.Rounded.Restore,
                     contentDescription = null,
                     tint = colors.textSecondary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(HonqSizing.iconSizeSmall)
                 )
                 Spacer(modifier = Modifier.width(HonqSpacing.sm))
                 Text(
                     text = if (isRestoring) "Restoring..." else "Restore Purchase",
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = colors.textPrimary,
                     modifier = Modifier.weight(1f)
                 )
@@ -545,14 +591,14 @@ private fun HonqProSection(
                     imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                     contentDescription = null,
                     tint = colors.textMuted,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(HonqSizing.iconSize18)
                 )
             }
 
             if (restoreMessage != null) {
                 Text(
                     text = restoreMessage,
-                    fontSize = 12.sp,
+                    style = MaterialTheme.typography.labelSmall,
                     color = colors.textMuted,
                     modifier = Modifier.padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.xs)
                 )
@@ -569,12 +615,12 @@ private fun HonqProSection(
                     imageVector = Icons.Rounded.Restore,
                     contentDescription = null,
                     tint = colors.textSecondary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(HonqSizing.iconSizeSmall)
                 )
                 Spacer(modifier = Modifier.width(HonqSpacing.sm))
                 Text(
                     text = "Manage Purchase",
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = colors.textPrimary,
                     modifier = Modifier.weight(1f)
                 )
@@ -582,7 +628,7 @@ private fun HonqProSection(
                     imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                     contentDescription = null,
                     tint = colors.textMuted,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(HonqSizing.iconSize18)
                 )
             }
         }

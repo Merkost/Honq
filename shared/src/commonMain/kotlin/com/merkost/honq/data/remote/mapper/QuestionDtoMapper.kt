@@ -7,7 +7,8 @@ import com.merkost.honq.data.local.entity.QuestionEntity
 import com.merkost.honq.data.local.entity.QuestionSetCategoryEntity
 import com.merkost.honq.data.local.entity.QuestionSetEntity
 import com.merkost.honq.data.local.entity.StateEntity
-import com.merkost.honq.data.remote.api.SupabaseConfig
+import com.merkost.honq.BuildKonfig
+import com.merkost.honq.data.remote.api.HostedImageUrlBuilder
 import com.merkost.honq.data.remote.dto.AssessmentTypeDto
 import com.merkost.honq.data.remote.dto.CategoryDto
 import com.merkost.honq.data.remote.dto.LicenseTypeDto
@@ -28,11 +29,13 @@ import com.merkost.honq.domain.model.StateResource
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+private val imageUrlBuilder by lazy { HostedImageUrlBuilder(BuildKonfig.FIREBASE_HOSTING_BASE_URL) }
+
 fun QuestionDto.toDomain(): Question = Question(
     id = id,
     code = code,
     text = text,
-    imageUrl = SupabaseConfig.getStorageUrl(imageUrl),
+    imageUrl = imageUrlBuilder.buildUrl(imageUrl),
     options = options,
     correctIndex = correctIndex,
     explanation = explanation.orEmpty(),
@@ -47,7 +50,7 @@ fun QuestionDto.toEntity(json: Json): QuestionEntity = QuestionEntity(
     id = id,
     code = code,
     text = text,
-    imageUrl = SupabaseConfig.getStorageUrl(imageUrl),
+    imageUrl = imageUrlBuilder.buildUrl(imageUrl),
     options = json.encodeToString(options),
     correctIndex = correctIndex,
     explanation = explanation.orEmpty(),

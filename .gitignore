@@ -1,6 +1,7 @@
 *.iml
 .kotlin
 .gradle
+/.firebase
 **/build/
 xcuserdata
 !src/**/build/
@@ -19,3 +20,16 @@ captures
 node_modules/
 google-services.json
 GoogleService-Info.plist
+
+# Firebase migration: question images are deployed via Firebase Hosting from
+# public/questions/ but are populated locally by the export script — never committed.
+public/questions/*.png
+
+# Python venvs and Firebase service-account JSON used only by the export script.
+.venv*/
+*-firebase-sa*.json
+firebase-adminsdk-*.json
+
+# Local build artifacts.
+androidApp/release/
+scripts/__pycache__/

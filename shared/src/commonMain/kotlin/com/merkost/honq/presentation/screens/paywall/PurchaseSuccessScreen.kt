@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,11 +33,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.HonqCard
 import com.merkost.honq.presentation.theme.HonqMotion
@@ -163,8 +162,7 @@ fun PurchaseSuccessScreen(
             // Title
             Text(
                 text = "Welcome to Honq Pro!",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineMedium,
                 color = colors.primary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.staggered(1)
@@ -175,10 +173,9 @@ fun PurchaseSuccessScreen(
             // Subtitle
             Text(
                 text = "Thank you for your purchase. You now have full access to all premium features.",
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyMedium,
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center,
-                lineHeight = 24.sp,
                 modifier = Modifier.staggered(1)
             )
 
@@ -200,13 +197,12 @@ fun PurchaseSuccessScreen(
                                 imageVector = Icons.Rounded.CheckCircle,
                                 contentDescription = null,
                                 tint = colors.correct,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(HonqSizing.iconSizeSmall)
                             )
                             Text(
                                 text = feature,
-                                fontSize = 14.sp,
-                                color = colors.textPrimary,
-                                fontWeight = FontWeight.Medium
+                                style = MaterialTheme.typography.labelMedium,
+                                color = colors.textPrimary
                             )
                         }
                     }

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,10 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.presentation.components.base.HonqCard
 import com.merkost.honq.presentation.theme.HonqTheme
 import com.merkost.honq.presentation.theme.HonqMotion
+import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 
 @Composable
@@ -72,7 +73,7 @@ fun ExplanationCard(
                     contentDescription = null,
                     tint = iconColor,
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(HonqSizing.iconSizeMedium)
                         .graphicsLayer {
                             scaleX = iconScale
                             scaleY = iconScale
@@ -82,8 +83,8 @@ fun ExplanationCard(
                 Text(
                     text = title,
                     color = iconColor,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -92,7 +93,7 @@ fun ExplanationCard(
                 Text(
                     text = explanation,
                     color = HonqTheme.colors.textSecondary,
-                    lineHeight = 22.sp
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

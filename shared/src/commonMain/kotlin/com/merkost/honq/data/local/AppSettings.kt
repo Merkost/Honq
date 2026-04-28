@@ -38,16 +38,29 @@ class DataStoreThemePreferences(
 
     private object Keys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
+        val FONT_SCALE = stringPreferencesKey("font_scale")
     }
 
     override val themeMode: StateFlow<ThemeMode> = dataStore.data
         .map { preferences -> ThemeMode.fromString(preferences[Keys.THEME_MODE]) }
         .stateIn(scope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
 
+    override val fontScale: StateFlow<FontScale> = dataStore.data
+        .map { preferences -> FontScale.fromString(preferences[Keys.FONT_SCALE]) }
+        .stateIn(scope, SharingStarted.Eagerly, FontScale.DEFAULT)
+
     override fun setThemeMode(mode: ThemeMode) {
         runBlocking {
             dataStore.edit { preferences ->
                 preferences[Keys.THEME_MODE] = mode.toStorageString()
+            }
+        }
+    }
+
+    override fun setFontScale(scale: FontScale) {
+        runBlocking {
+            dataStore.edit { preferences ->
+                preferences[Keys.FONT_SCALE] = scale.name
             }
         }
     }

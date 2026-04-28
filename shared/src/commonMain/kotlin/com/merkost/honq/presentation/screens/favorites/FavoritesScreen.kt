@@ -21,16 +21,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.Question
 import com.merkost.honq.presentation.components.base.FullscreenLoading
 import com.merkost.honq.presentation.components.base.HonqCard
@@ -39,9 +38,7 @@ import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 import pro.respawn.flowmvi.compose.dsl.subscribe
 
 @Composable
@@ -122,14 +119,14 @@ private fun FavoritesList(
                 Text(
                     text = "No favorites yet",
                     color = colors.textPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.height(HonqSpacing.xs))
                 Text(
                     text = "Save questions during practice or mock tests to review them here.",
                     color = colors.textMuted,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelSmall
                 )
             }
         } else {
@@ -207,7 +204,7 @@ private fun FavoriteMetaPill(text: String) {
         Text(
             text = text,
             color = colors.textSecondary,
-            fontSize = 12.sp
+            style = MaterialTheme.typography.labelSmall
         )
     }
 }

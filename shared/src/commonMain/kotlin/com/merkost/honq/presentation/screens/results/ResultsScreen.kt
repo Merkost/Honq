@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,7 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.CategoryScore
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.HonqButtonVariant
@@ -109,13 +109,14 @@ private fun ResultTitle(passed: Boolean, passPercentage: Int) {
 
     Text(
         text = title,
-        fontSize = 28.sp,
+        style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
         color = colors.textPrimary
     )
     Spacer(modifier = Modifier.height(HonqSpacing.sm))
     Text(
         text = subtitle,
+        style = MaterialTheme.typography.bodyMedium,
         color = colors.textSecondary,
         textAlign = TextAlign.Center
     )
@@ -131,14 +132,14 @@ private fun ScoreCard(score: Int, total: Int, percentage: Int, passed: Boolean) 
         ) {
             Text(
                 text = "$score/$total",
-                fontSize = 48.sp,
+                style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
                 color = if (passed) colors.correct else colors.incorrect
             )
             Spacer(modifier = Modifier.height(HonqSpacing.sm))
             Text(
                 text = "$percentage%",
-                fontSize = 24.sp,
+                style = MaterialTheme.typography.headlineSmall,
                 color = colors.textSecondary
             )
         }
@@ -154,7 +155,7 @@ private fun CategoryBreakdownSection(categoryBreakdown: List<CategoryScore>) {
     ) {
         Text(
             text = "Category Breakdown",
-            fontSize = 18.sp,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             color = colors.textPrimary
         )
@@ -187,30 +188,30 @@ private fun CategoryScoreRow(category: CategoryScore) {
             ) {
                 Text(
                     text = category.categoryName,
+                    style = MaterialTheme.typography.bodySmall,
                     color = colors.textPrimary,
-                    fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "${category.correct}/${category.total} (${category.percentage}%)",
+                    style = MaterialTheme.typography.labelMedium,
                     color = color,
-                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp))
+                    .height(HonqSizing.progressBarHeightMedium)
+                    .clip(RoundedCornerShape(HonqSizing.progressBarHeightMedium / 2))
                     .background(colors.progressTrack)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(fraction)
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp))
+                        .height(HonqSizing.progressBarHeightMedium)
+                        .clip(RoundedCornerShape(HonqSizing.progressBarHeightMedium / 2))
                         .background(color)
                 )
             }

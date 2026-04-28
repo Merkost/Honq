@@ -28,7 +28,7 @@ fun getLocalProperty(key: String, defaultValue: String = ""): String {
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
@@ -83,9 +83,6 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
 
-            implementation(libs.supabase.postgrest)
-            implementation(libs.supabase.functions)
-
             implementation(libs.flowmvi.core)
             implementation(libs.flowmvi.compose)
 
@@ -100,6 +97,7 @@ kotlin {
             implementation(libs.compottie.resources)
 
             api(libs.firebase.crashlytics)
+            api(libs.firebase.firestore)
         }
 
         androidMain.dependencies {
@@ -124,8 +122,8 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -148,8 +146,7 @@ buildkonfig {
     exposeObjectWithName = "BuildKonfig"
 
     defaultConfigs {
-        buildConfigField(STRING, "SUPABASE_URL", getLocalProperty("supabase.url", ""))
-        buildConfigField(STRING, "SUPABASE_KEY", getLocalProperty("supabase.key", ""))
+        buildConfigField(STRING, "FIREBASE_HOSTING_BASE_URL", getLocalProperty("firebase.hosting.base.url", "https://honq-ac8e4.web.app"))
         buildConfigField(STRING, "AMPLITUDE_API_KEY", getLocalProperty("amplitude.api.key", ""))
         buildConfigField(STRING, "APP_VERSION", "\"1.0.0\"")
         buildConfigField(STRING, "GOOGLE_CLOUD_PROJECT_NUMBER", getLocalProperty("google.cloud.project.number", ""))

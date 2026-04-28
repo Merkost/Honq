@@ -21,16 +21,34 @@ enum class ThemeMode {
     }
 }
 
+enum class FontScale(val scale: Float, val label: String) {
+    SMALL(0.85f, "Small"),
+    DEFAULT(1.0f, "Default"),
+    LARGE(1.15f, "Large"),
+    EXTRA_LARGE(1.3f, "Extra Large");
+
+    companion object {
+        fun fromString(value: String?): FontScale = entries.find { it.name == value } ?: DEFAULT
+    }
+}
+
 interface ThemePreferences {
     val themeMode: StateFlow<ThemeMode>
+    val fontScale: StateFlow<FontScale>
     fun setThemeMode(mode: ThemeMode)
+    fun setFontScale(scale: FontScale)
 }
 
 class InMemoryThemePreferences : ThemePreferences {
     private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     override val themeMode: StateFlow<ThemeMode> = _themeMode
+    private val _fontScale = MutableStateFlow(FontScale.DEFAULT)
+    override val fontScale: StateFlow<FontScale> = _fontScale
     override fun setThemeMode(mode: ThemeMode) {
         _themeMode.value = mode
+    }
+    override fun setFontScale(scale: FontScale) {
+        _fontScale.value = scale
     }
 }
 
