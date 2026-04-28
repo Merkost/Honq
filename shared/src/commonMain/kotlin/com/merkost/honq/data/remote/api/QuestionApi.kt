@@ -1,13 +1,13 @@
 package com.merkost.honq.data.remote.api
 
-import com.merkost.honq.data.remote.dto.AssessmentTypeDto
-import com.merkost.honq.data.remote.dto.CategoryDto
-import com.merkost.honq.data.remote.dto.LicenseTypeDto
-import com.merkost.honq.data.remote.dto.QuestionDto
-import com.merkost.honq.data.remote.dto.QuestionSetCategoryDto
-import com.merkost.honq.data.remote.dto.QuestionSetDto
-import com.merkost.honq.data.remote.dto.StateDto
-import com.merkost.honq.data.remote.dto.StateResourceDto
+import com.merkost.honq.data.local.seed.dto.AssessmentTypeDto
+import com.merkost.honq.data.local.seed.dto.CategoryDto
+import com.merkost.honq.data.local.seed.dto.LicenseTypeDto
+import com.merkost.honq.data.local.seed.dto.QuestionDto
+import com.merkost.honq.data.local.seed.dto.QuestionSetCategoryDto
+import com.merkost.honq.data.local.seed.dto.QuestionSetDto
+import com.merkost.honq.data.local.seed.dto.StateDto
+import com.merkost.honq.data.local.seed.dto.StateResourceDto
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns

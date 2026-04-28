@@ -25,7 +25,7 @@ import com.merkost.honq.data.local.entity.QuestionSetEntity
 import com.merkost.honq.data.local.entity.StateEntity
 import com.merkost.honq.data.local.mapper.toDomain
 import com.merkost.honq.data.local.mapper.toEntity
-import com.merkost.honq.data.remote.mapper.toDomain
+import com.merkost.honq.data.local.seed.mapper.toDomain
 import com.merkost.honq.domain.model.AssessmentType
 import com.merkost.honq.domain.model.Category
 import com.merkost.honq.domain.model.LicenseType

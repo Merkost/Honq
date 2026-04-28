@@ -3,7 +3,7 @@ package com.merkost.honq.domain.usecase
 import com.merkost.honq.core.util.Result
 import com.merkost.honq.core.util.runCatching as runCatchingResult
 import com.merkost.honq.data.remote.api.QuestionApi
-import com.merkost.honq.data.remote.mapper.toDomain
+import com.merkost.honq.data.local.seed.mapper.toDomain
 import com.merkost.honq.domain.model.StateResource
 
 class GetStateResourcesUseCase(

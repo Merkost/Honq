@@ -1,4 +1,4 @@
-package com.merkost.honq.data.remote.dto
+package com.merkost.honq.data.local.seed.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

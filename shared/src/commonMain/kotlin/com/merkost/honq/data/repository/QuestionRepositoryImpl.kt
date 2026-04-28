@@ -6,7 +6,7 @@ import com.merkost.honq.core.util.runLogged
 import com.merkost.honq.data.local.SyncPreferences
 import com.merkost.honq.data.local.datasource.QuestionLocalDataSource
 import com.merkost.honq.data.remote.api.QuestionApi
-import com.merkost.honq.data.remote.mapper.toEntity
+import com.merkost.honq.data.local.seed.mapper.toEntity
 import com.merkost.honq.domain.model.AssessmentType
 import com.merkost.honq.domain.model.Category
 import com.merkost.honq.domain.model.CategoryProgress
@@ -369,10 +369,10 @@ class QuestionRepositoryImpl(
 }
 
 private data class SyncData(
-    val states: List<com.merkost.honq.data.remote.dto.StateDto>,
-    val licenseTypes: List<com.merkost.honq.data.remote.dto.LicenseTypeDto>,
-    val assessmentTypes: List<com.merkost.honq.data.remote.dto.AssessmentTypeDto>,
-    val questionSets: List<com.merkost.honq.data.remote.dto.QuestionSetDto>,
-    val categories: List<com.merkost.honq.data.remote.dto.CategoryDto>,
-    val qsCategories: List<com.merkost.honq.data.remote.dto.QuestionSetCategoryDto>
+    val states: List<com.merkost.honq.data.local.seed.dto.StateDto>,
+    val licenseTypes: List<com.merkost.honq.data.local.seed.dto.LicenseTypeDto>,
+    val assessmentTypes: List<com.merkost.honq.data.local.seed.dto.AssessmentTypeDto>,
+    val questionSets: List<com.merkost.honq.data.local.seed.dto.QuestionSetDto>,
+    val categories: List<com.merkost.honq.data.local.seed.dto.CategoryDto>,
+    val qsCategories: List<com.merkost.honq.data.local.seed.dto.QuestionSetCategoryDto>
 )

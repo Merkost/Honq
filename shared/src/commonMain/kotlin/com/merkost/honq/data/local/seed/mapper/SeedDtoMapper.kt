@@ -1,4 +1,4 @@
-package com.merkost.honq.data.remote.mapper
+package com.merkost.honq.data.local.seed.mapper
 
 import com.merkost.honq.data.local.entity.AssessmentTypeEntity
 import com.merkost.honq.data.local.entity.CategoryEntity
@@ -7,47 +7,25 @@ import com.merkost.honq.data.local.entity.QuestionEntity
 import com.merkost.honq.data.local.entity.QuestionSetCategoryEntity
 import com.merkost.honq.data.local.entity.QuestionSetEntity
 import com.merkost.honq.data.local.entity.StateEntity
-import com.merkost.honq.data.remote.api.SupabaseConfig
-import com.merkost.honq.data.remote.dto.AssessmentTypeDto
-import com.merkost.honq.data.remote.dto.CategoryDto
-import com.merkost.honq.data.remote.dto.LicenseTypeDto
-import com.merkost.honq.data.remote.dto.QuestionDto
-import com.merkost.honq.data.remote.dto.QuestionSetCategoryDto
-import com.merkost.honq.data.remote.dto.QuestionSetDto
-import com.merkost.honq.data.remote.dto.StateDto
-import com.merkost.honq.data.remote.dto.StateResourceDto
-import com.merkost.honq.domain.model.AssessmentType
-import com.merkost.honq.domain.model.Category
+import com.merkost.honq.data.local.seed.dto.AssessmentTypeDto
+import com.merkost.honq.data.local.seed.dto.CategoryDto
+import com.merkost.honq.data.local.seed.dto.LicenseTypeDto
+import com.merkost.honq.data.local.seed.dto.QuestionDto
+import com.merkost.honq.data.local.seed.dto.QuestionSetCategoryDto
+import com.merkost.honq.data.local.seed.dto.QuestionSetDto
+import com.merkost.honq.data.local.seed.dto.StateDto
+import com.merkost.honq.data.local.seed.dto.StateResourceDto
 import com.merkost.honq.domain.model.Difficulty
-import com.merkost.honq.domain.model.LicenseType
-import com.merkost.honq.domain.model.Question
-import com.merkost.honq.domain.model.QuestionSet
 import com.merkost.honq.domain.model.ResourceType
-import com.merkost.honq.domain.model.State
 import com.merkost.honq.domain.model.StateResource
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-
-fun QuestionDto.toDomain(): Question = Question(
-    id = id,
-    code = code,
-    text = text,
-    imageUrl = SupabaseConfig.getStorageUrl(imageUrl),
-    options = options,
-    correctIndex = correctIndex,
-    explanation = explanation.orEmpty(),
-    categoryId = category.lowercase(),
-    categoryName = category.lowercase(),
-    questionSetId = questionSetId,
-    stateId = stateId.lowercase(),
-    difficulty = Difficulty.fromValue(difficulty ?: Difficulty.MEDIUM.value)
-)
 
 fun QuestionDto.toEntity(json: Json): QuestionEntity = QuestionEntity(
     id = id,
     code = code,
     text = text,
-    imageUrl = SupabaseConfig.getStorageUrl(imageUrl),
+    imageUrl = imageUrl,
     options = json.encodeToString(options),
     correctIndex = correctIndex,
     explanation = explanation.orEmpty(),
@@ -62,15 +40,6 @@ fun QuestionDto.toEntity(json: Json): QuestionEntity = QuestionEntity(
     createdAt = createdAt
 )
 
-fun StateDto.toDomain(): State = State(
-    id = id,
-    name = name,
-    shortName = shortName,
-    externalPracticeUrl = externalPracticeUrl,
-    handbookUrl = handbookUrl,
-    isActive = isActive
-)
-
 fun StateDto.toEntity(): StateEntity = StateEntity(
     id = id,
     name = name,
@@ -80,33 +49,6 @@ fun StateDto.toEntity(): StateEntity = StateEntity(
     isActive = isActive,
     createdAt = createdAt,
     updatedAt = updatedAt
-)
-
-fun StateEntity.toDomain(): State = State(
-    id = id,
-    name = name,
-    shortName = shortName,
-    externalPracticeUrl = externalPracticeUrl,
-    handbookUrl = handbookUrl,
-    isActive = isActive
-)
-
-fun CategoryDto.toDomain(): Category = Category(
-    id = id,
-    name = name,
-    description = description.orEmpty(),
-    iconName = iconName.orEmpty(),
-    displayOrder = displayOrder,
-    isActive = isActive
-)
-
-fun CategoryEntity.toDomain(): Category = Category(
-    id = id,
-    name = name,
-    description = description,
-    iconName = iconName,
-    displayOrder = displayOrder,
-    isActive = isActive
 )
 
 fun CategoryDto.toEntity(): CategoryEntity = CategoryEntity(
@@ -157,33 +99,6 @@ fun QuestionSetCategoryDto.toEntity(): QuestionSetCategoryEntity = QuestionSetCa
     questionSetId = questionSetId,
     categoryId = categoryId,
     displayOrder = displayOrder,
-    isActive = isActive
-)
-
-fun LicenseTypeEntity.toDomain(): LicenseType = LicenseType(
-    id = id,
-    name = name,
-    shortName = shortName,
-    isActive = isActive,
-    displayOrder = displayOrder
-)
-
-fun AssessmentTypeEntity.toDomain(): AssessmentType = AssessmentType(
-    id = id,
-    name = name,
-    shortName = shortName,
-    isActive = isActive,
-    displayOrder = displayOrder
-)
-
-fun QuestionSetEntity.toDomain(): QuestionSet = QuestionSet(
-    id = id,
-    stateId = stateId,
-    licenseTypeId = licenseTypeId,
-    assessmentTypeId = assessmentTypeId,
-    mockTestQuestionCount = mockTestQuestionCount,
-    mockTestTimeLimitMinutes = mockTestTimeLimitMinutes,
-    mockTestPassPercentage = mockTestPassPercentage,
     isActive = isActive
 )
 
