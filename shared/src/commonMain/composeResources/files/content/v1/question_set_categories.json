@@ -1,0 +1,359 @@
+[
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "alcohol_and_drugs",
+    "short_code": "ad",
+    "display_order": 1,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "bicycle_safety",
+    "short_code": "sb",
+    "display_order": 2,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "fatigue_and_defensive_driving",
+    "short_code": "fd",
+    "display_order": 3,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "general_knowledge",
+    "short_code": "cg",
+    "display_order": 4,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "icac",
+    "short_code": "icac",
+    "display_order": 5,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "intersections",
+    "short_code": "in",
+    "display_order": 6,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "negligent_driving",
+    "short_code": "nd",
+    "display_order": 7,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "pedestrians",
+    "short_code": "pd",
+    "display_order": 8,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "road_users_hazards",
+    "short_code": "rs",
+    "display_order": 9,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "seat_belts_restraints",
+    "short_code": "sb2",
+    "display_order": 10,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "speed_limits",
+    "short_code": "sl",
+    "display_order": 11,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "traffic_lights_lanes",
+    "short_code": "tl",
+    "display_order": 12,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_car",
+    "category_id": "traffic_signs",
+    "short_code": "si",
+    "display_order": 13,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "braking_systems",
+    "short_code": "bs",
+    "display_order": 8,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "coupling_uncoupling",
+    "short_code": "cu",
+    "display_order": 6,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "general_knowledge",
+    "short_code": "gk",
+    "display_order": 1,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "heavy_vehicle_general",
+    "short_code": "hvg",
+    "display_order": 3,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "loading_and_restraints",
+    "short_code": "lr",
+    "display_order": 5,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "pre_trip_inspection",
+    "short_code": "pti",
+    "display_order": 7,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "speed_limits",
+    "short_code": "sl",
+    "display_order": 9,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "traffic_signs",
+    "short_code": "ts",
+    "display_order": 2,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hc",
+    "category_id": "vehicle_controls",
+    "short_code": "vc",
+    "display_order": 4,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hr",
+    "category_id": "braking_systems",
+    "short_code": "bs",
+    "display_order": 7,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hr",
+    "category_id": "general_knowledge",
+    "short_code": "gk",
+    "display_order": 1,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hr",
+    "category_id": "heavy_vehicle_general",
+    "short_code": "hvg",
+    "display_order": 3,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hr",
+    "category_id": "loading_and_restraints",
+    "short_code": "lr",
+    "display_order": 5,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hr",
+    "category_id": "pre_trip_inspection",
+    "short_code": "pti",
+    "display_order": 6,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hr",
+    "category_id": "speed_limits",
+    "short_code": "sl",
+    "display_order": 8,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hr",
+    "category_id": "traffic_signs",
+    "short_code": "ts",
+    "display_order": 2,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_hr",
+    "category_id": "vehicle_controls",
+    "short_code": "vc",
+    "display_order": 4,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_rider_rkt",
+    "category_id": "alcohol_and_drugs",
+    "short_code": "ad",
+    "display_order": 1,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_rider_rkt",
+    "category_id": "fatigue_and_defensive_driving",
+    "short_code": "fd",
+    "display_order": 2,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_rider_rkt",
+    "category_id": "general_knowledge",
+    "short_code": "cg",
+    "display_order": 3,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_rider_rkt",
+    "category_id": "rider_safety",
+    "short_code": "rs",
+    "display_order": 4,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nsw_rsmv",
+    "category_id": "general_knowledge",
+    "short_code": "gk",
+    "display_order": 1,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_rsmv",
+    "category_id": "mobility_vehicle_safety",
+    "short_code": "mvs",
+    "display_order": 5,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_rsmv",
+    "category_id": "rider_safety",
+    "short_code": "rs",
+    "display_order": 4,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_rsmv",
+    "category_id": "speed_limits",
+    "short_code": "sl",
+    "display_order": 3,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nsw_rsmv",
+    "category_id": "traffic_signs",
+    "short_code": "ts",
+    "display_order": 2,
+    "created_at": "2026-01-30T21:58:11.94948+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "alcohol_and_drugs",
+    "short_code": "ad",
+    "display_order": 1,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "bicycle_safety",
+    "short_code": "srb",
+    "display_order": 2,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "fatigue_and_defensive_driving",
+    "short_code": "fd",
+    "display_order": 3,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "general_knowledge",
+    "short_code": "gk",
+    "display_order": 4,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "intersections",
+    "short_code": "in",
+    "display_order": 5,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "negligent_driving",
+    "short_code": "nd",
+    "display_order": 6,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "pedestrians",
+    "short_code": "pd",
+    "display_order": 7,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "rider_safety",
+    "short_code": "srm",
+    "display_order": 8,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "road_users_hazards",
+    "short_code": "srh",
+    "display_order": 9,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "speed_limits",
+    "short_code": "sl",
+    "display_order": 10,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "traffic_lights_lanes",
+    "short_code": "ld",
+    "display_order": 11,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  },
+  {
+    "question_set_id": "nt_car",
+    "category_id": "traffic_signs",
+    "short_code": "si",
+    "display_order": 12,
+    "created_at": "2026-01-30T11:50:17.016162+00:00"
+  }
+]
