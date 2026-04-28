@@ -6,8 +6,7 @@ import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.data.local.OnboardingPreferences
-import com.merkost.honq.data.repository.DataSyncManager
-import com.merkost.honq.domain.repository.QuestionRepository
+import com.merkost.honq.data.local.seed.BundledContentLoader
 import com.merkost.honq.domain.usecase.GetLicenseTypesUseCase
 import com.merkost.honq.domain.usecase.GetStatesUseCase
 import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
@@ -27,8 +26,7 @@ class OnboardingContainer(
     private val setSelectedQuestionSet: SetSelectedQuestionSetUseCase,
     private val onboardingPreferences: OnboardingPreferences,
     private val analytics: Analytics,
-    private val dataSyncManager: DataSyncManager,
-    private val repository: QuestionRepository,
+    private val bundledContentLoader: BundledContentLoader,
     scope: CoroutineScope
 ) : Container<OnboardingState, OnboardingIntent, OnboardingAction>, ViewModel() {
 
@@ -66,12 +64,7 @@ class OnboardingContainer(
         Cedar.tag("Onboarding").d("loadData: starting...")
         updateState { copy(isLoading = true, error = null) }
 
-        if (dataSyncManager.needsInitialSync()) {
-            Cedar.tag("Onboarding").d("loadData: first launch, running full sync")
-            val remoteVersion = dataSyncManager.fetchRemoteVersion().getOrDefault(0)
-            repository.fullSync(null)
-            dataSyncManager.markSyncCompleted(remoteVersion)
-        }
+        bundledContentLoader.ensureSeeded()
 
         getStates()
             .onSuccess { states ->

@@ -7,7 +7,7 @@ import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.data.local.OnboardingPreferences
-import com.merkost.honq.data.repository.DataSyncManager
+import com.merkost.honq.data.local.seed.BundledContentLoader
 import com.merkost.honq.domain.model.LicenseType
 import com.merkost.honq.domain.model.QuestionSet
 import com.merkost.honq.domain.model.State
@@ -18,8 +18,6 @@ import com.merkost.honq.domain.usecase.GetStatesUseCase
 import com.merkost.honq.domain.usecase.GetUserProgressUseCase
 import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionsUseCase
 import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
-import com.merkost.honq.domain.usecase.SyncQuestionsUseCase
-import com.merkost.honq.domain.repository.QuestionRepository
 import org.kimplify.cedar.logging.Cedar
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.PipelineContext
@@ -35,15 +33,11 @@ class HomeContainer(
     private val getQuestionSetsByState: GetQuestionSetsByStateUseCase,
     private val getStateResources: GetStateResourcesUseCase,
     private val setSelectedQuestionSet: SetSelectedQuestionSetUseCase,
-    private val syncQuestions: SyncQuestionsUseCase,
     private val observeFavoriteQuestions: ObserveFavoriteQuestionsUseCase,
     private val onboardingPreferences: OnboardingPreferences,
     private val analytics: Analytics,
-    private val dataSyncManager: DataSyncManager,
-    private val repository: QuestionRepository
+    private val bundledContentLoader: BundledContentLoader
 ) : Container<HomeState, HomeIntent, HomeAction>, ViewModel() {
-
-    private var pendingSyncVersion: Int? = null
 
     override val store = store(HomeState(), viewModelScope) {
         init {
@@ -78,23 +72,7 @@ class HomeContainer(
         Cedar.tag("Home").d("loadInitialData: starting...")
         updateState { copy(isInitialLoading = true, initialLoadError = null) }
 
-        val dbEmpty = !dataSyncManager.needsInitialSync() && repository.isDatabaseEmpty()
-        if (dbEmpty) {
-            Cedar.tag("Home").d("loadInitialData: DB empty but sync flag set, resetting sync state")
-            dataSyncManager.resetAllSyncData()
-        }
-        if (dataSyncManager.needsInitialSync()) {
-            Cedar.tag("Home").d("loadInitialData: first launch, running full sync")
-            val remoteVersion = dataSyncManager.fetchRemoteVersion().getOrDefault(0)
-            repository.fullSync(questionSetId = null, remoteVersion = remoteVersion)
-        } else {
-            val check = dataSyncManager.checkIfSyncNeeded()
-            if (check.needsSync) {
-                Cedar.tag("Home").d("loadInitialData: data version changed, syncing metadata version=${check.remoteVersion}")
-                repository.fullSync(questionSetId = null, remoteVersion = check.remoteVersion)
-                pendingSyncVersion = check.remoteVersion
-            }
-        }
+        bundledContentLoader.ensureSeeded()
 
         var loadedStates: List<State> = emptyList()
         var loadedTypes: List<LicenseType> = emptyList()
@@ -179,14 +157,11 @@ class HomeContainer(
                         questionSets = activeQuestionSets,
                         selectedQuestionSet = matchingQuestionSet,
                         isInitialLoading = false,
-                        isSyncing = matchingQuestionSet != null
+                        isSyncing = false
                     )
                 }
 
                 setSelectedQuestionSet(matchingQuestionSet?.id)
-                if (matchingQuestionSet != null) {
-                    syncInBackground()
-                }
             }
             .onError { e ->
                 Cedar.tag("Home").e("loadQuestionSetsAndSync: failed to load question sets for state=$stateId: ${e.message}", e)
@@ -210,7 +185,7 @@ class HomeContainer(
 
         analytics.track(AnalyticsEvent.StateSelected(stateId))
         onboardingPreferences.setSelectedStateId(stateId)
-        updateState { copy(selectedStateId = stateId, isSyncing = true) }
+        updateState { copy(selectedStateId = stateId, isSyncing = false) }
         loadQuestionSetsAndSync(stateId, currentTypeId)
     }
 
@@ -235,44 +210,6 @@ class HomeContainer(
         }
 
         setSelectedQuestionSet(matchingQuestionSet?.id)
-        if (matchingQuestionSet != null) {
-            syncInBackground()
-        }
-    }
-
-    private suspend fun PipelineContext<HomeState, HomeIntent, HomeAction>.syncInBackground() {
-        var questionSetId: String? = null
-        withState { questionSetId = selectedQuestionSet?.id }
-
-        val alreadySynced = questionSetId?.let { repository.getLastSyncTime(it) } != null
-        val hasQuestions = questionSetId?.let { repository.hasQuestionsForSet(it) } ?: false
-
-        if (alreadySynced && hasQuestions && pendingSyncVersion == null) {
-            Cedar.tag("Home").d("syncInBackground: skipping sync (already synced, has questions, no version change)")
-            updateState { copy(isSyncing = false, syncError = null) }
-            return
-        }
-
-        if (pendingSyncVersion != null) {
-            Cedar.tag("Home").d("syncInBackground: version changed, clearing sync times to force full re-fetch")
-            dataSyncManager.clearQuestionSetSyncTimestamps()
-        }
-
-        Cedar.tag("Home").d("syncInBackground: starting sync for questionSet=$questionSetId")
-        updateState { copy(isSyncing = true) }
-        syncQuestions()
-            .onSuccess {
-                pendingSyncVersion?.let { version ->
-                    dataSyncManager.markSyncCompleted(version)
-                    pendingSyncVersion = null
-                }
-                Cedar.tag("Home").d("syncInBackground: sync completed successfully")
-                updateState { copy(isSyncing = false, syncError = null) }
-            }
-            .onError { e ->
-                Cedar.tag("Home").e("syncInBackground: sync failed: ${e.message}", e)
-                updateState { copy(isSyncing = false, syncError = e.message) }
-            }
     }
 
     private suspend fun PipelineContext<HomeState, HomeIntent, HomeAction>.trackExternalLink(

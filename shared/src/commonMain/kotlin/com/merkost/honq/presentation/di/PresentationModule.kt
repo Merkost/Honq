@@ -26,14 +26,11 @@ val presentationModule = module {
             get(),
             get(),
             get(),
-            get(),
             params.get<CoroutineScope>()
         )
     }
     factory {
         HomeContainer(
-            get(),
-            get(),
             get(),
             get(),
             get(),
