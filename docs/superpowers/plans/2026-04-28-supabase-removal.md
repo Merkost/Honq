@@ -72,58 +72,39 @@ docs/SUPABASE_SCHEMA.md                              [MOVE to docs/archive/]
 ## Task 1: Create the export script and generate the bundle
 
 **Files:**
-- Create: `scripts/export-supabase-bundle.main.kts`
+- Create: `scripts/export-supabase-bundle.py`
 - Create (output): `shared/src/commonMain/composeResources/files/content/v1/*.json` (8 files)
 - Create (output): `shared/src/commonMain/composeResources/files/content/v1/questions/<state>/*.png` (~392 files)
 
 The script reads the existing `local.properties` for Supabase URL/key, dumps each of the 8 content tables to pretty-printed JSON, then downloads every `image_url` referenced in `questions.json` from the public Storage bucket. It is a build-time tool — never executed by the app.
 
+Implemented in Python (stdlib only — no `pip install` required) so no new toolchain is added to the repo. macOS has Python 3 by default at `/usr/bin/python3`.
+
 - [ ] **Step 1: Write the script**
 
-Create `scripts/export-supabase-bundle.main.kts`:
+Create `scripts/export-supabase-bundle.py`:
 
-```kotlin
-#!/usr/bin/env kotlin
+```python
+#!/usr/bin/env python3
+"""One-shot exporter that dumps Supabase content tables and question images
+into shared/src/commonMain/composeResources/files/content/v1/ for offline
+embedding. See docs/superpowers/specs/2026-04-28-supabase-removal-design.md.
+"""
 
-@file:DependsOn("io.ktor:ktor-client-core-jvm:3.0.3")
-@file:DependsOn("io.ktor:ktor-client-cio-jvm:3.0.3")
-@file:DependsOn("io.ktor:ktor-client-content-negotiation-jvm:3.0.3")
-@file:DependsOn("io.ktor:ktor-serialization-kotlinx-json-jvm:3.0.3")
-@file:DependsOn("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.3")
+from __future__ import annotations
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsBytes
-import io.ktor.client.statement.bodyAsText
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import java.io.File
-import java.util.Properties
+import json
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
 
-val repoRoot = File(System.getProperty("user.dir"))
-val localPropsFile = File(repoRoot, "local.properties")
-require(localPropsFile.exists()) { "local.properties not found at ${localPropsFile.absolutePath}" }
-val props = Properties().apply { localPropsFile.inputStream().use { load(it) } }
-val supabaseUrl = props.getProperty("supabase.url")?.trimEnd('/')
-    ?: error("supabase.url missing from local.properties")
-val supabaseKey = props.getProperty("supabase.key")
-    ?: error("supabase.key missing from local.properties")
+REPO_ROOT = Path(__file__).resolve().parent.parent
+LOCAL_PROPS = REPO_ROOT / "local.properties"
+OUT_DIR = REPO_ROOT / "shared/src/commonMain/composeResources/files/content/v1"
 
-val outDir = File(repoRoot, "shared/src/commonMain/composeResources/files/content/v1").apply { mkdirs() }
-val imagesDir = File(outDir, "questions").apply { mkdirs() }
-
-val tables = listOf(
+TABLES = [
     "states",
     "license_types",
     "assessment_types",
@@ -132,76 +113,93 @@ val tables = listOf(
     "question_set_categories",
     "questions",
     "state_resources",
-)
+]
 
-val pretty = Json { prettyPrint = true; prettyPrintIndent = "  " }
-val parser = Json { ignoreUnknownKeys = true }
 
-runBlocking {
-    HttpClient(CIO) {
-        install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
-    }.use { client ->
-        suspend fun fetchTable(name: String): JsonArray {
-            val resp: HttpResponse = client.get("$supabaseUrl/rest/v1/$name") {
-                url.parameters.append("select", "*")
-                url.parameters.append("order", "id")
-                header("apikey", supabaseKey)
-                header("Authorization", "Bearer $supabaseKey")
-            }
-            require(resp.status.value in 200..299) {
-                "GET /rest/v1/$name failed: ${resp.status} ${resp.bodyAsText()}"
-            }
-            return parser.parseToJsonElement(resp.bodyAsText()).jsonArray
-        }
+def read_local_properties() -> dict[str, str]:
+    if not LOCAL_PROPS.exists():
+        sys.exit(f"local.properties not found at {LOCAL_PROPS}")
+    props: dict[str, str] = {}
+    for line in LOCAL_PROPS.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        props[key.strip()] = value.strip()
+    return props
 
-        // Step A: dump tables.
-        val tableData = mutableMapOf<String, JsonArray>()
-        for (table in tables) {
-            print("Fetching $table... ")
-            val rows = fetchTable(table)
-            tableData[table] = rows
-            File(outDir, "$table.json").writeText(pretty.encodeToString(JsonArray.serializer(), rows))
-            println("${rows.size} rows")
-        }
 
-        // Step B: download images referenced by questions.image_url.
-        val questionRows = tableData["questions"]!!
-        val imagePaths: List<String> = questionRows
-            .map { it.jsonObject }
-            .mapNotNull { row ->
-                row["image_url"]?.takeIf { it !is kotlinx.serialization.json.JsonNull }
-                    ?.jsonPrimitive?.contentOrNull
-            }
-            .filter { it.isNotBlank() }
-            .distinct()
+def http_get(url: str, headers: dict[str, str]) -> bytes:
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as e:
+        sys.exit(f"HTTP {e.code} for {url}: {e.read().decode(errors='replace')}")
 
-        println("Downloading ${imagePaths.size} images...")
-        var totalBytes = 0L
-        for (relPath in imagePaths) {
-            val resp = client.get("$supabaseUrl/storage/v1/object/public/$relPath") {
-                header("apikey", supabaseKey)
-            }
-            require(resp.status.value in 200..299) {
-                "GET storage/$relPath failed: ${resp.status}"
-            }
-            val bytes = resp.bodyAsBytes()
-            val outFile = File(outDir, relPath)
-            outFile.parentFile.mkdirs()
-            outFile.writeBytes(bytes)
-            totalBytes += bytes.size
-        }
-        println("Wrote ${imagePaths.size} images, ${totalBytes / 1024} KB total")
-        println("Done. Bundle written to ${outDir.absolutePath}")
-    }
-}
+
+def fetch_table(base_url: str, key: str, table: str) -> list[dict]:
+    headers = {"apikey": key, "Authorization": f"Bearer {key}"}
+    query = urllib.parse.urlencode({"select": "*", "order": "id"})
+    body = http_get(f"{base_url}/rest/v1/{table}?{query}", headers)
+    return json.loads(body.decode("utf-8"))
+
+
+def main() -> None:
+    props = read_local_properties()
+    supabase_url = props.get("supabase.url", "").rstrip("/")
+    supabase_key = props.get("supabase.key", "")
+    if not supabase_url or not supabase_key:
+        sys.exit("supabase.url or supabase.key missing from local.properties")
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    table_data: dict[str, list[dict]] = {}
+    for table in TABLES:
+        print(f"Fetching {table}... ", end="", flush=True)
+        rows = fetch_table(supabase_url, supabase_key, table)
+        table_data[table] = rows
+        out_file = OUT_DIR / f"{table}.json"
+        out_file.write_text(json.dumps(rows, indent=2, ensure_ascii=False) + "\n")
+        print(f"{len(rows)} rows")
+
+    image_paths = sorted({
+        row["image_url"]
+        for row in table_data["questions"]
+        if isinstance(row.get("image_url"), str) and row["image_url"].strip()
+    })
+    print(f"Downloading {len(image_paths)} images...")
+
+    headers = {"apikey": supabase_key}
+    total_bytes = 0
+    for rel_path in image_paths:
+        body = http_get(
+            f"{supabase_url}/storage/v1/object/public/{rel_path}",
+            headers,
+        )
+        out_file = OUT_DIR / rel_path
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+        out_file.write_bytes(body)
+        total_bytes += len(body)
+    print(f"Wrote {len(image_paths)} images, {total_bytes // 1024} KB total")
+    print(f"Done. Bundle written to {OUT_DIR}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Make it executable:
+```bash
+chmod +x scripts/export-supabase-bundle.py
 ```
 
 - [ ] **Step 2: Run the script and verify output**
 
-Run:
+Run from the repo root:
 ```bash
 cd /Users/merkost/StudioProjects/Honq
-kotlin scripts/export-supabase-bundle.main.kts
+python3 scripts/export-supabase-bundle.py
 ```
 
 Expected output:
@@ -231,7 +229,7 @@ find shared/src/commonMain/composeResources/files/content/v1/questions -name "*.
 - [ ] **Step 3: Commit the script and bundle**
 
 ```bash
-git add scripts/export-supabase-bundle.main.kts \
+git add scripts/export-supabase-bundle.py \
         shared/src/commonMain/composeResources/files/content/v1
 git commit -m "feat: add Supabase bundle exporter and embed content offline
 
