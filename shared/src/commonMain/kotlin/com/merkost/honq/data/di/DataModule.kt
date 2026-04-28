@@ -45,6 +45,27 @@ val dataModule = module {
     single<QuestionSetSelectionRepository> { InMemoryQuestionSetSelectionRepository() }
 
     single<SupabaseClient> { SupabaseConfig.createClient() }
+
+    // Bundled-content seeding (replacing Supabase sync over the next several commits)
+    single {
+        com.merkost.honq.data.local.seed.StateResourcesProvider(
+            json = get(),
+            readBundle = {
+                @OptIn(org.jetbrains.compose.resources.ExperimentalResourceApi::class)
+                honq.shared.generated.resources.Res.readBytes("files/content/v1/state_resources.json")
+            },
+        )
+    }
+    single {
+        com.merkost.honq.data.local.seed.BundledContentLoader(
+            localDataSource = get(),
+            stateResourcesProvider = get(),
+            syncPreferences = get(),
+            json = get(),
+            dispatchers = get(),
+        )
+    }
+
     single { QuestionApi(get()) }
     single { AppConfigApi(get()) }
     single { DataSyncManager(get(), get()) }
