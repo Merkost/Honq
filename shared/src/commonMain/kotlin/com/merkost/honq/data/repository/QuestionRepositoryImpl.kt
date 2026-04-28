@@ -5,7 +5,7 @@ import com.merkost.honq.core.util.Result
 import com.merkost.honq.core.util.runLogged
 import com.merkost.honq.data.local.SyncPreferences
 import com.merkost.honq.data.local.datasource.QuestionLocalDataSource
-import com.merkost.honq.data.remote.api.QuestionApi
+import com.merkost.honq.data.remote.api.FirestoreContentApi
 import com.merkost.honq.data.remote.mapper.toEntity
 import com.merkost.honq.domain.model.AssessmentType
 import com.merkost.honq.domain.model.Category
@@ -24,7 +24,7 @@ import kotlin.time.Clock
 
 class QuestionRepositoryImpl(
     private val localDataSource: QuestionLocalDataSource,
-    private val questionApi: QuestionApi,
+    private val questionApi: FirestoreContentApi,
     private val dispatchers: AppDispatchers,
     private val json: Json,
     private val syncPreferences: SyncPreferences,

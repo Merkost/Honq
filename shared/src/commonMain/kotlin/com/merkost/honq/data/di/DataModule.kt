@@ -16,9 +16,8 @@ import com.merkost.honq.data.local.createDataStore
 import com.merkost.honq.data.premium.RevenueCatPremiumManager
 import com.merkost.honq.domain.premium.PremiumManager
 import com.merkost.honq.data.local.datasource.QuestionLocalDataSource
-import com.merkost.honq.data.remote.api.AppConfigApi
-import com.merkost.honq.data.remote.api.QuestionApi
-import com.merkost.honq.data.remote.api.SupabaseConfig
+import com.merkost.honq.data.remote.api.FirebaseAppConfigApi
+import com.merkost.honq.data.remote.api.FirestoreContentApi
 import com.merkost.honq.data.repository.DataSyncManager
 import com.merkost.honq.data.repository.FavoritesRepositoryImpl
 import com.merkost.honq.data.repository.InMemoryReviewRepository
@@ -30,7 +29,8 @@ import com.merkost.honq.domain.repository.QuestionRepository
 import com.merkost.honq.domain.repository.QuestionSetSelectionRepository
 import com.merkost.honq.domain.repository.ReviewRepository
 import com.merkost.honq.domain.repository.StateSelectionRepository
-import io.github.jan.supabase.SupabaseClient
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.firestore.firestore
 import org.koin.dsl.module
 
 val dataModule = module {
@@ -44,9 +44,9 @@ val dataModule = module {
     single<StateSelectionRepository> { InMemoryStateSelectionRepository() }
     single<QuestionSetSelectionRepository> { InMemoryQuestionSetSelectionRepository() }
 
-    single<SupabaseClient> { SupabaseConfig.createClient() }
-    single { QuestionApi(get()) }
-    single { AppConfigApi(get()) }
+    single { Firebase.firestore }
+    single { FirestoreContentApi(get()) }
+    single { FirebaseAppConfigApi(get()) }
     single { DataSyncManager(get(), get()) }
     single {
         QuestionLocalDataSource(

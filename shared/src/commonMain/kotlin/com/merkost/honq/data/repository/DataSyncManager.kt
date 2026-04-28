@@ -1,13 +1,13 @@
 package com.merkost.honq.data.repository
 
 import com.merkost.honq.data.local.SyncPreferences
-import com.merkost.honq.data.remote.api.AppConfigApi
+import com.merkost.honq.data.remote.api.FirebaseAppConfigApi
 import org.kimplify.cedar.logging.Cedar
 
 data class SyncCheck(val needsSync: Boolean, val remoteVersion: Int)
 
 class DataSyncManager(
-    private val appConfigApi: AppConfigApi,
+    private val appConfigApi: FirebaseAppConfigApi,
     private val syncPreferences: SyncPreferences
 ) {
     suspend fun needsInitialSync(): Boolean {
