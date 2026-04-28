@@ -64,5 +64,4 @@ dependencies {
 
     implementation(libs.play.integrity)
     implementation(libs.play.review.ktx)
-    implementation(libs.supabase.functions)
 }

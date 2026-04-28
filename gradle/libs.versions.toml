@@ -29,7 +29,6 @@ ktor = "3.4.1"
 kotlinx-serialization = "1.10.0"
 kotlinx-datetime = "0.7.1"
 coil = "3.4.0"
-supabase = "3.4.1"
 flowmvi = "3.2.1"
 buildkonfig = "0.17.1"
 datastore = "1.2.1"
@@ -88,9 +87,6 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
-
-supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
-supabase-functions = { module = "io.github.jan-tennert.supabase:functions-kt", version.ref = "supabase" }
 
 flowmvi-core = { module = "pro.respawn.flowmvi:core", version.ref = "flowmvi" }
 flowmvi-compose = { module = "pro.respawn.flowmvi:compose", version.ref = "flowmvi" }
