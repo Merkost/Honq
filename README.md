@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024-flat.png" width="128" alt="Honq logo" />
+</p>
+
 # Honq — Australian DKT Test
 
 > Clean, focused practice for the Australian Driver Knowledge Test. No ads, no subscriptions, no clutter.
@@ -14,7 +18,7 @@ This repository contains the source for the production app available on the App 
 
 | Platform | Status |
 |---|---|
-| Android | Released |
+| Android | Released — [Google Play](https://play.google.com/store/apps/details?id=com.merkost.honq) |
 | iOS | Released |
 | Question banks | NSW, NT (more states linked to official handbooks where no public bank exists) |
 
@@ -71,15 +75,16 @@ This repository contains the source for the production app available on the App 
 
 ### Configuration
 
-Copy `local.properties.example` to `local.properties` (if present) and provide:
+Copy `local.properties.example` to `local.properties` and fill in your values:
 
 ```properties
-# Required
-firebase.project.id=<your firebase project id>
+# Optional — defaults to https://honq-ac8e4.web.app if unset
 firebase.hosting.base.url=https://<your-project>.web.app
 
-# Optional — only if you want analytics or RevenueCat in dev
+# Optional — leave blank to disable analytics in dev
 amplitude.api.key=<your amplitude write key>
+
+# Optional — only needed if you wire Play Integrity to your own GCP project
 google.cloud.project.number=<your gcp project number>
 ```
 
@@ -145,7 +150,7 @@ Official sources are documented in [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md
 
 ## License
 
-TBD — choose a license before pushing public.
+[PolyForm Noncommercial 1.0.0](LICENSE). The source is available for personal study, hobby projects, research, and noncommercial use. Shipping a derivative app commercially (e.g. publishing a fork to the App Store / Google Play) is not permitted.
 
 ---
 

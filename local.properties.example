@@ -1,0 +1,15 @@
+# Copy this file to local.properties and fill in your own values.
+# local.properties is gitignored.
+
+# Android SDK location (Android Studio sets this automatically on first sync).
+#sdk.dir=/Users/you/Library/Android/sdk
+
+# Base URL for the Firebase Hosting bucket that serves question images.
+# Defaults to https://honq-ac8e4.web.app if unset.
+firebase.hosting.base.url=
+
+# Amplitude write key. Leave blank to disable analytics in local builds.
+amplitude.api.key=
+
+# GCP project number — required only if you wire Play Integrity to your own project.
+google.cloud.project.number=
