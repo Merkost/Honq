@@ -23,7 +23,6 @@ class CrashReportingTree : LogTree {
                 val category = when (priority) {
                     LogPriority.ERROR -> "E"
                     LogPriority.WARNING -> "W"
-                    else -> throw IllegalStateException()
                 }
                 crashlytics.log("$category/$tag: $message")
             }

@@ -3,6 +3,8 @@ package com.merkost.honq.presentation.screens.onboarding
 import androidx.lifecycle.ViewModel
 import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.AnalyticsEvent
+import com.merkost.honq.core.util.Result
+import com.merkost.honq.core.util.getOrNull
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.data.local.OnboardingPreferences
@@ -62,26 +64,57 @@ class OnboardingContainer(
         }
     }
 
+    private suspend fun runSync(): Result<Unit> {
+        val remoteVersion = dataSyncManager.fetchRemoteVersion().getOrDefault(0)
+        val syncResult = repository.fullSync(null)
+        if (syncResult is Result.Success) {
+            dataSyncManager.markSyncCompleted(remoteVersion)
+        }
+        return syncResult
+    }
+
     private suspend fun PipelineContext<OnboardingState, OnboardingIntent, OnboardingAction>.loadData() {
         Cedar.tag("Onboarding").d("loadData: starting...")
         updateState { copy(isLoading = true, error = null) }
 
         if (dataSyncManager.needsInitialSync()) {
             Cedar.tag("Onboarding").d("loadData: first launch, running full sync")
-            val remoteVersion = dataSyncManager.fetchRemoteVersion().getOrDefault(0)
-            repository.fullSync(null)
-            dataSyncManager.markSyncCompleted(remoteVersion)
+            val syncResult = runSync()
+            if (syncResult is Result.Error) {
+                Cedar.tag("Onboarding").e("loadData: initial sync failed: ${syncResult.exception.message}", syncResult.exception)
+                updateState {
+                    copy(
+                        isLoading = false,
+                        error = "Couldn't load content. Check your connection and try again."
+                    )
+                }
+                return
+            }
         }
 
-        getStates()
-            .onSuccess { states ->
-                Cedar.tag("Onboarding").d("loadData: loaded ${states.size} states")
-                updateState { copy(states = states) }
+        var states = getStates().getOrNull().orEmpty()
+
+        // Self-heal: prior installs may have flagged sync complete with an empty
+        // DB (e.g. PERMISSION_DENIED on v1.0.1). If the local store is empty,
+        // re-run the sync once before giving up.
+        if (states.isEmpty()) {
+            Cedar.tag("Onboarding").w("loadData: states empty after read, re-running sync")
+            val retryResult = runSync()
+            if (retryResult is Result.Error) {
+                Cedar.tag("Onboarding").e("loadData: retry sync failed: ${retryResult.exception.message}", retryResult.exception)
+                updateState {
+                    copy(
+                        isLoading = false,
+                        error = "Couldn't load content. Check your connection and try again."
+                    )
+                }
+                return
             }
-            .onError { e ->
-                Cedar.tag("Onboarding").e("loadData: failed to load states: ${e.message}", e)
-                updateState { copy(error = e.message ?: "Failed to load states") }
-            }
+            states = getStates().getOrNull().orEmpty()
+        }
+
+        Cedar.tag("Onboarding").d("loadData: loaded ${states.size} states")
+        updateState { copy(states = states) }
 
         getLicenseTypes()
             .onSuccess { types ->

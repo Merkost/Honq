@@ -23,6 +23,12 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
+# Keep Firestore DTOs end-to-end. R8's optimize pass can mangle the data classes
+# even when the generated serializer survives, which makes GitLive Firebase KMP's
+# `documents.map { it.data<Dto>() }` decode silently return empty in release.
+# Covers both data/remote/dto/* and data/remote/api/*$ConfigDoc nested types.
+-keep class com.merkost.honq.data.remote.** { *; }
+
 # ============================================================
 # Kotlin
 # ============================================================
