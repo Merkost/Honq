@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Honq content collections — public read of active rows, no client writes.
+    match /questions/{doc} {
+      allow read: if resource.data.is_active == true;
+      allow write: if false;
+    }
+    match /states/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /license_types/{doc} {
+      allow read: if resource.data.is_active == true;
+      allow write: if false;
+    }
+    match /assessment_types/{doc} {
+      allow read: if resource.data.is_active == true;
+      allow write: if false;
+    }
+    match /question_sets/{doc} {
+      allow read: if resource.data.is_active == true;
+      allow write: if false;
+    }
+    match /question_set_categories/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /categories/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /state_resources/{doc} {
+      allow read: if resource.data.is_active == true;
+      allow write: if false;
+    }
+    match /app_config/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
