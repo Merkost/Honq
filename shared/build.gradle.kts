@@ -151,6 +151,7 @@ buildkonfig {
     defaultConfigs {
         buildConfigField(STRING, "SUPABASE_URL", getLocalProperty("supabase.url", ""))
         buildConfigField(STRING, "SUPABASE_KEY", getLocalProperty("supabase.key", ""))
+        buildConfigField(STRING, "FIREBASE_HOSTING_BASE_URL", getLocalProperty("firebase.hosting.base.url", "https://honq-ac8e4.web.app"))
         buildConfigField(STRING, "AMPLITUDE_API_KEY", getLocalProperty("amplitude.api.key", ""))
         buildConfigField(STRING, "APP_VERSION", "\"1.0.0\"")
         buildConfigField(STRING, "GOOGLE_CLOUD_PROJECT_NUMBER", getLocalProperty("google.cloud.project.number", ""))
