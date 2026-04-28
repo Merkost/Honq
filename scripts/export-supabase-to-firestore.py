@@ -91,21 +91,36 @@ def export_tables(supabase: Client, fs: firestore.Client) -> None:
         print(f"[tables] {table}: {total} docs written")
 
 
+def _list_recursive(supabase: Client, prefix: str) -> list[str]:
+    """Walk a Supabase Storage bucket starting at `prefix` (relative to bucket root),
+    returning a flat list of file paths (also relative to bucket root). Folder entries
+    have id=None in the Supabase response; recurse into them."""
+    paths: list[str] = []
+    entries = supabase.storage.from_(SUPABASE_BUCKET).list(path=prefix, options={"limit": 5000})
+    for entry in entries or []:
+        name = entry.get("name", "")
+        if not name or name == ".emptyFolderPlaceholder":
+            continue
+        full = f"{prefix}/{name}" if prefix else name
+        if entry.get("id") is None:
+            paths.extend(_list_recursive(supabase, full))
+        else:
+            paths.append(full)
+    return paths
+
+
 def stage_images(supabase: Client) -> None:
-    print(f"[hosting] listing supabase bucket '{SUPABASE_BUCKET}'...")
-    listing = supabase.storage.from_(SUPABASE_BUCKET).list(path="", options={"limit": 5000})
-    if not listing:
+    print(f"[hosting] walking supabase bucket '{SUPABASE_BUCKET}'...")
+    paths = _list_recursive(supabase, prefix="")
+    if not paths:
         print("[hosting] empty bucket — skipping")
         return
     HOSTING_QUESTIONS_DIR.mkdir(parents=True, exist_ok=True)
     count = 0
-    for entry in listing:
-        name = entry["name"]
-        if name.endswith("/"):
-            continue
-        print(f"[hosting] staging {name}...")
-        blob_bytes = supabase.storage.from_(SUPABASE_BUCKET).download(name)
-        out_path = HOSTING_QUESTIONS_DIR / name
+    for path in paths:
+        print(f"[hosting] staging {path}...")
+        blob_bytes = supabase.storage.from_(SUPABASE_BUCKET).download(path)
+        out_path = HOSTING_QUESTIONS_DIR / path
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_bytes(blob_bytes)
         count += 1
