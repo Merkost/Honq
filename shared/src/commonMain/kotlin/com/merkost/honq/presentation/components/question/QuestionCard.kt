@@ -10,9 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import com.merkost.honq.data.local.seed.BundledImagePath
 import com.merkost.honq.domain.model.Question
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
+import honq.shared.generated.resources.Res
 
 @Composable
 fun QuestionCard(
@@ -32,10 +34,10 @@ fun QuestionCard(
             fontWeight = FontWeight.Medium
         )
 
-        question.imageUrl?.let { url ->
+        BundledImagePath.resolve(question.imageUrl)?.let { resourcePath ->
             Spacer(modifier = Modifier.height(HonqSpacing.md))
             QuestionImage(
-                url = url,
+                url = Res.getUri(resourcePath),
                 modifier = Modifier.fillMaxWidth()
             )
         }
