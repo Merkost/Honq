@@ -28,7 +28,6 @@ import com.merkost.honq.domain.usecase.SaveIncorrectAnswersUseCase
 import com.merkost.honq.domain.usecase.SaveMockTestResultUseCase
 import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
 import com.merkost.honq.domain.usecase.SetSelectedStateUseCase
-import com.merkost.honq.domain.usecase.SyncQuestionsUseCase
 import com.merkost.honq.domain.usecase.ToggleFavoriteQuestionUseCase
 import org.koin.dsl.module
 
@@ -39,7 +38,6 @@ val domainModule = module {
     factory { RecordAnswerUseCase(get()) }
     factory { SaveMockTestResultUseCase(get()) }
     factory { GetUserProgressUseCase(get()) }
-    factory { SyncQuestionsUseCase(get(), get()) }
     factory { GetStatesUseCase(get()) }
     factory { GetStateResourcesUseCase(get()) }
     factory { GetLicenseTypesUseCase(get()) }

@@ -87,7 +87,7 @@ val dataModule = module {
     }
 
     single<QuestionRepository> {
-        QuestionRepositoryImpl(get(), get(), get(), get(), get(), get())
+        QuestionRepositoryImpl(get(), get(), get())
     }
     single<ProgressRepository> { ProgressRepositoryImpl(get(), get(), get()) }
     single<FavoritesRepository> { FavoritesRepositoryImpl(get(), get()) }

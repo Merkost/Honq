@@ -350,20 +350,8 @@ class FakeQuestionRepository : QuestionRepository {
         )
     }
 
-    override suspend fun syncQuestions(): Result<Unit> {
-        return Result.Success(Unit)
-    }
-
-    override suspend fun syncQuestions(questionSetId: String): Result<Unit> {
-        return Result.Success(Unit)
-    }
-
     override suspend fun getStates(): Result<List<State>> {
         return Result.Success(listOf(defaultState))
-    }
-
-    override suspend fun syncStates(): Result<Unit> {
-        return Result.Success(Unit)
     }
 
     override suspend fun getLicenseTypes(): Result<List<LicenseType>> {
@@ -386,8 +374,6 @@ class FakeQuestionRepository : QuestionRepository {
         return Result.Success(categories.values.toList())
     }
 
-    override suspend fun fullSync(questionSetId: String?, remoteVersion: Int?): Result<Unit> = Result.Success(Unit)
-
     override suspend fun getAllActiveCategories(): Result<List<Category>> =
         Result.Success(categories.values.toList())
 
@@ -401,9 +387,4 @@ class FakeQuestionRepository : QuestionRepository {
             )
         )
 
-    override suspend fun getLastSyncTime(questionSetId: String): kotlin.time.Instant? = null
-
-    override suspend fun isDatabaseEmpty(): Boolean = false
-
-    override suspend fun hasQuestionsForSet(questionSetId: String): Boolean = true
 }

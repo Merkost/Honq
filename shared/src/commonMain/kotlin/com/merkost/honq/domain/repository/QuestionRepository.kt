@@ -16,19 +16,12 @@ interface QuestionRepository {
     suspend fun getMockTestQuestions(questionSetId: String): Result<List<Question>>
     suspend fun getQuestionById(questionId: String): Result<Question?>
     suspend fun searchQuestions(questionSetId: String, query: String): Result<List<Question>>
-    suspend fun syncQuestions(): Result<Unit>
-    suspend fun syncQuestions(questionSetId: String): Result<Unit>
     suspend fun getStates(): Result<List<State>>
-    suspend fun syncStates(): Result<Unit>
     suspend fun getLicenseTypes(): Result<List<LicenseType>>
     suspend fun getAssessmentTypes(): Result<List<AssessmentType>>
     suspend fun getQuestionSetsByState(stateId: String): Result<List<QuestionSet>>
     suspend fun getQuestionSetById(questionSetId: String): Result<QuestionSet?>
     suspend fun getCategoriesByQuestionSet(questionSetId: String): Result<List<Category>>
-    suspend fun fullSync(questionSetId: String? = null, remoteVersion: Int? = null): Result<Unit>
     suspend fun getAllActiveCategories(): Result<List<Category>>
     suspend fun getCategoryProgress(questionSetId: String): Result<Map<String, CategoryProgress>>
-    suspend fun getLastSyncTime(questionSetId: String): kotlin.time.Instant?
-    suspend fun isDatabaseEmpty(): Boolean
-    suspend fun hasQuestionsForSet(questionSetId: String): Boolean
 }

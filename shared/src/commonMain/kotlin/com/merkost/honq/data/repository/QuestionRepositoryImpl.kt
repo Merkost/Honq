@@ -3,10 +3,7 @@ package com.merkost.honq.data.repository
 import com.merkost.honq.core.util.AppDispatchers
 import com.merkost.honq.core.util.Result
 import com.merkost.honq.core.util.runLogged
-import com.merkost.honq.data.local.SyncPreferences
 import com.merkost.honq.data.local.datasource.QuestionLocalDataSource
-import com.merkost.honq.data.remote.api.QuestionApi
-import com.merkost.honq.data.local.seed.mapper.toEntity
 import com.merkost.honq.domain.model.AssessmentType
 import com.merkost.honq.domain.model.Category
 import com.merkost.honq.domain.model.CategoryProgress
@@ -15,20 +12,14 @@ import com.merkost.honq.domain.model.Question
 import com.merkost.honq.domain.model.QuestionSet
 import com.merkost.honq.domain.model.State
 import com.merkost.honq.domain.repository.QuestionRepository
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.kimplify.cedar.logging.Cedar
-import kotlin.time.Clock
 
 class QuestionRepositoryImpl(
     private val localDataSource: QuestionLocalDataSource,
-    private val questionApi: QuestionApi,
     private val dispatchers: AppDispatchers,
     private val json: Json,
-    private val syncPreferences: SyncPreferences,
-    private val dataSyncManager: DataSyncManager
 ) : QuestionRepository {
 
     companion object {
@@ -139,67 +130,6 @@ class QuestionRepositoryImpl(
             }
         }
 
-    override suspend fun syncQuestions(): Result<Unit> =
-        withContext(dispatchers.io) {
-            try {
-                val questionSetId = resolveDefaultQuestionSetId(DEFAULT_STATE_ID)
-                if (questionSetId == null) {
-                    Cedar.tag("QuestionRepo").w("syncQuestions: no default question set found, skipping")
-                    return@withContext Result.Success(Unit)
-                }
-                syncQuestions(questionSetId)
-            } catch (e: Exception) {
-                Cedar.tag("QuestionRepo").e("syncQuestions failed: ${e.message}", e)
-                Result.Error(e)
-            }
-        }
-
-    override suspend fun syncQuestions(questionSetId: String): Result<Unit> =
-        withContext(dispatchers.io) {
-            try {
-                Cedar.tag("QuestionRepo").d("syncQuestions: starting for questionSet=$questionSetId")
-                val lastSync = syncPreferences.getLastSyncTime(questionSetId)
-                val localCount = localDataSource.getQuestionCountByQuestionSet(questionSetId)
-                Cedar.tag("QuestionRepo").d("syncQuestions: lastSync=$lastSync, localCount=$localCount")
-
-                val isFullFetch = lastSync == null || localCount == 0
-                val remoteQuestions = if (!isFullFetch) {
-                    val lastUpdatedAt = localDataSource.getLastUpdatedAt(questionSetId)
-                    if (lastUpdatedAt != null) {
-                        questionApi.fetchUpdatedQuestions(questionSetId, lastUpdatedAt)
-                    } else {
-                        questionApi.fetchQuestionsByQuestionSet(questionSetId)
-                    }
-                } else {
-                    questionApi.fetchQuestionsByQuestionSet(questionSetId)
-                }
-
-                if (remoteQuestions.isNotEmpty()) {
-                    val entities = remoteQuestions.map { it.toEntity(json) }
-                    Cedar.tag("QuestionRepo").d("syncQuestions: upserting ${entities.size} questions")
-                    localDataSource.upsertQuestions(entities)
-
-                    if (isFullFetch) {
-                        // Clean up stale local questions not present in the remote set
-                        val remoteIds = entities.map { it.id }.toSet()
-                        localDataSource.deleteStaleQuestions(questionSetId, remoteIds)
-                    }
-
-                    val now = kotlin.time.Instant.fromEpochMilliseconds(
-                        Clock.System.now().toEpochMilliseconds()
-                    )
-                    syncPreferences.setLastSyncTime(questionSetId, now)
-                } else {
-                    Cedar.tag("QuestionRepo").w("syncQuestions: API returned 0 questions for questionSet=$questionSetId")
-                }
-                Cedar.tag("QuestionRepo").d("syncQuestions: completed for questionSet=$questionSetId")
-                Result.Success(Unit)
-            } catch (e: Exception) {
-                Cedar.tag("QuestionRepo").e("syncQuestions($questionSetId) failed: ${e.message}", e)
-                Result.Error(e)
-            }
-        }
-
     override suspend fun getStates(): Result<List<State>> = withContext(dispatchers.io) {
         try {
             val states = localDataSource.getStates()
@@ -207,56 +137,6 @@ class QuestionRepositoryImpl(
             Result.Success(states)
         } catch (e: Exception) {
             Cedar.tag("QuestionRepo").e("getStates failed: ${e.message}", e)
-            Result.Error(e)
-        }
-    }
-
-    override suspend fun syncStates(): Result<Unit> = withContext(dispatchers.io) {
-        try {
-            Cedar.tag("QuestionRepo").d("syncStates: starting full state sync...")
-
-            // Fetch all reference data in parallel
-            val (states, licenseTypes, assessmentTypes, questionSets, categories, qsCategories) =
-                coroutineScope {
-                    val statesDeferred = async { questionApi.fetchStates(includeInactive = true) }
-                    val licenseTypesDeferred = async { questionApi.fetchLicenseTypes(includeInactive = true) }
-                    val assessmentTypesDeferred = async { questionApi.fetchAssessmentTypes(includeInactive = true) }
-                    val questionSetsDeferred = async { questionApi.fetchQuestionSets(includeInactive = true) }
-                    val categoriesDeferred = async { questionApi.fetchCategories(includeInactive = true) }
-                    val qsCategoriesDeferred = async {
-                        try {
-                            questionApi.fetchQuestionSetCategories(includeInactive = true)
-                        } catch (e: Exception) {
-                            Cedar.tag("SyncCategories").w("question_set_categories fetch failed: ${e.message}")
-                            emptyList()
-                        }
-                    }
-                    SyncData(
-                        statesDeferred.await(),
-                        licenseTypesDeferred.await(),
-                        assessmentTypesDeferred.await(),
-                        questionSetsDeferred.await(),
-                        categoriesDeferred.await(),
-                        qsCategoriesDeferred.await()
-                    )
-                }
-
-            // Upsert all reference data in a transaction
-            // Order matters due to foreign keys: independent tables first, then dependent ones
-            Cedar.tag("QuestionRepo").d("syncStates: upserting ${states.size} states, ${licenseTypes.size} license types, ${assessmentTypes.size} assessment types, ${questionSets.size} question sets, ${categories.size} categories, ${qsCategories.size} question set categories")
-            localDataSource.upsertAllReferenceData(
-                states = states.map { it.toEntity() },
-                licenseTypes = licenseTypes.map { it.toEntity() },
-                assessmentTypes = assessmentTypes.map { it.toEntity() },
-                categories = categories.map { it.toEntity() },
-                questionSets = questionSets.map { it.toEntity() },
-                questionSetCategories = qsCategories.map { it.toEntity() }
-            )
-
-            Cedar.tag("QuestionRepo").d("syncStates: completed")
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Cedar.tag("QuestionRepo").e("syncStates FAILED: ${e.message}", e)
             Result.Error(e)
         }
     }
@@ -310,33 +190,6 @@ class QuestionRepositoryImpl(
             }
         }
 
-    override suspend fun fullSync(questionSetId: String?, remoteVersion: Int?): Result<Unit> =
-        withContext(dispatchers.io) {
-            try {
-                Cedar.tag("QuestionRepo").d("fullSync: starting (questionSetId=$questionSetId, remoteVersion=$remoteVersion)")
-                val syncResult = syncStates()
-                if (syncResult is Result.Error) {
-                    Cedar.tag("QuestionRepo").w("fullSync: syncStates failed: ${syncResult.exception.message}")
-                    return@withContext syncResult
-                }
-                if (questionSetId != null) {
-                    val questionsResult = syncQuestions(questionSetId)
-                    if (questionsResult is Result.Error) {
-                        Cedar.tag("QuestionRepo").w("fullSync: syncQuestions failed: ${questionsResult.exception.message}")
-                        return@withContext questionsResult
-                    }
-                }
-                if (remoteVersion != null) {
-                    dataSyncManager.markSyncCompleted(remoteVersion)
-                }
-                Cedar.tag("QuestionRepo").d("fullSync: completed")
-                Result.Success(Unit)
-            } catch (e: Exception) {
-                Cedar.tag("QuestionRepo").e("fullSync failed: ${e.message}", e)
-                Result.Error(e)
-            }
-        }
-
     override suspend fun getAllActiveCategories(): Result<List<Category>> =
         withContext(dispatchers.io) {
             try {
@@ -355,24 +208,4 @@ class QuestionRepositoryImpl(
                 localDataSource.getCategoryProgress(questionSetId)
             }
         }
-
-    override suspend fun getLastSyncTime(questionSetId: String): kotlin.time.Instant? =
-        syncPreferences.getLastSyncTime(questionSetId)
-
-    override suspend fun isDatabaseEmpty(): Boolean = withContext(dispatchers.io) {
-        localDataSource.getStates().isEmpty()
-    }
-
-    override suspend fun hasQuestionsForSet(questionSetId: String): Boolean = withContext(dispatchers.io) {
-        localDataSource.getQuestionCountByQuestionSet(questionSetId) > 0
-    }
 }
-
-private data class SyncData(
-    val states: List<com.merkost.honq.data.local.seed.dto.StateDto>,
-    val licenseTypes: List<com.merkost.honq.data.local.seed.dto.LicenseTypeDto>,
-    val assessmentTypes: List<com.merkost.honq.data.local.seed.dto.AssessmentTypeDto>,
-    val questionSets: List<com.merkost.honq.data.local.seed.dto.QuestionSetDto>,
-    val categories: List<com.merkost.honq.data.local.seed.dto.CategoryDto>,
-    val qsCategories: List<com.merkost.honq.data.local.seed.dto.QuestionSetCategoryDto>
-)
