@@ -51,6 +51,7 @@ import com.merkost.honq.data.local.ThemePreferences
 import com.merkost.honq.domain.premium.PremiumManager
 import com.revenuecat.purchases.kmp.ui.revenuecatui.CustomerCenter
 import com.merkost.honq.domain.repository.ProgressRepository
+import com.merkost.honq.presentation.components.base.AnimatedSegmentedSelector
 import com.merkost.honq.presentation.components.base.HonqScaffold
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
@@ -408,41 +409,19 @@ private fun ThemeModeSelector(
     selected: ThemeMode,
     onSelect: (ThemeMode) -> Unit
 ) {
-    val colors = HonqTheme.colors
-    val options = listOf(
-        ThemeMode.SYSTEM to "System",
-        ThemeMode.LIGHT to "Light",
-        ThemeMode.DARK to "Dark"
-    )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(HonqSizing.cornerRadius))
-            .background(colors.surfaceVariant),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        options.forEach { (mode, label) ->
-            val isSelected = mode == selected
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
-                    .background(if (isSelected) colors.primary else Color.Transparent)
-                    .clickable { onSelect(mode) }
-                    .padding(vertical = HonqSpacing.sm),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (isSelected) colors.onPrimary else colors.textSecondary,
-                    textAlign = TextAlign.Center
-                )
+    AnimatedSegmentedSelector(
+        options = ThemeMode.entries,
+        selected = selected,
+        onSelect = onSelect,
+        labelOf = { mode ->
+            when (mode) {
+                ThemeMode.SYSTEM -> "System"
+                ThemeMode.LIGHT -> "Light"
+                ThemeMode.DARK -> "Dark"
             }
-        }
-    }
+        },
+        labelStyle = MaterialTheme.typography.labelMedium
+    )
 }
 
 @Composable
@@ -450,36 +429,13 @@ private fun FontScaleSelector(
     selected: FontScale,
     onSelect: (FontScale) -> Unit
 ) {
-    val colors = HonqTheme.colors
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(HonqSizing.cornerRadius))
-            .background(colors.surfaceVariant),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        FontScale.entries.forEach { scale ->
-            val isSelected = scale == selected
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(HonqSizing.cornerRadius))
-                    .background(if (isSelected) colors.primary else Color.Transparent)
-                    .clickable { onSelect(scale) }
-                    .padding(vertical = HonqSpacing.sm),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = scale.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (isSelected) colors.onPrimary else colors.textSecondary,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
+    AnimatedSegmentedSelector(
+        options = FontScale.entries,
+        selected = selected,
+        onSelect = onSelect,
+        labelOf = { it.label },
+        labelStyle = MaterialTheme.typography.labelSmall
+    )
 }
 
 @Composable

@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,59 +36,73 @@ fun HonqScaffold(
     modifier: Modifier = Modifier,
     title: String? = null,
     showLogo: Boolean = false,
+    centered: Boolean = true,
     onNavigateBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit
 ) {
+    val titleSlot: @Composable () -> Unit = {
+        if (showLogo) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(Res.drawable.ic_honq_logo),
+                    contentDescription = "Honq Logo",
+                    modifier = Modifier.size(HonqSizing.iconSizeLarge)
+                )
+                title?.let {
+                    Spacer(modifier = Modifier.width(HonqSpacing.sm))
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        } else {
+            title?.let { Text(it) }
+        }
+    }
+    val navIconSlot: @Composable () -> Unit = {
+        onNavigateBack?.let { onBack ->
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = HonqTheme.colors.background,
         bottomBar = bottomBar,
         topBar = {
             if (title != null || onNavigateBack != null || showLogo) {
-                CenterAlignedTopAppBar(
-                    title = {
-                        if (showLogo) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Image(
-                                    painter = painterResource(Res.drawable.ic_honq_logo),
-                                    contentDescription = "Honq Logo",
-                                    modifier = Modifier.size(HonqSizing.iconSizeLarge)
-                                )
-                                title?.let {
-                                    Spacer(modifier = Modifier.width(HonqSpacing.sm))
-                                    Text(
-                                        text = it,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        } else {
-                            title?.let { Text(it) }
-                        }
-                    },
-                    navigationIcon = {
-                        onNavigateBack?.let { onBack ->
-                            IconButton(onClick = onBack) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back"
-                                )
-                            }
-                        }
-                    },
-                    actions = actions,
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = HonqTheme.colors.background,
-                        titleContentColor = HonqTheme.colors.textPrimary,
-                        navigationIconContentColor = HonqTheme.colors.textPrimary
+                if (centered) {
+                    CenterAlignedTopAppBar(
+                        title = titleSlot,
+                        navigationIcon = navIconSlot,
+                        actions = actions,
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = HonqTheme.colors.background,
+                            titleContentColor = HonqTheme.colors.textPrimary,
+                            navigationIconContentColor = HonqTheme.colors.textPrimary
+                        )
                     )
-                )
+                } else {
+                    TopAppBar(
+                        title = titleSlot,
+                        navigationIcon = navIconSlot,
+                        actions = actions,
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = HonqTheme.colors.background,
+                            titleContentColor = HonqTheme.colors.textPrimary,
+                            navigationIconContentColor = HonqTheme.colors.textPrimary
+                        )
+                    )
+                }
             }
         },
         content = content

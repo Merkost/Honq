@@ -20,10 +20,13 @@ fun LicenseTypeIcon(
 ) {
     val icon = when (typeId) {
         LicenseTypeId.CAR -> Icons.Rounded.DirectionsCar
-        LicenseTypeId.RIDER -> Icons.Rounded.TwoWheeler
+        LicenseTypeId.RIDER,
         LicenseTypeId.RIDER_SPECIAL_MOBILITY_VEHICLE -> Icons.Rounded.TwoWheeler
-        LicenseTypeId.HEAVY_RIGID -> Icons.Rounded.LocalShipping
-        LicenseTypeId.HEAVY_COMBINATION -> Icons.Rounded.LocalShipping
+        LicenseTypeId.LIGHT_RIGID,
+        LicenseTypeId.MEDIUM_RIGID,
+        LicenseTypeId.HEAVY_RIGID,
+        LicenseTypeId.HEAVY_COMBINATION,
+        LicenseTypeId.MULTI_COMBINATION -> Icons.Rounded.LocalShipping
         null -> Icons.Rounded.DirectionsCar
     }
 

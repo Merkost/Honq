@@ -17,6 +17,16 @@
 
     <string name="home_about">About</string>
     <string name="home_state">State</string>
+
+    <string name="home_readiness_title">Test readiness</string>
+    <string name="home_readiness_status_ready">READY</string>
+    <string name="home_readiness_status_on_track">ON TRACK</string>
+    <string name="home_readiness_status_keep_going">KEEP STUDYING</string>
+    <string name="home_readiness_points_to_pass">%1$d points to your pass mark</string>
+    <string name="home_readiness_passed">You're past the pass mark — keep practising</string>
+    <string name="home_readiness_caption">%1$d questions answered · %2$d% accuracy</string>
+
+
     <string name="home_license_type">License Type</string>
     <string name="home_no_questions_available">No questions available for this selection</string>
     <string name="home_question_bank">Question Bank</string>

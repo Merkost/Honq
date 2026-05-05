@@ -4,8 +4,11 @@ enum class LicenseTypeId(val id: String) {
     CAR("car"),
     RIDER("rider"),
     RIDER_SPECIAL_MOBILITY_VEHICLE("rider_special_mobility_vehicle"),
+    LIGHT_RIGID("light_rigid"),
+    MEDIUM_RIGID("medium_rigid"),
     HEAVY_RIGID("heavy_rigid"),
-    HEAVY_COMBINATION("heavy_combination");
+    HEAVY_COMBINATION("heavy_combination"),
+    MULTI_COMBINATION("multi_combination");
 
     companion object {
         fun fromId(id: String): LicenseTypeId? = entries.find { it.id == id }

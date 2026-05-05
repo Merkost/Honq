@@ -664,10 +664,13 @@ private fun LicenseTypeCard(
 @Composable
 private fun getLicenseTypeDescription(typeId: LicenseTypeId?): String = when (typeId) {
     LicenseTypeId.CAR -> stringResource(Res.string.onboarding_car_license)
-    LicenseTypeId.RIDER -> stringResource(Res.string.onboarding_rider_license)
+    LicenseTypeId.RIDER,
     LicenseTypeId.RIDER_SPECIAL_MOBILITY_VEHICLE -> stringResource(Res.string.onboarding_rider_license)
-    LicenseTypeId.HEAVY_RIGID -> ""
-    LicenseTypeId.HEAVY_COMBINATION -> ""
+    LicenseTypeId.LIGHT_RIGID,
+    LicenseTypeId.MEDIUM_RIGID,
+    LicenseTypeId.HEAVY_RIGID,
+    LicenseTypeId.HEAVY_COMBINATION,
+    LicenseTypeId.MULTI_COMBINATION -> ""
     null -> ""
 }
 
