@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.LicenseType
 import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.domain.model.State
+import com.merkost.honq.presentation.components.base.FullscreenError
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.LicenseTypeIcon
 import com.merkost.honq.presentation.theme.HonqMotion
@@ -68,6 +69,8 @@ import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 import honq.shared.generated.resources.Res
+import honq.shared.generated.resources.error_offline_subtitle
+import honq.shared.generated.resources.error_offline_title
 import honq.shared.generated.resources.ic_honq_logo
 import honq.shared.generated.resources.onboarding_app_name
 import honq.shared.generated.resources.onboarding_car_license
@@ -93,6 +96,8 @@ import pro.respawn.flowmvi.compose.dsl.subscribe
 private const val WELCOME_STAGGER_DELAY = 80L
 private const val LIST_STAGGER_DELAY = 60L
 private const val SLIDE_UP_PX = 40f
+
+private enum class OnboardingPhase { Loading, Error, Ready }
 
 @Composable
 fun OnboardingScreen(
@@ -126,18 +131,28 @@ private fun OnboardingContent(
             .background(colors.background)
             .windowInsetsPadding(WindowInsets.statusBars)
     ) {
+        val phase = when {
+            state.isLoading -> OnboardingPhase.Loading
+            state.error != null -> OnboardingPhase.Error
+            else -> OnboardingPhase.Ready
+        }
         AnimatedContent(
-            targetState = state.isLoading,
+            targetState = phase,
             transitionSpec = {
                 fadeIn(tween(HonqMotion.durationMedium)).togetherWith(
                     fadeOut(tween(HonqMotion.durationMedium))
                 )
             }
-        ) { isLoading ->
-            if (isLoading) {
-                BrandedSplash()
-            } else {
-                AnimatedContent(
+        ) { current ->
+            when (current) {
+                OnboardingPhase.Loading -> BrandedSplash()
+                OnboardingPhase.Error -> FullscreenError(
+                    title = stringResource(Res.string.error_offline_title),
+                    subtitle = stringResource(Res.string.error_offline_subtitle),
+                    errorDetail = state.error,
+                    onRetry = { onIntent(OnboardingIntent.Retry) }
+                )
+                OnboardingPhase.Ready -> AnimatedContent(
                     targetState = state.currentStep,
                     transitionSpec = {
                         val isForward = targetState.ordinal > initialState.ordinal

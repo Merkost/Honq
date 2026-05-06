@@ -1,5 +1,23 @@
 # Release Notes
 
+## v1.1.0
+
+### Google Play Release Notes
+
+```
+A fresh, more refined Honq — built around your readiness for the test.
+
+What's new:
+- Brand-new home with a speedometer-style readiness gauge
+- Plate-style state / licence selector with a clean picker sheet
+- Smoother Appearance and Font size animations
+- Friendlier offline screen on first launch, with retry
+- All NSW heavy-vehicle classes supported: LR, MR, HR, HC, MC
+- Tighter typography, calmer colours, snappier transitions
+
+Still no ads. Still no subscriptions.
+```
+
 ## v1.0.0
 
 ### Google Play Release Notes

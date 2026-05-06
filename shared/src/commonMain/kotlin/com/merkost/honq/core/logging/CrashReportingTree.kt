@@ -12,20 +12,20 @@ class CrashReportingTree : LogTree {
         message: String,
         throwable: Throwable?
     ) {
-        if (priority == LogPriority.VERBOSE || priority == LogPriority.DEBUG || priority == LogPriority.INFO) {
-            return
-        }
-        if (priority == LogPriority.ERROR || priority == LogPriority.WARNING) {
-            val crashlytics = Firebase.crashlytics
-            if (throwable != null) {
-                crashlytics.recordException(throwable)
-            } else {
-                val category = when (priority) {
-                    LogPriority.ERROR -> "E"
-                    LogPriority.WARNING -> "W"
-                }
-                crashlytics.log("$category/$tag: $message")
+        if (priority == LogPriority.VERBOSE || priority == LogPriority.DEBUG) return
+
+        val crashlytics = Firebase.crashlytics
+        when (priority) {
+            LogPriority.INFO -> crashlytics.log("I/$tag: $message")
+            LogPriority.WARNING -> {
+                if (throwable != null) crashlytics.recordException(throwable)
+                else crashlytics.log("W/$tag: $message")
             }
+            LogPriority.ERROR -> {
+                if (throwable != null) crashlytics.recordException(throwable)
+                else crashlytics.log("E/$tag: $message")
+            }
+            else -> Unit // VERBOSE/DEBUG already returned above
         }
     }
 }

@@ -3,18 +3,6 @@ package com.merkost.honq.presentation.screens.home
 import com.merkost.honq.domain.model.UserProgress
 import kotlin.math.roundToInt
 
-/**
- * 0–100 score that combines coverage, accuracy, and mock-test performance into
- * a single "how prepared am I?" number for the speedometer hero.
- *
- * Why this shape:
- * - Accuracy carries the most weight (it's the actual signal of knowledge).
- * - Coverage prevents inflating the score when only a handful of questions have been seen.
- * - Mock-test pass rate is folded in once the user has actually taken one; before that
- *   we use accuracy as the fallback signal so the score doesn't dip on first launch.
- * - Coverage also gates accuracy via a confidence multiplier — answering 1/100 questions
- *   correctly shouldn't claim 100% readiness.
- */
 object Readiness {
 
     private const val DEFAULT_PASS_PERCENTAGE = 80

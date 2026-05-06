@@ -27,12 +27,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.domain.model.UserProgress
 import com.merkost.honq.presentation.screens.home.Readiness
 import com.merkost.honq.presentation.screens.home.ReadinessZone
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
@@ -46,12 +48,6 @@ import honq.shared.generated.resources.home_readiness_status_ready
 import honq.shared.generated.resources.home_readiness_title
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * Hero card with a horizontal layout — the score number occupies the left column as the
- * headline, the speedometer arc sits on the right as a compact instrument. Cuts the card
- * height roughly in half compared to the stacked layout while keeping the speedometer
- * metaphor recognizable.
- */
 @Composable
 fun ReadinessCard(
     progress: UserProgress,
@@ -126,7 +122,6 @@ fun ReadinessCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
         ) {
-            // Score readout — flexes to fill remaining width left of the gauge.
             Row(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.Bottom,
@@ -202,8 +197,6 @@ private fun ReadinessContextChip(
 ) {
     val colors = HonqTheme.colors
     Row(
-        // Rectangle clip on the *click ripple* only — the previous CircleShape pill clip
-        // was cropping the plate's corners, which is the "circle shape clipping" issue.
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
@@ -271,3 +264,119 @@ private fun StatusPill(zone: ReadinessZone) {
         )
     }
 }
+
+private fun previewProgress(score: Int) = UserProgress(
+    totalQuestions = 408,
+    uniqueQuestionsAnswered = (score * 4.08).toInt(),
+    totalPracticed = (score * 5).toInt(),
+    correctAnswers = (score * 3.4).toInt(),
+    mockTestsTaken = if (score >= 70) 4 else 1,
+    mockTestsPassed = if (score >= 70) 3 else 0,
+    lastPracticeDate = null
+)
+
+@Preview
+@Composable
+private fun ReadinessCardOnTrackPreview() {
+    HonqPreviewTheme {
+        ReadinessCard(
+            progress = previewProgress(72),
+            passMark = 80,
+            stateCode = "NSW",
+            licenseTypeId = LicenseTypeId.CAR,
+            licenseCode = "C",
+            onContextClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessCardReadyPreview() {
+    HonqPreviewTheme {
+        ReadinessCard(
+            progress = previewProgress(88),
+            passMark = 80,
+            stateCode = "VIC",
+            licenseTypeId = LicenseTypeId.RIDER,
+            licenseCode = "R",
+            onContextClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessCardKeepStudyingPreview() {
+    HonqPreviewTheme {
+        ReadinessCard(
+            progress = previewProgress(35),
+            passMark = 80,
+            stateCode = "QLD",
+            licenseTypeId = LicenseTypeId.HEAVY_RIGID,
+            licenseCode = "HR",
+            onContextClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessCardOnTrackLightPreview() {
+    HonqPreviewTheme(darkTheme = false) {
+        ReadinessCard(
+            progress = previewProgress(72),
+            passMark = 80,
+            stateCode = "NSW",
+            licenseTypeId = LicenseTypeId.CAR,
+            licenseCode = "C",
+            onContextClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessCardZeroStatePreview() {
+    HonqPreviewTheme {
+        ReadinessCard(
+            progress = UserProgress.EMPTY.copy(totalQuestions = 408),
+            passMark = 80,
+            stateCode = "NSW",
+            licenseTypeId = LicenseTypeId.CAR,
+            licenseCode = "C",
+            onContextClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessCardPassedPreview() {
+    HonqPreviewTheme {
+        ReadinessCard(
+            progress = previewProgress(95),
+            passMark = 80,
+            stateCode = "NSW",
+            licenseTypeId = LicenseTypeId.CAR,
+            licenseCode = "C",
+            onContextClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessCardNoContextPreview() {
+    HonqPreviewTheme {
+        ReadinessCard(
+            progress = previewProgress(60),
+            passMark = 80,
+            stateCode = null,
+            licenseTypeId = null,
+            licenseCode = "",
+            onContextClick = {}
+        )
+    }
+}
+

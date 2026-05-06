@@ -69,7 +69,10 @@ class HomeContainer(
                 is HomeIntent.SelectState -> selectState(intent.stateId)
                 is HomeIntent.SelectLicenseType -> selectLicenseType(intent.typeId)
                 is HomeIntent.OpenExternalLink -> trackExternalLink(intent.linkType, intent.url)
-                HomeIntent.Retry -> loadInitialData()
+                HomeIntent.Retry -> {
+                    Cedar.tag("Home").i("Retry triggered by user")
+                    loadInitialData()
+                }
             }
         }
     }

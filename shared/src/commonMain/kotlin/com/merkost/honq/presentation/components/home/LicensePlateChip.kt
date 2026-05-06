@@ -22,20 +22,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.domain.model.LicenseTypeId
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqTheme
 
-/**
- * Two paired badges: the original Australia-style dual-panel licence plate (blue state
- * code + white licence letter) and a separate amber tile with the vehicle silhouette.
- * Splitting the icon out of the plate keeps the plate looking authentic while making the
- * vehicle type visually obvious — the letter alone was unreadable at small sizes.
- *
- * Plate corner radius is small (4dp) so the curve never crosses the text bounds, which
- * was the source of the previous "clipping" issue.
- */
 @Composable
 fun LicensePlateChip(
     stateCode: String,
@@ -51,7 +44,6 @@ fun LicensePlateChip(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Blue + white plate — the look you liked, restored.
         Row(
             modifier = Modifier
                 .height(PLATE_HEIGHT)
@@ -93,8 +85,6 @@ fun LicensePlateChip(
             }
         }
 
-        // Vehicle silhouette — no container, just the icon. Lets the plate be the
-        // visual "object" and the vehicle icon read as a clean accent.
         Icon(
             imageVector = vehicleIconFor(licenseTypeId),
             contentDescription = null,
@@ -124,3 +114,51 @@ private val PLATE_CORNER = 4.dp
 private val PLATE_PANEL_PADDING_H = 11.dp
 
 private val VEHICLE_ICON_SIZE = 28.dp
+
+@Preview
+@Composable
+private fun LicensePlateChipCarPreview() {
+    HonqPreviewTheme {
+        LicensePlateChip(stateCode = "NSW", licenseTypeId = LicenseTypeId.CAR, licenseCode = "C")
+    }
+}
+
+@Preview
+@Composable
+private fun LicensePlateChipRiderPreview() {
+    HonqPreviewTheme {
+        LicensePlateChip(stateCode = "VIC", licenseTypeId = LicenseTypeId.RIDER, licenseCode = "R")
+    }
+}
+
+@Preview
+@Composable
+private fun LicensePlateChipHeavyPreview() {
+    HonqPreviewTheme {
+        LicensePlateChip(stateCode = "QLD", licenseTypeId = LicenseTypeId.HEAVY_COMBINATION, licenseCode = "HC")
+    }
+}
+
+@Preview
+@Composable
+private fun LicensePlateChipCarLightPreview() {
+    HonqPreviewTheme(darkTheme = false) {
+        LicensePlateChip(stateCode = "NSW", licenseTypeId = LicenseTypeId.CAR, licenseCode = "C")
+    }
+}
+
+@Preview
+@Composable
+private fun LicensePlateChipMultiCombinationPreview() {
+    HonqPreviewTheme {
+        LicensePlateChip(stateCode = "ACT", licenseTypeId = LicenseTypeId.MULTI_COMBINATION, licenseCode = "MC")
+    }
+}
+
+@Preview
+@Composable
+private fun LicensePlateChipNullTypePreview() {
+    HonqPreviewTheme {
+        LicensePlateChip(stateCode = "NSW", licenseTypeId = null, licenseCode = "")
+    }
+}

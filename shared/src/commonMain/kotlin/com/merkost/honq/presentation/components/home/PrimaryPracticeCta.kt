@@ -28,17 +28,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 
-/**
- * The primary entry into the practice flow — an amber gradient card with a dashed
- * road-stripe along the bottom edge. Replaces the old "Practice" pill from PillGrid
- * to give the home a single, unmistakable next step.
- */
 @Composable
 fun PrimaryPracticeCta(
     eyebrow: String,
@@ -52,9 +49,6 @@ fun PrimaryPracticeCta(
     val onCta = colors.onPrimary
     val contentAlpha = if (enabled) 1f else 0.5f
 
-    // Subtle top-to-bottom shift from primary → primaryVariant gives the surface a hint
-    // of depth without competing with the dark text on top. Both stops are Honq tokens,
-    // so it works coherently in light and dark themes.
     val gradient = Brush.verticalGradient(
         colors = listOf(
             colors.primary,
@@ -142,6 +136,62 @@ fun PrimaryPracticeCta(
             contentDescription = null,
             tint = onCta.copy(alpha = 0.85f),
             modifier = Modifier.size(HonqSizing.iconSize20)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PrimaryPracticeCtaContinuePreview() {
+    HonqPreviewTheme {
+        PrimaryPracticeCta(
+            eyebrow = "Continue",
+            title = "Practice questions",
+            subtitle = "By category",
+            enabled = true,
+            onClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PrimaryPracticeCtaStartPreview() {
+    HonqPreviewTheme {
+        PrimaryPracticeCta(
+            eyebrow = "Start",
+            title = "Start practising",
+            subtitle = "Random selection",
+            enabled = true,
+            onClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PrimaryPracticeCtaDisabledPreview() {
+    HonqPreviewTheme {
+        PrimaryPracticeCta(
+            eyebrow = "Start",
+            title = "Start practising",
+            subtitle = "Loading…",
+            enabled = false,
+            onClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PrimaryPracticeCtaContinueLightPreview() {
+    HonqPreviewTheme(darkTheme = false) {
+        PrimaryPracticeCta(
+            eyebrow = "Continue",
+            title = "Practice questions",
+            subtitle = "By category",
+            enabled = true,
+            onClick = {}
         )
     }
 }

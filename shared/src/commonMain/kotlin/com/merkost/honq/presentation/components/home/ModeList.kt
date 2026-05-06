@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Assignment
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.Psychology
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,17 +30,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.merkost.honq.presentation.components.base.ProBadge
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 
-/**
- * Unified list-card for the home's secondary practice modes. One surface with hairline
- * dividers — like an iOS grouped-table section. Replaces the cramped 3-up tile grid.
- */
 @Composable
 fun ModeList(
     modifier: Modifier = Modifier,
@@ -161,3 +162,137 @@ private fun ModeListRow(entry: ModeListEntry) {
 }
 
 private val ICON_BADGE_SIZE = 38.dp
+
+private val SmartTint = Color(0xFF5E5CE6)
+
+@Composable
+private fun previewRows(isPremium: Boolean = false): List<ModeListEntry> {
+    val colors = HonqTheme.colors
+    return listOf(
+        ModeListEntry(
+            icon = Icons.AutoMirrored.Rounded.Assignment,
+            tint = colors.primary,
+            title = "Mock test",
+            subtitle = "Timed exam · 25 questions",
+            enabled = true,
+            onClick = {},
+            trailingBadgeText = if (!isPremium) "2 FREE" else null,
+            trailingBadgeColor = colors.warning
+        ),
+        ModeListEntry(
+            icon = Icons.Rounded.Psychology,
+            tint = SmartTint,
+            title = "Smart drill",
+            subtitle = "Adaptive — focuses your weak spots",
+            enabled = true,
+            onClick = {},
+            showProBadge = !isPremium
+        ),
+        ModeListEntry(
+            icon = Icons.Rounded.Bookmark,
+            tint = colors.warning,
+            title = "Saved questions",
+            subtitle = "12 questions bookmarked",
+            enabled = true,
+            onClick = {}
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun ModeListFreePreview() {
+    HonqPreviewTheme {
+        ModeList(rows = previewRows(isPremium = false))
+    }
+}
+
+@Preview
+@Composable
+private fun ModeListPremiumPreview() {
+    HonqPreviewTheme {
+        ModeList(rows = previewRows(isPremium = true))
+    }
+}
+
+@Preview
+@Composable
+private fun ModeListFreeLightPreview() {
+    HonqPreviewTheme(darkTheme = false) {
+        ModeList(rows = previewRows(isPremium = false))
+    }
+}
+
+@Preview
+@Composable
+private fun ModeListAllDisabledPreview() {
+    val colors = HonqTheme.colors
+    HonqPreviewTheme {
+        ModeList(
+            rows = listOf(
+                ModeListEntry(
+                    icon = Icons.AutoMirrored.Rounded.Assignment,
+                    tint = colors.primary,
+                    title = "Mock test",
+                    subtitle = "Loading content…",
+                    enabled = false,
+                    onClick = {}
+                ),
+                ModeListEntry(
+                    icon = Icons.Rounded.Psychology,
+                    tint = SmartTint,
+                    title = "Smart drill",
+                    subtitle = "Loading content…",
+                    enabled = false,
+                    onClick = {}
+                ),
+                ModeListEntry(
+                    icon = Icons.Rounded.Bookmark,
+                    tint = colors.warning,
+                    title = "Saved questions",
+                    subtitle = "Loading content…",
+                    enabled = false,
+                    onClick = {}
+                )
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ModeListNoFavoritesPreview() {
+    val colors = HonqTheme.colors
+    HonqPreviewTheme {
+        ModeList(
+            rows = listOf(
+                ModeListEntry(
+                    icon = Icons.AutoMirrored.Rounded.Assignment,
+                    tint = colors.primary,
+                    title = "Mock test",
+                    subtitle = "Timed exam · 25 questions",
+                    enabled = true,
+                    onClick = {}
+                ),
+                ModeListEntry(
+                    icon = Icons.Rounded.Psychology,
+                    tint = SmartTint,
+                    title = "Smart drill",
+                    subtitle = "Adaptive — focuses your weak spots",
+                    enabled = true,
+                    onClick = {},
+                    showProBadge = true
+                ),
+                ModeListEntry(
+                    icon = Icons.Rounded.Bookmark,
+                    tint = colors.warning,
+                    title = "Saved questions",
+                    subtitle = "Bookmark questions to revisit them",
+                    enabled = true,
+                    onClick = {}
+                )
+            )
+        )
+    }
+}
+

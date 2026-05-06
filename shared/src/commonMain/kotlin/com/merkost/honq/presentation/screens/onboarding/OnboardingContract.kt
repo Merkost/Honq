@@ -43,6 +43,7 @@ sealed interface OnboardingIntent : MVIIntent {
     data class SelectLicenseType(val typeId: String) : OnboardingIntent
     data object CompleteOnboarding : OnboardingIntent
     data object GoBack : OnboardingIntent
+    data object Retry : OnboardingIntent
 }
 
 sealed interface OnboardingAction : MVIAction {

@@ -60,6 +60,10 @@ class OnboardingContainer(
                 OnboardingIntent.GoBack -> {
                     goBack()
                 }
+                OnboardingIntent.Retry -> {
+                    Cedar.tag("Onboarding").i("Retry triggered by user")
+                    loadData()
+                }
             }
         }
     }
@@ -94,9 +98,6 @@ class OnboardingContainer(
 
         var states = getStates().getOrNull().orEmpty()
 
-        // Self-heal: prior installs may have flagged sync complete with an empty
-        // DB (e.g. PERMISSION_DENIED on v1.0.1). If the local store is empty,
-        // re-run the sync once before giving up.
         if (states.isEmpty()) {
             Cedar.tag("Onboarding").w("loadData: states empty after read, re-running sync")
             val retryResult = runSync()

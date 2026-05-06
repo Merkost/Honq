@@ -8,7 +8,9 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,9 +23,11 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.merkost.honq.presentation.screens.home.Readiness
 import com.merkost.honq.presentation.screens.home.ReadinessZone
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqTheme
 import kotlin.math.PI
 import kotlin.math.cos
@@ -31,12 +35,6 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-/**
- * 270° speedometer arc with red/amber/green zones, tick marks every 10 points, an animated
- * needle, and a pass-mark indicator that extends outside the arc. Pure visualization — the
- * score number is rendered separately above the gauge by [ReadinessCard], like a digital
- * speed readout above a dashboard's analog dial.
- */
 @Composable
 fun ReadinessGauge(
     score: Int,
@@ -45,9 +43,6 @@ fun ReadinessGauge(
 ) {
     val colors = HonqTheme.colors
 
-    // Needle starts at 0 and sweeps to the current score with a slow ease-out — the kind
-    // of deliberate "instrument powering on" feel a luxury car dashboard has. Same animation
-    // is used for subsequent score changes so progress feels deliberate, not jittery.
     val animatedScore = remember { Animatable(0f) }
     LaunchedEffect(score) {
         animatedScore.animateTo(
@@ -56,8 +51,6 @@ fun ReadinessGauge(
         )
     }
 
-    // Slow infinite breathe on the pivot — a barely-perceptible touch of life. Cycle is
-    // long enough (4s) that it never reads as fidgety.
     val pivotPulse by rememberInfiniteTransition(label = "pivotPulse").animateFloat(
         initialValue = 0.78f,
         targetValue = 1f,
@@ -92,9 +85,6 @@ fun ReadinessGauge(
     }
 }
 
-// Natural 270° arc proportion (2R wide × 1.707R tall ≈ 1.17). With this ratio, the arc
-// fills its canvas — important for the compact horizontal layout where the gauge is
-// constrained to ~130dp wide and needs to look properly proportioned at small size.
 private const val GAUGE_ASPECT_RATIO = 1.17f
 private val OUTER_PADDING = 10.dp
 private val STROKE_WIDTH = 10.dp
@@ -120,8 +110,6 @@ private fun DrawScope.drawSpeedometer(
     val strokeWidth = STROKE_WIDTH.toPx()
     val outerPadding = strokeWidth / 2f + OUTER_PADDING.toPx()
 
-    // 270° sweep with the gap at the bottom: the arc extends R upward and 0.707·R downward
-    // from the centre, so total vertical extent is R·(1 + sin 45°) ≈ 1.707·R.
     val maxRadiusByWidth = size.width / 2f - outerPadding
     val maxRadiusByHeight = size.height / VERTICAL_EXTENT_FACTOR - outerPadding
     val radius = min(maxRadiusByWidth, maxRadiusByHeight)
@@ -199,7 +187,6 @@ private fun DrawScope.drawSpeedometer(
         color = needleColor
     )
 
-    // Subtle outer halo modulated by the pulse — barely-perceptible breathe.
     drawCircle(
         color = pivotRingColor.copy(alpha = 0.10f * pivotPulse),
         radius = 12.dp.toPx(),
@@ -242,7 +229,6 @@ private fun DrawScope.drawTickMarks(
         )
     }
 
-    // Pass-mark indicator: tick extends outside the arc and ends with a small dot.
     val passAngleRad = ((ARC_START_ANGLE + passMark * DEGREES_PER_POINT) * PI / 180.0).toFloat()
     val passCos = cos(passAngleRad)
     val passSin = sin(passAngleRad)
@@ -296,3 +282,74 @@ private fun DrawScope.drawNeedle(
     }
     drawPath(needlePath, color = color)
 }
+
+@Preview
+@Composable
+private fun ReadinessGaugeReadyPreview() {
+    HonqPreviewTheme {
+        Box(modifier = Modifier.size(width = 132.dp, height = 113.dp)) {
+            ReadinessGauge(score = 88, passMark = 80)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessGaugeOnTrackPreview() {
+    HonqPreviewTheme {
+        Box(modifier = Modifier.size(width = 132.dp, height = 113.dp)) {
+            ReadinessGauge(score = 72, passMark = 80)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessGaugeKeepStudyingPreview() {
+    HonqPreviewTheme {
+        Box(modifier = Modifier.size(width = 132.dp, height = 113.dp)) {
+            ReadinessGauge(score = 35, passMark = 80)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessGaugeOnTrackLightPreview() {
+    HonqPreviewTheme(darkTheme = false) {
+        Box(modifier = Modifier.size(width = 132.dp, height = 113.dp)) {
+            ReadinessGauge(score = 72, passMark = 80)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessGaugeZeroStatePreview() {
+    HonqPreviewTheme {
+        Box(modifier = Modifier.size(width = 132.dp, height = 113.dp)) {
+            ReadinessGauge(score = 0, passMark = 80)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessGaugeMaxedPreview() {
+    HonqPreviewTheme {
+        Box(modifier = Modifier.size(width = 132.dp, height = 113.dp)) {
+            ReadinessGauge(score = 100, passMark = 80)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun ReadinessGaugeCustomPassMarkPreview() {
+    HonqPreviewTheme {
+        Box(modifier = Modifier.size(width = 132.dp, height = 113.dp)) {
+            ReadinessGauge(score = 60, passMark = 75)
+        }
+    }
+}
+

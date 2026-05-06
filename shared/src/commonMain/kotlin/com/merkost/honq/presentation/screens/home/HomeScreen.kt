@@ -299,8 +299,6 @@ private fun HomeContent(
                             .padding(HonqSizing.screenPadding),
                         verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
                     ) {
-                        // Top chip only for external-only states (which don't render
-                        // ReadinessCard, so this row is the only state picker entry).
                         if (selectedState != null && isExternalOnly) {
                             Box(modifier = Modifier.staggeredEntrance(0)) {
                                 HomeContextChipRow(
@@ -386,8 +384,6 @@ private fun HomeContent(
     }
 }
 
-// region Context Chip
-
 @Composable
 private fun HomeContextChipRow(
     stateCode: String,
@@ -397,7 +393,6 @@ private fun HomeContextChipRow(
 ) {
     val colors = HonqTheme.colors
     Row(
-        // Rectangle clip on the click ripple — pill clip would crop the plate's corners.
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
@@ -426,10 +421,6 @@ private fun HomeContextChipRow(
         )
     }
 }
-
-// endregion
-
-// region Mode List
 
 @Composable
 private fun HomeModeList(
@@ -481,10 +472,6 @@ private fun HomeModeList(
 
 private val SmartDrillTint = Color(0xFF5E5CE6)
 
-// endregion
-
-// region Sync Indicator
-
 @Composable
 private fun SyncIndicator(
     isSyncing: Boolean,
@@ -529,10 +516,6 @@ private fun SyncIndicator(
         }
     }
 }
-
-// endregion
-
-// region External / Official Resources
 
 @Composable
 private fun ExternalResourcesCard(
@@ -782,8 +765,3 @@ private fun ResourceItem(
     }
 }
 
-// endregion
-
-// region Previews
-
-// endregion

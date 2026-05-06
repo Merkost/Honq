@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,8 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.merkost.honq.presentation.theme.HonqMotion
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
@@ -157,3 +160,57 @@ fun FullscreenError(
         }
     }
 }
+
+@Preview
+@Composable
+private fun FullscreenErrorGenericPreview() {
+    HonqPreviewTheme {
+        FullscreenError(onRetry = {})
+    }
+}
+
+@Preview
+@Composable
+private fun FullscreenErrorWithDetailPreview() {
+    HonqPreviewTheme {
+        FullscreenError(
+            onRetry = {},
+            errorDetail = "PERMISSION_DENIED: Missing or insufficient permissions."
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun FullscreenErrorOnboardingOfflinePreview() {
+    HonqPreviewTheme {
+        FullscreenError(
+            title = "No internet connection",
+            subtitle = "Honq needs the internet for first launch to download the question banks. Connect to Wi-Fi or mobile data and try again.",
+            errorDetail = "Couldn't load content. Check your connection and try again.",
+            onRetry = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun FullscreenErrorCloudOffPreview() {
+    HonqPreviewTheme {
+        FullscreenError(
+            title = "Service unavailable",
+            subtitle = "We can't reach the question server right now. Please try again in a moment.",
+            icon = Icons.Rounded.CloudOff,
+            onRetry = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun FullscreenErrorGenericLightPreview() {
+    HonqPreviewTheme(darkTheme = false) {
+        FullscreenError(onRetry = {})
+    }
+}
+

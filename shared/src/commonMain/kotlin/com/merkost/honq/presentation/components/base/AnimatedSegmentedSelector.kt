@@ -27,16 +27,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.merkost.honq.presentation.theme.HonqPreviewTheme
 import com.merkost.honq.presentation.theme.HonqSizing
 import com.merkost.honq.presentation.theme.HonqSpacing
 import com.merkost.honq.presentation.theme.HonqTheme
 
-/**
- * A segmented selector with a smoothly-sliding pill indicator. Tap a segment and the amber
- * pill slides under the new label with a spring; text colour cross-fades. Used for the
- * Appearance and Font-size controls in Settings — same component, different data.
- */
 @Composable
 fun <T> AnimatedSegmentedSelector(
     options: List<T>,
@@ -68,7 +65,6 @@ fun <T> AnimatedSegmentedSelector(
             label = "segmentedIndicator"
         )
 
-        // Sliding pill indicator — sits behind the labels.
         Box(
             modifier = Modifier
                 .offset(x = animatedOffset)
@@ -122,3 +118,56 @@ private fun lerpFontWeight(t: Float): FontWeight {
 }
 
 private val SELECTOR_HEIGHT = 44.dp
+
+@Preview
+@Composable
+private fun AnimatedSegmentedSelectorThreeOptionsPreview() {
+    HonqPreviewTheme {
+        AnimatedSegmentedSelector(
+            options = listOf("System", "Light", "Dark"),
+            selected = "System",
+            onSelect = {},
+            labelOf = { it }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun AnimatedSegmentedSelectorMiddleSelectedPreview() {
+    HonqPreviewTheme {
+        AnimatedSegmentedSelector(
+            options = listOf("System", "Light", "Dark"),
+            selected = "Light",
+            onSelect = {},
+            labelOf = { it }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun AnimatedSegmentedSelectorFourOptionsPreview() {
+    HonqPreviewTheme {
+        AnimatedSegmentedSelector(
+            options = listOf("XS", "S", "M", "L"),
+            selected = "M",
+            onSelect = {},
+            labelOf = { it }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun AnimatedSegmentedSelectorLightThemePreview() {
+    HonqPreviewTheme(darkTheme = false) {
+        AnimatedSegmentedSelector(
+            options = listOf("System", "Light", "Dark"),
+            selected = "Dark",
+            onSelect = {},
+            labelOf = { it }
+        )
+    }
+}
+
