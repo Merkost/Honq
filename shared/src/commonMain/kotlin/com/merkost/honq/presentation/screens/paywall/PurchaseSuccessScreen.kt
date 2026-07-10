@@ -36,6 +36,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.merkost.honq.core.analytics.Analytics
+import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.presentation.components.base.HonqButton
 import com.merkost.honq.presentation.components.base.HonqCard
 import com.merkost.honq.presentation.theme.HonqMotion
@@ -53,6 +55,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 
 private const val STAGGER_DELAY = 80L
 private const val SLIDE_UP_PX = 40f
@@ -63,6 +66,11 @@ fun PurchaseSuccessScreen(
     onContinue: () -> Unit
 ) {
     val colors = HonqTheme.colors
+    val analytics = koinInject<Analytics>()
+
+    LaunchedEffect(Unit) {
+        analytics.track(AnalyticsEvent.PurchaseSuccessViewed)
+    }
 
     val animProgress = remember { List(4) { Animatable(0f) } }
 

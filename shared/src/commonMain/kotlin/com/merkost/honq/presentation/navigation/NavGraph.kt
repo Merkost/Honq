@@ -269,8 +269,14 @@ fun NavGraph(navController: NavHostController = rememberNavController()) {
                     }
                 },
                 onRetry = {
-                    navController.navigate(Screen.MockTest) {
-                        popUpTo<Screen.Home>()
+                    if (premiumManager.isPremium.value || premiumManager.freeTrialMockTestsRemaining.value > 0) {
+                        navController.navigate(Screen.MockTest) {
+                            popUpTo<Screen.Home>()
+                        }
+                    } else {
+                        navController.navigate(Screen.Home) {
+                            popUpTo<Screen.Home> { inclusive = true }
+                        }
                     }
                 },
                 onReviewIncorrect = {

@@ -76,8 +76,13 @@ import com.merkost.honq.presentation.components.home.ModeListEntry
 import com.merkost.honq.presentation.components.home.PrimaryPracticeCta
 import com.merkost.honq.presentation.components.home.ReadinessCard
 import com.merkost.honq.presentation.components.home.StateLicenseSheet
+import com.merkost.honq.core.REVENUECAT_ENTITLEMENT_ID
+import com.merkost.honq.core.analytics.Analytics
+import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.presentation.screens.paywall.PurchaseSuccessScreen
 import com.revenuecat.purchases.kmp.models.CustomerInfo
+import com.revenuecat.purchases.kmp.models.Package
+import com.revenuecat.purchases.kmp.models.PurchasesError
 import com.revenuecat.purchases.kmp.models.StoreTransaction
 import com.revenuecat.purchases.kmp.ui.revenuecatui.Paywall
 import com.revenuecat.purchases.kmp.ui.revenuecatui.PaywallListener
@@ -113,6 +118,7 @@ fun HomeScreen(
 ) {
     val container = koinViewModel<HomeContainer>()
     val premiumManager: PremiumManager = koinInject()
+    val analytics: Analytics = koinInject()
     val isPremium by premiumManager.isPremium.collectAsState()
     val freeTestsRemaining by premiumManager.freeTrialMockTestsRemaining.collectAsState()
 
@@ -126,13 +132,43 @@ fun HomeScreen(
     var showPaywall by remember { mutableStateOf(false) }
     var showPurchaseSuccess by remember { mutableStateOf(false) }
     var pendingNavigation by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var paywallTrigger by remember { mutableStateOf("unknown") }
+    var restoreInProgress by remember { mutableStateOf(false) }
+    var conversionHandled by remember { mutableStateOf(false) }
 
-    fun gatedNavigation(isPro: Boolean, navigate: () -> Unit) {
+    fun openPaywall(trigger: String, navigate: () -> Unit) {
+        pendingNavigation = navigate
+        paywallTrigger = trigger
+        restoreInProgress = false
+        conversionHandled = false
+        showPaywall = true
+        analytics.track(AnalyticsEvent.PaywallShown(trigger))
+    }
+
+    fun gatedNavigation(isPro: Boolean, trigger: String, navigate: () -> Unit) {
         if (isPro) {
             navigate()
         } else {
-            pendingNavigation = navigate
-            showPaywall = true
+            openPaywall(trigger, navigate)
+        }
+    }
+
+    fun handleConversion(event: AnalyticsEvent) {
+        if (conversionHandled) return
+        conversionHandled = true
+        analytics.track(event)
+        showPaywall = false
+        showPurchaseSuccess = true
+    }
+
+    LaunchedEffect(isPremium, showPaywall) {
+        if (isPremium && showPaywall) {
+            if (restoreInProgress) {
+                restoreInProgress = false
+                handleConversion(AnalyticsEvent.RestoreCompleted(restored = true, source = "paywall"))
+            } else {
+                handleConversion(AnalyticsEvent.PurchaseCompleted("", paywallTrigger))
+            }
         }
     }
 
@@ -144,14 +180,13 @@ fun HomeScreen(
             if (isPremium) onNavigateToPractice() else onNavigateToRandomPractice()
         },
         onNavigateToSmartPractice = {
-            gatedNavigation(isPremium, onNavigateToSmartPractice)
+            gatedNavigation(isPremium, "smart_drill", onNavigateToSmartPractice)
         },
         onNavigateToMockTest = {
             if (isPremium || freeTestsRemaining > 0) {
                 onNavigateToMockTest()
             } else {
-                pendingNavigation = onNavigateToMockTest
-                showPaywall = true
+                openPaywall("mock_test_limit", onNavigateToMockTest)
             }
         },
         onNavigateToFavorites = onNavigateToFavorites,
@@ -170,18 +205,60 @@ fun HomeScreen(
         Paywall(
             options = PaywallOptions(
                 dismissRequest = {
-                    showPaywall = false
-                    pendingNavigation = null
+                    if (showPaywall) {
+                        analytics.track(AnalyticsEvent.PaywallDismissed(paywallTrigger))
+                        showPaywall = false
+                        pendingNavigation = null
+                    }
                 }
             ) {
                 shouldDisplayDismissButton = true
                 listener = object : PaywallListener {
+                    override fun onPurchaseStarted(rcPackage: Package) {
+                        analytics.track(
+                            AnalyticsEvent.PurchaseStarted(rcPackage.storeProduct.id, paywallTrigger)
+                        )
+                    }
+
                     override fun onPurchaseCompleted(
                         customerInfo: CustomerInfo,
                         storeTransaction: StoreTransaction
                     ) {
-                        showPaywall = false
-                        showPurchaseSuccess = true
+                        handleConversion(
+                            AnalyticsEvent.PurchaseCompleted(
+                                storeTransaction.productIds.firstOrNull().orEmpty(),
+                                paywallTrigger
+                            )
+                        )
+                    }
+
+                    override fun onPurchaseCancelled() {
+                        analytics.track(AnalyticsEvent.PurchaseCancelled(paywallTrigger))
+                    }
+
+                    override fun onPurchaseError(error: PurchasesError) {
+                        analytics.track(AnalyticsEvent.PurchaseFailed(error.message, paywallTrigger))
+                    }
+
+                    override fun onRestoreStarted() {
+                        restoreInProgress = true
+                        analytics.track(AnalyticsEvent.RestoreStarted("paywall"))
+                    }
+
+                    override fun onRestoreCompleted(customerInfo: CustomerInfo) {
+                        restoreInProgress = false
+                        val restored =
+                            customerInfo.entitlements[REVENUECAT_ENTITLEMENT_ID]?.isActive == true
+                        if (restored) {
+                            handleConversion(AnalyticsEvent.RestoreCompleted(restored = true, source = "paywall"))
+                        } else {
+                            analytics.track(AnalyticsEvent.RestoreCompleted(restored = false, source = "paywall"))
+                        }
+                    }
+
+                    override fun onRestoreError(error: PurchasesError) {
+                        restoreInProgress = false
+                        analytics.track(AnalyticsEvent.RestoreFailed(error.message, "paywall"))
                     }
                 }
             }

@@ -15,12 +15,22 @@ import com.merkost.honq.domain.usecase.GetStatesUseCase
 import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
 import com.merkost.honq.domain.usecase.GetQuestionSetsByStateUseCase
 import kotlinx.coroutines.CoroutineScope
+import kotlin.time.TimeSource
 import org.kimplify.cedar.logging.Cedar
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.PipelineContext
 import pro.respawn.flowmvi.dsl.store
 import pro.respawn.flowmvi.plugins.init
 import pro.respawn.flowmvi.plugins.reduce
+
+private const val SYNC_ERROR_MESSAGE = "Couldn't load content. Check your connection and try again."
+
+private val OnboardingStep.analyticsName: String
+    get() = when (this) {
+        OnboardingStep.Welcome -> "welcome"
+        OnboardingStep.StateSelection -> "state_selection"
+        OnboardingStep.LicenseTypeSelection -> "license_selection"
+    }
 
 class OnboardingContainer(
     private val getStates: GetStatesUseCase,
@@ -37,6 +47,7 @@ class OnboardingContainer(
     override val store = store(OnboardingState(), scope) {
         init {
             analytics.track(AnalyticsEvent.OnboardingStarted)
+            analytics.track(AnalyticsEvent.OnboardingStepViewed(OnboardingStep.Welcome.analyticsName))
             loadData()
         }
 
@@ -44,11 +55,22 @@ class OnboardingContainer(
             when (intent) {
                 OnboardingIntent.GetStarted -> {
                     updateState { copy(currentStep = OnboardingStep.StateSelection) }
+                    withState {
+                        when {
+                            error != null && !isLoading -> loadData()
+                            !isLoading -> analytics.track(
+                                AnalyticsEvent.OnboardingStepViewed(OnboardingStep.StateSelection.analyticsName)
+                            )
+                        }
+                    }
                 }
                 is OnboardingIntent.SelectState -> {
                     updateState { copy(selectedStateId = intent.stateId) }
                 }
                 OnboardingIntent.ConfirmStateSelection -> {
+                    analytics.track(
+                        AnalyticsEvent.OnboardingStepViewed(OnboardingStep.LicenseTypeSelection.analyticsName)
+                    )
                     updateState { copy(currentStep = OnboardingStep.LicenseTypeSelection) }
                 }
                 is OnboardingIntent.SelectLicenseType -> {
@@ -62,6 +84,7 @@ class OnboardingContainer(
                 }
                 OnboardingIntent.Retry -> {
                     Cedar.tag("Onboarding").i("Retry triggered by user")
+                    analytics.track(AnalyticsEvent.OnboardingRetryClicked)
                     loadData()
                 }
             }
@@ -80,18 +103,28 @@ class OnboardingContainer(
     private suspend fun PipelineContext<OnboardingState, OnboardingIntent, OnboardingAction>.loadData() {
         Cedar.tag("Onboarding").d("loadData: starting...")
         updateState { copy(isLoading = true, error = null) }
+        var networkSyncMs = 0L
+        var didNetworkSync = false
+
+        suspend fun timedSync(): Result<Unit> {
+            didNetworkSync = true
+            val start = TimeSource.Monotonic.markNow()
+            val result = runSync()
+            networkSyncMs += start.elapsedNow().inWholeMilliseconds
+            return result
+        }
+
+        suspend fun failWith(reason: String?) {
+            analytics.track(AnalyticsEvent.OnboardingSyncFailed(reason, networkSyncMs))
+            updateState { copy(isLoading = false, error = SYNC_ERROR_MESSAGE) }
+        }
 
         if (dataSyncManager.needsInitialSync()) {
             Cedar.tag("Onboarding").d("loadData: first launch, running full sync")
-            val syncResult = runSync()
+            val syncResult = timedSync()
             if (syncResult is Result.Error) {
                 Cedar.tag("Onboarding").e("loadData: initial sync failed: ${syncResult.exception.message}", syncResult.exception)
-                updateState {
-                    copy(
-                        isLoading = false,
-                        error = "Couldn't load content. Check your connection and try again."
-                    )
-                }
+                failWith(syncResult.exception.message)
                 return
             }
         }
@@ -100,18 +133,18 @@ class OnboardingContainer(
 
         if (states.isEmpty()) {
             Cedar.tag("Onboarding").w("loadData: states empty after read, re-running sync")
-            val retryResult = runSync()
+            val retryResult = timedSync()
             if (retryResult is Result.Error) {
                 Cedar.tag("Onboarding").e("loadData: retry sync failed: ${retryResult.exception.message}", retryResult.exception)
-                updateState {
-                    copy(
-                        isLoading = false,
-                        error = "Couldn't load content. Check your connection and try again."
-                    )
-                }
+                failWith(retryResult.exception.message)
                 return
             }
             states = getStates().getOrNull().orEmpty()
+            if (states.isEmpty()) {
+                Cedar.tag("Onboarding").e("loadData: states still empty after successful sync")
+                failWith("states empty after sync")
+                return
+            }
         }
 
         Cedar.tag("Onboarding").d("loadData: loaded ${states.size} states")
@@ -121,11 +154,19 @@ class OnboardingContainer(
             .onSuccess { types ->
                 val activeTypes = types.filter { it.isActive }.sortedBy { it.displayOrder }
                 Cedar.tag("Onboarding").d("loadData: loaded ${activeTypes.size} active license types")
+                if (didNetworkSync) {
+                    analytics.track(AnalyticsEvent.OnboardingSyncCompleted(networkSyncMs))
+                }
                 updateState { copy(licenseTypes = activeTypes, isLoading = false) }
+                withState {
+                    if (currentStep != OnboardingStep.Welcome) {
+                        analytics.track(AnalyticsEvent.OnboardingStepViewed(currentStep.analyticsName))
+                    }
+                }
             }
             .onError { e ->
                 Cedar.tag("Onboarding").e("loadData: failed to load license types: ${e.message}", e)
-                updateState { copy(isLoading = false, error = e.message ?: "Failed to load license types") }
+                failWith(e.message)
             }
     }
 
@@ -175,6 +216,9 @@ class OnboardingContainer(
                 OnboardingStep.Welcome -> OnboardingStep.Welcome
                 OnboardingStep.StateSelection -> OnboardingStep.Welcome
                 OnboardingStep.LicenseTypeSelection -> OnboardingStep.StateSelection
+            }
+            if (previousStep != currentStep) {
+                analytics.track(AnalyticsEvent.OnboardingStepViewed(previousStep.analyticsName))
             }
             updateState { copy(currentStep = previousStep) }
         }

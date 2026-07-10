@@ -38,6 +38,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DirectionsCar
 import androidx.compose.material.icons.rounded.LocalShipping
 import androidx.compose.material.icons.rounded.TwoWheeler
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,7 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -77,6 +77,7 @@ import honq.shared.generated.resources.onboarding_car_license
 import honq.shared.generated.resources.onboarding_coming_soon
 import honq.shared.generated.resources.onboarding_continue
 import honq.shared.generated.resources.onboarding_get_started
+import honq.shared.generated.resources.onboarding_loading_content
 import honq.shared.generated.resources.onboarding_resources_only
 import honq.shared.generated.resources.onboarding_rider_license
 import honq.shared.generated.resources.onboarding_select_license_subtitle
@@ -132,6 +133,7 @@ private fun OnboardingContent(
             .windowInsetsPadding(WindowInsets.statusBars)
     ) {
         val phase = when {
+            state.currentStep == OnboardingStep.Welcome -> OnboardingPhase.Ready
             state.isLoading -> OnboardingPhase.Loading
             state.error != null -> OnboardingPhase.Error
             else -> OnboardingPhase.Ready
@@ -145,7 +147,7 @@ private fun OnboardingContent(
             }
         ) { current ->
             when (current) {
-                OnboardingPhase.Loading -> BrandedSplash()
+                OnboardingPhase.Loading -> ContentLoading()
                 OnboardingPhase.Error -> FullscreenError(
                     title = stringResource(Res.string.error_offline_title),
                     subtitle = stringResource(Res.string.error_offline_subtitle),
@@ -202,56 +204,21 @@ private fun OnboardingContent(
 }
 
 @Composable
-private fun BrandedSplash() {
+private fun ContentLoading() {
     val colors = HonqTheme.colors
-    val logoAnim = remember { Animatable(0f) }
-    val titleAnim = remember { Animatable(0f) }
 
-    LaunchedEffect(Unit) {
-        logoAnim.animateTo(
-            1f,
-            animationSpec = tween(
-                durationMillis = HonqMotion.durationEnter,
-                easing = HonqMotion.easingEmphasizedDecelerate
-            )
-        )
-        titleAnim.animateTo(
-            1f,
-            animationSpec = tween(
-                durationMillis = HonqMotion.durationEnter,
-                easing = HonqMotion.easingEmphasizedDecelerate
-            )
-        )
-    }
-
-    Box(
+    Column(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.ic_honq_logo),
-                contentDescription = "Honq Logo",
-                modifier = Modifier
-                    .size(120.dp)
-                    .alpha(logoAnim.value)
-                    .scale(0.8f + 0.2f * logoAnim.value)
-            )
-
-            Spacer(modifier = Modifier.height(HonqSpacing.lg))
-
-            Text(
-                text = stringResource(Res.string.onboarding_app_name),
-                style = MaterialTheme.typography.displaySmall.copy(fontSize = 48.sp),
-                fontWeight = FontWeight.Bold,
-                color = colors.primary,
-                modifier = Modifier
-                    .alpha(titleAnim.value)
-                    .offset { IntOffset(0, ((1f - titleAnim.value) * SLIDE_UP_PX).toInt()) }
-            )
-        }
+        CircularProgressIndicator(color = colors.primary)
+        Spacer(modifier = Modifier.height(HonqSpacing.md))
+        Text(
+            text = stringResource(Res.string.onboarding_loading_content),
+            style = MaterialTheme.typography.bodyMedium,
+            color = colors.textSecondary
+        )
     }
 }
 

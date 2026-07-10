@@ -114,7 +114,7 @@ class MockTestContainer(
             delay(1.seconds)
             var shouldSubmit = false
             withState {
-                if (timeRemaining <= 0.seconds) {
+                if (!isSubmitting && timeRemaining <= 0.seconds) {
                     shouldSubmit = true
                 }
             }
@@ -161,8 +161,17 @@ class MockTestContainer(
     }
 
     private suspend fun PipelineContext<MockTestState, MockTestIntent, MockTestAction>.submitTest() {
+        var alreadySubmitting = false
+        updateState {
+            if (isSubmitting) {
+                alreadySubmitting = true
+                this
+            } else {
+                copy(isSubmitting = true)
+            }
+        }
+        if (alreadySubmitting) return
         Cedar.tag("MockTest").d("submitTest: submitting...")
-        updateState { copy(isSubmitting = true) }
 
         val now = clock.now()
         val questionSetId = questionSetSelectionRepository.selectedQuestionSetId.value ?: ""
@@ -210,7 +219,11 @@ class MockTestContainer(
             saveMockTestResult(result, allAnswers)
 
             if (!premiumManager.isPremium.value) {
-                premiumManager.consumeFreeMockTest()
+                val remainingBefore = premiumManager.freeTrialMockTestsRemaining.value
+                if (remainingBefore > 0) {
+                    premiumManager.consumeFreeMockTest()
+                    analytics.track(AnalyticsEvent.FreeMockTestConsumed(remainingBefore - 1))
+                }
             }
 
             // Compute per-category breakdown

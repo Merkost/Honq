@@ -61,6 +61,7 @@
     <string name="onboarding_start_learning">Start Learning</string>
     <string name="onboarding_coming_soon">%1$s (Coming Soon)</string>
     <string name="onboarding_resources_only">Resources only</string>
+    <string name="onboarding_loading_content">Loading question banks…</string>
     <string name="onboarding_car_license">Car (Class C) license</string>
     <string name="onboarding_rider_license">Motorcycle (Class R) license</string>
 </resources>

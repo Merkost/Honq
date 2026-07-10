@@ -1,6 +1,7 @@
 package com.merkost.honq.data.premium
 
 import com.merkost.honq.core.REVENUECAT_ENTITLEMENT_ID
+import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.data.local.FREE_MOCK_TEST_LIMIT
 import com.merkost.honq.data.local.PremiumPreferences
 import com.merkost.honq.domain.premium.PremiumManager
@@ -25,7 +26,8 @@ import kotlinx.coroutines.launch
 import org.kimplify.cedar.logging.Cedar
 
 class RevenueCatPremiumManager(
-    private val premiumPreferences: PremiumPreferences
+    private val premiumPreferences: PremiumPreferences,
+    private val analytics: Analytics
 ) : PremiumManager {
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -61,9 +63,14 @@ class RevenueCatPremiumManager(
             override fun onCustomerInfoUpdated(customerInfo: CustomerInfo) {
                 val isPro = customerInfo.entitlements[REVENUECAT_ENTITLEMENT_ID]?.isActive == true
                 Cedar.tag("Premium").d("onCustomerInfoUpdated: isPro=$isPro")
-                scope.launch { premiumPreferences.setPremiumPurchased(isPro) }
+                scope.launch { updatePremiumStatus(isPro) }
             }
         }
+    }
+
+    private suspend fun updatePremiumStatus(isPro: Boolean) {
+        premiumPreferences.setPremiumPurchased(isPro)
+        analytics.setUserProperty("is_premium", isPro.toString())
     }
 
     override suspend fun consumeFreeMockTest() {
@@ -74,7 +81,7 @@ class RevenueCatPremiumManager(
         return try {
             val customerInfo = Purchases.sharedInstance.awaitRestore()
             val isPro = customerInfo.entitlements[REVENUECAT_ENTITLEMENT_ID]?.isActive == true
-            premiumPreferences.setPremiumPurchased(isPro)
+            updatePremiumStatus(isPro)
             Cedar.tag("Premium").d("restorePurchase: isPro=$isPro")
             Result.success(isPro)
         } catch (e: Exception) {
@@ -92,7 +99,7 @@ class RevenueCatPremiumManager(
 
             val purchaseResult = Purchases.sharedInstance.awaitPurchase(packageToPurchase = pkg)
             val isPro = purchaseResult.customerInfo.entitlements[REVENUECAT_ENTITLEMENT_ID]?.isActive == true
-            premiumPreferences.setPremiumPurchased(isPro)
+            updatePremiumStatus(isPro)
             Cedar.tag("Premium").d("purchasePro: isPro=$isPro")
             Result.success(isPro)
         } catch (e: Exception) {
@@ -109,7 +116,7 @@ class RevenueCatPremiumManager(
         try {
             val customerInfo = Purchases.sharedInstance.awaitCustomerInfo()
             val isPro = customerInfo.entitlements[REVENUECAT_ENTITLEMENT_ID]?.isActive == true
-            premiumPreferences.setPremiumPurchased(isPro)
+            updatePremiumStatus(isPro)
             Cedar.tag("Premium").d("syncEntitlementStatus: isPro=$isPro")
         } catch (e: Exception) {
             Cedar.tag("Premium").e("syncEntitlementStatus failed: ${e.message}", e)

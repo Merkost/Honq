@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.merkost.honq.core.analytics.Analytics
+import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.data.local.FontScale
 import com.merkost.honq.data.local.ThemeMode
 import com.merkost.honq.data.local.ThemePreferences
@@ -84,6 +86,7 @@ fun AboutScreen(
     val progressRepository: ProgressRepository = koinInject()
     val themePreferences: ThemePreferences = koinInject()
     val premiumManager: PremiumManager = koinInject()
+    val analytics: Analytics = koinInject()
     val themeMode by themePreferences.themeMode.collectAsState()
     val fontScale by themePreferences.fontScale.collectAsState()
     val isPremium by premiumManager.isPremium.collectAsState()
@@ -208,15 +211,20 @@ fun AboutScreen(
                 onRestorePurchase = {
                     isRestoring = true
                     restoreMessage = null
+                    analytics.track(AnalyticsEvent.RestoreStarted("about"))
                     coroutineScope.launch {
                         premiumManager.restorePurchase()
                             .onSuccess { restored ->
                                 isRestoring = false
                                 restoreMessage = if (restored) "Purchase restored!" else "No previous purchase found"
+                                analytics.track(AnalyticsEvent.RestoreCompleted(restored, "about"))
                             }
                             .onFailure { e ->
                                 isRestoring = false
                                 restoreMessage = e.message ?: "Restore failed"
+                                analytics.track(
+                                    AnalyticsEvent.RestoreFailed(e.message ?: "unknown", "about")
+                                )
                             }
                     }
                 },

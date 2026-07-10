@@ -105,6 +105,73 @@ sealed class AnalyticsEvent(
 
     data object PurchaseSuccessViewed : AnalyticsEvent("purchase_success_viewed")
 
+    data class PaywallShown(val trigger: String) : AnalyticsEvent(
+        "paywall_shown",
+        mapOf("trigger" to trigger)
+    )
+
+    data class PaywallDismissed(val trigger: String) : AnalyticsEvent(
+        "paywall_dismissed",
+        mapOf("trigger" to trigger)
+    )
+
+    data class PurchaseStarted(val productId: String, val trigger: String) : AnalyticsEvent(
+        "purchase_started",
+        mapOf("product_id" to productId, "trigger" to trigger)
+    )
+
+    data class PurchaseCompleted(val productId: String, val trigger: String) : AnalyticsEvent(
+        "purchase_completed",
+        mapOf("product_id" to productId, "trigger" to trigger)
+    )
+
+    data class PurchaseCancelled(val trigger: String) : AnalyticsEvent(
+        "purchase_cancelled",
+        mapOf("trigger" to trigger)
+    )
+
+    data class PurchaseFailed(val error: String, val trigger: String) : AnalyticsEvent(
+        "purchase_failed",
+        mapOf("error" to error, "trigger" to trigger)
+    )
+
+    data class RestoreStarted(val source: String) : AnalyticsEvent(
+        "restore_started",
+        mapOf("source" to source)
+    )
+
+    data class RestoreCompleted(val restored: Boolean, val source: String) : AnalyticsEvent(
+        "restore_completed",
+        mapOf("restored" to restored, "source" to source)
+    )
+
+    data class RestoreFailed(val error: String, val source: String) : AnalyticsEvent(
+        "restore_failed",
+        mapOf("error" to error, "source" to source)
+    )
+
+    data class FreeMockTestConsumed(val remaining: Int) : AnalyticsEvent(
+        "free_mock_test_consumed",
+        mapOf("remaining" to remaining)
+    )
+
+    data class OnboardingStepViewed(val step: String) : AnalyticsEvent(
+        "onboarding_step_viewed",
+        mapOf("step" to step)
+    )
+
+    data class OnboardingSyncCompleted(val durationMs: Long) : AnalyticsEvent(
+        "onboarding_sync_completed",
+        mapOf("duration_ms" to durationMs)
+    )
+
+    data class OnboardingSyncFailed(val error: String?, val durationMs: Long) : AnalyticsEvent(
+        "onboarding_sync_failed",
+        mapOf("error" to error, "duration_ms" to durationMs)
+    )
+
+    data object OnboardingRetryClicked : AnalyticsEvent("onboarding_retry_clicked")
+
     data class ReviewFailed(val trigger: String, val error: String?) : AnalyticsEvent(
         "review_failed",
         mapOf("trigger" to trigger, "error" to error)

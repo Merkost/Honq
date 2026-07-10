@@ -40,7 +40,7 @@ val dataModule = module {
     single<ThemePreferences> { DataStoreThemePreferences(get()) }
     single<InAppReviewPreferences> { DataStoreInAppReviewPreferences(get()) }
     single<PremiumPreferences> { DataStorePremiumPreferences(get()) }
-    single<PremiumManager> { RevenueCatPremiumManager(get()) }
+    single<PremiumManager> { RevenueCatPremiumManager(get(), get()) }
     single<StateSelectionRepository> { InMemoryStateSelectionRepository() }
     single<QuestionSetSelectionRepository> { InMemoryQuestionSetSelectionRepository() }
 
