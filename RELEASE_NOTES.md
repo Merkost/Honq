@@ -1,5 +1,21 @@
 # Release Notes
 
+## v1.1.1
+
+### Google Play Release Notes
+
+```
+A faster, smoother first launch.
+
+What's new:
+- The welcome screen now appears instantly — question banks load in the background
+- Clear progress and retry while content downloads on first launch
+- Fixed an issue where one mock test could use up two free attempts
+- Restoring your Pro purchase from the paywall now completes properly
+
+Still no ads. Still no subscriptions.
+```
+
 ## v1.1.0
 
 ### Google Play Release Notes
