@@ -26,6 +26,7 @@
         }
       ],
       "productID" : "honq_pro_lifetime",
+      "promotionalImageID" : "CCC3A430",
       "referenceName" : "Honq Pro",
       "type" : "NonConsumable"
     }
@@ -55,7 +56,7 @@
 
   ],
   "version" : {
-    "major" : 4,
+    "major" : 5,
     "minor" : 0
   }
 }

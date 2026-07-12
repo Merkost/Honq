@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CD66E85E2F5D0BE6005EBB55 /* PurchasesHybridCommon in Frameworks */ = {isa = PBXBuildFile; productRef = CD66E85D2F5D0BE6005EBB55 /* PurchasesHybridCommon */; };
-		CD66E8602F5D0BE6005EBB55 /* PurchasesHybridCommonUI in Frameworks */ = {isa = PBXBuildFile; productRef = CD66E85F2F5D0BE6005EBB55 /* PurchasesHybridCommonUI */; };
 		CD66E8702F5D4D4E005EBB55 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = CD66E86F2F5D4D4E005EBB55 /* Products.storekit */; };
 		CDABC73C2F2CBACC00E844B9 /* AmplitudeSwift in Frameworks */ = {isa = PBXBuildFile; productRef = CDABC73B2F2CBACC00E844B9 /* AmplitudeSwift */; };
 		CDABC73F2F2CBD5100E844B9 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = CDABC73E2F2CBD5100E844B9 /* FirebaseCrashlytics */; };
@@ -53,8 +51,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CDABC73C2F2CBACC00E844B9 /* AmplitudeSwift in Frameworks */,
-				CD66E85E2F5D0BE6005EBB55 /* PurchasesHybridCommon in Frameworks */,
-				CD66E8602F5D0BE6005EBB55 /* PurchasesHybridCommonUI in Frameworks */,
 				CDABC73F2F2CBD5100E844B9 /* FirebaseCrashlytics in Frameworks */,
 				D1FFF1010000000000000001 /* FirebaseFirestore in Frameworks */,
 				D1FFF1030000000000000003 /* FirebaseCore in Frameworks */,
@@ -116,8 +112,6 @@
 				CDABC73E2F2CBD5100E844B9 /* FirebaseCrashlytics */,
 				D1FFF1020000000000000002 /* FirebaseFirestore */,
 				D1FFF1040000000000000004 /* FirebaseCore */,
-				CD66E85D2F5D0BE6005EBB55 /* PurchasesHybridCommon */,
-				CD66E85F2F5D0BE6005EBB55 /* PurchasesHybridCommonUI */,
 			);
 			productName = iosApp;
 			productReference = 2725962F34C79EBF2E70EDA3 /* Honq.app */;
@@ -150,7 +144,6 @@
 			packageReferences = (
 				CDABC73A2F2CBACC00E844B9 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */,
 				CDABC73D2F2CBD5100E844B9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				CD66E85C2F5D0BE6005EBB55 /* XCRemoteSwiftPackageReference "purchases-hybrid-common" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 44CD830414C7B277C6B99E16 /* Products */;
@@ -439,14 +432,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		CD66E85C2F5D0BE6005EBB55 /* XCRemoteSwiftPackageReference "purchases-hybrid-common" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-hybrid-common";
-			requirement = {
-				kind = exactVersion;
-				version = 17.55.1;
-			};
-		};
 		CDABC73A2F2CBACC00E844B9 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/amplitude/Amplitude-Swift";
@@ -466,16 +451,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		CD66E85D2F5D0BE6005EBB55 /* PurchasesHybridCommon */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CD66E85C2F5D0BE6005EBB55 /* XCRemoteSwiftPackageReference "purchases-hybrid-common" */;
-			productName = PurchasesHybridCommon;
-		};
-		CD66E85F2F5D0BE6005EBB55 /* PurchasesHybridCommonUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = CD66E85C2F5D0BE6005EBB55 /* XCRemoteSwiftPackageReference "purchases-hybrid-common" */;
-			productName = PurchasesHybridCommonUI;
-		};
 		CDABC73B2F2CBACC00E844B9 /* AmplitudeSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = CDABC73A2F2CBACC00E844B9 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */;
