@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -58,7 +59,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -347,7 +350,7 @@ private fun HomeContent(
 
                 else -> {
                     val itemCount = if (isExternalOnly) 2 else {
-                        3 + (if (state.stateResources.isNotEmpty()) 1 else 0)
+                        4 + (if (state.stateResources.isNotEmpty()) 1 else 0)
                     }
                     val animProgress = remember { List(itemCount) { Animatable(0f) } }
                     LaunchedEffect(Unit) {
@@ -386,12 +389,13 @@ private fun HomeContent(
                             )
                         }
 
-                        if (selectedState != null && isExternalOnly) {
+                        if (selectedState != null) {
                             Box(modifier = Modifier.staggeredEntrance(0)) {
                                 HomeContextChipRow(
                                     stateCode = selectedState.shortName,
                                     licenseTypeId = selectedLicenseType?.typeId,
                                     licenseCode = selectedLicenseType?.shortName.orEmpty(),
+                                    licenseName = selectedLicenseType?.name.orEmpty(),
                                     onClick = { showStateLicenseSheet = true }
                                 )
                             }
@@ -405,20 +409,16 @@ private fun HomeContent(
                                 )
                             }
                         } else {
-                            Box(modifier = Modifier.staggeredEntrance(0)) {
+                            Box(modifier = Modifier.staggeredEntrance(1)) {
                                 ReadinessCard(
                                     progress = state.progress,
                                     passMark = state.selectedQuestionSet
                                         ?.mockTestPassPercentage
                                         ?: DEFAULT_PASS_PERCENTAGE,
-                                    stateCode = selectedState?.shortName,
-                                    licenseTypeId = selectedLicenseType?.typeId,
-                                    licenseCode = selectedLicenseType?.shortName.orEmpty(),
-                                    onContextClick = { showStateLicenseSheet = true },
                                     onClick = onNavigateToStatistics
                                 )
                             }
-                            Box(modifier = Modifier.staggeredEntrance(1)) {
+                            Box(modifier = Modifier.staggeredEntrance(2)) {
                                 val hasProgress = state.progress.uniqueQuestionsAnswered > 0
                                 PrimaryPracticeCta(
                                     eyebrow = if (hasProgress) "Continue" else "Start",
@@ -429,7 +429,7 @@ private fun HomeContent(
                                     onClick = onNavigateToPractice
                                 )
                             }
-                            Box(modifier = Modifier.staggeredEntrance(2)) {
+                            Box(modifier = Modifier.staggeredEntrance(3)) {
                                 HomeModeList(
                                     state = state,
                                     isPremium = isPremium,
@@ -441,7 +441,7 @@ private fun HomeContent(
                             }
 
                             if (state.stateResources.isNotEmpty()) {
-                                Box(modifier = Modifier.staggeredEntrance(3)) {
+                                Box(modifier = Modifier.staggeredEntrance(4)) {
                                     OfficialResourcesCard(
                                         resources = state.stateResources,
                                         onOpenExternalLink = onOpenExternalLink
@@ -476,14 +476,22 @@ private fun HomeContextChipRow(
     stateCode: String,
     licenseTypeId: LicenseTypeId?,
     licenseCode: String,
+    licenseName: String,
     onClick: () -> Unit
 ) {
     val colors = HonqTheme.colors
+    val changeSetupLabel = stringResource(Res.string.home_change_setup)
     Row(
         modifier = Modifier
+            .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 4.dp, horizontal = 2.dp),
+            .clickable(
+                onClickLabel = changeSetupLabel,
+                role = Role.Button,
+                onClick = onClick
+            )
+            .sizeIn(minHeight = HonqSizing.minTapTarget)
+            .padding(vertical = HonqSpacing.xs, horizontal = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
     ) {
@@ -493,12 +501,22 @@ private fun HomeContextChipRow(
             licenseCode = licenseCode
         )
         Text(
-            text = stringResource(Res.string.home_change_setup),
+            text = licenseName,
+            style = MaterialTheme.typography.labelMedium,
+            color = colors.textSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = changeSetupLabel,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium,
                 fontSize = 11.sp
             ),
-            color = colors.textMuted
+            color = colors.textMuted,
+            maxLines = 1,
+            softWrap = false
         )
         Icon(
             imageVector = Icons.Rounded.KeyboardArrowDown,
