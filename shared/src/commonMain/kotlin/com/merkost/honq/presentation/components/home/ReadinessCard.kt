@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,9 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,10 +25,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.domain.model.UserProgress
 import com.merkost.honq.presentation.screens.home.Readiness
 import com.merkost.honq.presentation.screens.home.ReadinessZone
@@ -52,10 +50,6 @@ import org.jetbrains.compose.resources.stringResource
 fun ReadinessCard(
     progress: UserProgress,
     passMark: Int,
-    stateCode: String?,
-    licenseTypeId: LicenseTypeId?,
-    licenseCode: String,
-    onContextClick: () -> Unit,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
@@ -89,72 +83,38 @@ fun ReadinessCard(
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(HonqSizing.cardPadding)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (stateCode != null) {
-                ReadinessContextChip(
-                    stateCode = stateCode,
-                    licenseTypeId = licenseTypeId,
-                    licenseCode = licenseCode,
-                    onClick = onContextClick
-                )
-            } else {
-                Text(
-                    text = stringResource(Res.string.home_readiness_title),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp,
-                        fontSize = 11.sp
-                    ),
-                    color = colors.textMuted
-                )
-            }
-            StatusPill(zone = zone)
-        }
+        ReadinessCardHeader(
+            zone = zone
+        )
 
         Spacer(Modifier.height(HonqSpacing.md))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
-        ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = score.toString(),
-                    style = TextStyle(
-                        brush = numberBrush,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 64.sp,
-                        letterSpacing = (-2.5).sp,
-                        lineHeight = 64.sp
-                    ),
-                    modifier = Modifier.alignByBaseline()
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            when (readinessMetricLayout(maxWidth)) {
+                ReadinessMetricLayout.Inline -> ReadinessMetricRow(
+                    score = score,
+                    passMark = passMark,
+                    numberBrush = numberBrush
                 )
-                Text(
-                    text = "/100",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = (-0.4).sp
-                    ),
-                    color = colors.textMuted,
-                    modifier = Modifier.alignByBaseline()
-                )
-            }
 
-            ReadinessGauge(
-                score = score,
-                passMark = passMark,
-                modifier = Modifier.width(GAUGE_WIDTH)
-            )
+                ReadinessMetricLayout.Stacked -> Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
+                ) {
+                    ReadinessScore(
+                        score = score,
+                        numberBrush = numberBrush
+                    )
+                    ReadinessGauge(
+                        score = score,
+                        passMark = passMark,
+                        modifier = Modifier
+                            .width(GAUGE_WIDTH)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
         }
 
         Spacer(Modifier.height(HonqSpacing.md))
@@ -187,35 +147,137 @@ fun ReadinessCard(
 
 private const val HERO_GRADIENT_RADIUS = 1200f
 private val GAUGE_WIDTH = 132.dp
+private val READINESS_HEADER_STACK_BREAKPOINT = 288.dp
+private val READINESS_METRIC_STACK_BREAKPOINT = 320.dp
+
+internal enum class ReadinessHeaderLayout {
+    Inline,
+    Stacked
+}
+
+internal enum class ReadinessMetricLayout {
+    Inline,
+    Stacked
+}
+
+internal fun readinessHeaderLayout(contentWidth: androidx.compose.ui.unit.Dp): ReadinessHeaderLayout =
+    if (contentWidth < READINESS_HEADER_STACK_BREAKPOINT) {
+        ReadinessHeaderLayout.Stacked
+    } else {
+        ReadinessHeaderLayout.Inline
+    }
+
+internal fun readinessMetricLayout(contentWidth: androidx.compose.ui.unit.Dp): ReadinessMetricLayout =
+    if (contentWidth < READINESS_METRIC_STACK_BREAKPOINT) {
+        ReadinessMetricLayout.Stacked
+    } else {
+        ReadinessMetricLayout.Inline
+    }
 
 @Composable
-private fun ReadinessContextChip(
-    stateCode: String,
-    licenseTypeId: LicenseTypeId?,
-    licenseCode: String,
-    onClick: () -> Unit
+private fun ReadinessMetricRow(
+    score: Int,
+    passMark: Int,
+    numberBrush: Brush
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
+    ) {
+        ReadinessScore(
+            score = score,
+            numberBrush = numberBrush,
+            modifier = Modifier.weight(1f)
+        )
+        ReadinessGauge(
+            score = score,
+            passMark = passMark,
+            modifier = Modifier.width(GAUGE_WIDTH)
+        )
+    }
+}
+
+@Composable
+private fun ReadinessScore(
+    score: Int,
+    numberBrush: Brush,
+    modifier: Modifier = Modifier
 ) {
     val colors = HonqTheme.colors
     Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 4.dp, horizontal = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier,
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        LicensePlateChip(
-            stateCode = stateCode,
-            licenseTypeId = licenseTypeId,
-            licenseCode = licenseCode
+        Text(
+            text = score.toString(),
+            style = TextStyle(
+                brush = numberBrush,
+                fontWeight = FontWeight.Bold,
+                fontSize = 64.sp,
+                letterSpacing = (-2.5).sp,
+                lineHeight = 64.sp
+            ),
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            modifier = Modifier.alignByBaseline()
         )
-        Icon(
-            imageVector = Icons.Rounded.KeyboardArrowDown,
-            contentDescription = null,
-            tint = colors.textMuted,
-            modifier = Modifier.size(16.dp)
+        Text(
+            text = "/100",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = (-0.4).sp
+            ),
+            color = colors.textMuted,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            modifier = Modifier.alignByBaseline()
         )
     }
+}
+
+@Composable
+private fun ReadinessCardHeader(
+    zone: ReadinessZone
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        when (readinessHeaderLayout(maxWidth)) {
+            ReadinessHeaderLayout.Inline -> Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ReadinessTitle()
+                StatusPill(zone = zone)
+            }
+
+            ReadinessHeaderLayout.Stacked -> Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
+            ) {
+                ReadinessTitle()
+                StatusPill(zone = zone)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReadinessTitle() {
+    val colors = HonqTheme.colors
+    Text(
+        text = stringResource(Res.string.home_readiness_title),
+        style = MaterialTheme.typography.labelSmall.copy(
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp,
+            fontSize = 11.sp
+        ),
+        color = colors.textMuted
+    )
 }
 
 @Composable
@@ -260,7 +322,10 @@ private fun StatusPill(zone: ReadinessZone) {
                 letterSpacing = 1.2.sp,
                 fontSize = 10.5.sp
             ),
-            color = fg
+            color = fg,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip
         )
     }
 }
@@ -281,11 +346,7 @@ private fun ReadinessCardOnTrackPreview() {
     HonqPreviewTheme {
         ReadinessCard(
             progress = previewProgress(72),
-            passMark = 80,
-            stateCode = "NSW",
-            licenseTypeId = LicenseTypeId.CAR,
-            licenseCode = "C",
-            onContextClick = {}
+            passMark = 80
         )
     }
 }
@@ -296,11 +357,7 @@ private fun ReadinessCardReadyPreview() {
     HonqPreviewTheme {
         ReadinessCard(
             progress = previewProgress(88),
-            passMark = 80,
-            stateCode = "VIC",
-            licenseTypeId = LicenseTypeId.RIDER,
-            licenseCode = "R",
-            onContextClick = {}
+            passMark = 80
         )
     }
 }
@@ -311,11 +368,7 @@ private fun ReadinessCardKeepStudyingPreview() {
     HonqPreviewTheme {
         ReadinessCard(
             progress = previewProgress(35),
-            passMark = 80,
-            stateCode = "QLD",
-            licenseTypeId = LicenseTypeId.HEAVY_RIGID,
-            licenseCode = "HR",
-            onContextClick = {}
+            passMark = 80
         )
     }
 }
@@ -326,11 +379,7 @@ private fun ReadinessCardOnTrackLightPreview() {
     HonqPreviewTheme(darkTheme = false) {
         ReadinessCard(
             progress = previewProgress(72),
-            passMark = 80,
-            stateCode = "NSW",
-            licenseTypeId = LicenseTypeId.CAR,
-            licenseCode = "C",
-            onContextClick = {}
+            passMark = 80
         )
     }
 }
@@ -341,11 +390,7 @@ private fun ReadinessCardZeroStatePreview() {
     HonqPreviewTheme {
         ReadinessCard(
             progress = UserProgress.EMPTY.copy(totalQuestions = 408),
-            passMark = 80,
-            stateCode = "NSW",
-            licenseTypeId = LicenseTypeId.CAR,
-            licenseCode = "C",
-            onContextClick = {}
+            passMark = 80
         )
     }
 }
@@ -356,11 +401,7 @@ private fun ReadinessCardPassedPreview() {
     HonqPreviewTheme {
         ReadinessCard(
             progress = previewProgress(95),
-            passMark = 80,
-            stateCode = "NSW",
-            licenseTypeId = LicenseTypeId.CAR,
-            licenseCode = "C",
-            onContextClick = {}
+            passMark = 80
         )
     }
 }
@@ -371,12 +412,7 @@ private fun ReadinessCardNoContextPreview() {
     HonqPreviewTheme {
         ReadinessCard(
             progress = previewProgress(60),
-            passMark = 80,
-            stateCode = null,
-            licenseTypeId = null,
-            licenseCode = "",
-            onContextClick = {}
+            passMark = 80
         )
     }
 }
-

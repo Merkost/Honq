@@ -13,7 +13,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,17 +26,16 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.DirectionsCar
-import androidx.compose.material.icons.rounded.LocalShipping
-import androidx.compose.material.icons.rounded.TwoWheeler
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,9 +50,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,6 +62,7 @@ import com.merkost.honq.domain.model.LicenseTypeId
 import com.merkost.honq.domain.model.State
 import com.merkost.honq.presentation.components.base.FullscreenError
 import com.merkost.honq.presentation.components.base.HonqButton
+import com.merkost.honq.presentation.components.base.HonqButtonVariant
 import com.merkost.honq.presentation.components.base.LicenseTypeIcon
 import com.merkost.honq.presentation.theme.HonqMotion
 import com.merkost.honq.presentation.theme.HonqSizing
@@ -73,18 +73,27 @@ import honq.shared.generated.resources.error_offline_subtitle
 import honq.shared.generated.resources.error_offline_title
 import honq.shared.generated.resources.ic_honq_logo
 import honq.shared.generated.resources.onboarding_app_name
+import honq.shared.generated.resources.onboarding_back
 import honq.shared.generated.resources.onboarding_car_license
+import honq.shared.generated.resources.onboarding_combination_license
+import honq.shared.generated.resources.onboarding_completion_error_subtitle
+import honq.shared.generated.resources.onboarding_completion_error_title
+import honq.shared.generated.resources.onboarding_completion_retry
 import honq.shared.generated.resources.onboarding_coming_soon
 import honq.shared.generated.resources.onboarding_continue
 import honq.shared.generated.resources.onboarding_get_started
 import honq.shared.generated.resources.onboarding_loading_content
 import honq.shared.generated.resources.onboarding_resources_only
 import honq.shared.generated.resources.onboarding_rider_license
+import honq.shared.generated.resources.onboarding_rsmv_license
+import honq.shared.generated.resources.onboarding_rigid_license
 import honq.shared.generated.resources.onboarding_select_license_subtitle
 import honq.shared.generated.resources.onboarding_select_license_title
 import honq.shared.generated.resources.onboarding_select_state_subtitle
 import honq.shared.generated.resources.onboarding_select_state_title
+import honq.shared.generated.resources.onboarding_selected
 import honq.shared.generated.resources.onboarding_start_learning
+import honq.shared.generated.resources.onboarding_step
 import honq.shared.generated.resources.onboarding_subtitle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -115,7 +124,7 @@ fun OnboardingScreen(
 
     OnboardingContent(
         state = state,
-        onIntent = container.store::intent
+        onIntent = container::onIntent
     )
 }
 
@@ -191,10 +200,15 @@ private fun OnboardingContent(
                         OnboardingStep.LicenseTypeSelection -> LicenseTypeSelectionStep(
                             licenseTypes = state.licenseTypes,
                             selectedTypeId = state.selectedLicenseTypeId,
+                            selectedState = state.selectedState,
+                            selectedLicenseType = state.selectedLicenseType,
                             onSelectType = { onIntent(OnboardingIntent.SelectLicenseType(it)) },
                             onComplete = { onIntent(OnboardingIntent.CompleteOnboarding) },
+                            onRetry = { onIntent(OnboardingIntent.RetryCompletion) },
                             onBack = { onIntent(OnboardingIntent.GoBack) },
-                            canComplete = state.canProceedFromLicenseTypeSelection
+                            canComplete = state.canProceedFromLicenseTypeSelection,
+                            isCompleting = state.isCompleting,
+                            completionError = state.completionError,
                         )
                     }
                 }
@@ -336,6 +350,7 @@ private fun StateSelectionStep(
         OnboardingHeader(
             title = stringResource(Res.string.onboarding_select_state_title),
             subtitle = stringResource(Res.string.onboarding_select_state_subtitle),
+            step = 1,
             onBack = onBack
         )
 
@@ -371,10 +386,15 @@ private fun StateSelectionStep(
 private fun LicenseTypeSelectionStep(
     licenseTypes: List<LicenseType>,
     selectedTypeId: String?,
+    selectedState: State?,
+    selectedLicenseType: LicenseType?,
     onSelectType: (String) -> Unit,
     onComplete: () -> Unit,
+    onRetry: () -> Unit,
     onBack: () -> Unit,
-    canComplete: Boolean
+    canComplete: Boolean,
+    isCompleting: Boolean,
+    completionError: String?,
 ) {
     val animProgress = remember(licenseTypes.size) { List(licenseTypes.size) { Animatable(0f) } }
 
@@ -399,6 +419,7 @@ private fun LicenseTypeSelectionStep(
         OnboardingHeader(
             title = stringResource(Res.string.onboarding_select_license_title),
             subtitle = stringResource(Res.string.onboarding_select_license_subtitle),
+            step = 2,
             onBack = onBack
         )
 
@@ -409,6 +430,10 @@ private fun LicenseTypeSelectionStep(
                 .padding(horizontal = HonqSizing.screenPadding),
             verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
         ) {
+            createSetupSummary(selectedState, selectedLicenseType)?.let { summary ->
+                OnboardingSetupSummaryCard(summary = summary)
+            }
+
             licenseTypes.forEachIndexed { index, type ->
                 val progress = animProgress.getOrNull(index)?.value ?: 1f
                 LicenseTypeCard(
@@ -420,12 +445,17 @@ private fun LicenseTypeSelectionStep(
                         .offset { IntOffset(0, ((1f - progress) * SLIDE_UP_PX).toInt()) }
                 )
             }
+
+            if (completionError != null) {
+                CompletionErrorPanel(onRetry = onRetry)
+            }
         }
 
         OnboardingFooter(
             buttonText = stringResource(Res.string.onboarding_start_learning),
             onClick = onComplete,
-            enabled = canComplete
+            enabled = canComplete && !isCompleting,
+            loading = isCompleting,
         )
     }
 }
@@ -434,6 +464,7 @@ private fun LicenseTypeSelectionStep(
 private fun OnboardingHeader(
     title: String,
     subtitle: String,
+    step: Int,
     onBack: () -> Unit
 ) {
     val colors = HonqTheme.colors
@@ -441,16 +472,29 @@ private fun OnboardingHeader(
     Column(
         modifier = Modifier.padding(HonqSizing.screenPadding)
     ) {
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier.padding(bottom = HonqSpacing.md)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                contentDescription = "Back",
-                tint = colors.textPrimary
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = stringResource(Res.string.onboarding_back),
+                    tint = colors.textPrimary
+                )
+            }
+            Text(
+                text = stringResource(Res.string.onboarding_step, step, 2),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.2.sp
+                ),
+                color = colors.textMuted
             )
         }
+
+        Spacer(modifier = Modifier.height(HonqSpacing.md))
 
         Text(
             text = title,
@@ -475,7 +519,8 @@ private fun OnboardingHeader(
 private fun OnboardingFooter(
     buttonText: String,
     onClick: () -> Unit,
-    enabled: Boolean
+    enabled: Boolean,
+    loading: Boolean = false,
 ) {
     Column(
         modifier = Modifier
@@ -486,9 +531,43 @@ private fun OnboardingFooter(
             text = buttonText,
             onClick = onClick,
             enabled = enabled,
+            loading = loading,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(HonqSpacing.md))
+    }
+}
+
+@Composable
+private fun CompletionErrorPanel(onRetry: () -> Unit) {
+    val colors = HonqTheme.colors
+    val shape = RoundedCornerShape(HonqSizing.cornerRadiusSmall)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colors.surfaceVariant)
+            .border(1.dp, colors.border, shape)
+            .padding(HonqSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(HonqSpacing.xs),
+    ) {
+        Text(
+            text = stringResource(Res.string.onboarding_completion_error_title),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = colors.textPrimary,
+        )
+        Text(
+            text = stringResource(Res.string.onboarding_completion_error_subtitle),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.textSecondary,
+        )
+        HonqButton(
+            text = stringResource(Res.string.onboarding_completion_retry),
+            onClick = onRetry,
+            variant = HonqButtonVariant.Text,
+        )
     }
 }
 
@@ -501,6 +580,7 @@ private fun StateSelectionCard(
 ) {
     val colors = HonqTheme.colors
     val enabled = state.isActive
+    val shape = RoundedCornerShape(HonqSizing.cornerRadiusSmall)
 
     val backgroundColor by animateColorAsState(
         targetValue = if (selected) colors.primarySurface else colors.surface,
@@ -524,19 +604,30 @@ private fun StateSelectionCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .sizeIn(minHeight = 72.dp)
             .alpha(contentAlpha)
-            .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+            .clip(shape)
             .background(backgroundColor)
             .border(
                 width = borderWidth,
                 color = borderColor,
-                shape = RoundedCornerShape(HonqSizing.cornerRadius)
+                shape = shape
             )
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(HonqSpacing.md),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .selectable(
+                selected = selected,
+                enabled = enabled,
+                role = Role.RadioButton,
+                onClick = onClick
+            )
+            .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        StateCodeBadge(
+            code = state.shortName,
+            selected = selected
+        )
+
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = state.name,
@@ -544,34 +635,60 @@ private fun StateSelectionCard(
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                 color = textColor
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
-            ) {
-                Text(
-                    text = if (!enabled) stringResource(Res.string.onboarding_coming_soon, state.shortName) else state.shortName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.textMuted
-                )
-                if (state.isExternalOnly) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(HonqSizing.progressBarHeightSmall))
-                            .background(colors.surfaceVariant)
-                            .padding(horizontal = HonqSpacing.xs, vertical = 2.dp)
-                    ) {
+            if (!enabled || state.isExternalOnly) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
+                ) {
+                    if (!enabled) {
                         Text(
-                            text = stringResource(Res.string.onboarding_resources_only),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = colors.textMuted,
-                            fontWeight = FontWeight.Medium
+                            text = stringResource(Res.string.onboarding_coming_soon, state.shortName),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.textMuted
                         )
+                    }
+                    if (state.isExternalOnly) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(HonqSizing.progressBarHeightSmall))
+                                .background(colors.surfaceVariant)
+                                .padding(horizontal = HonqSpacing.xs, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.onboarding_resources_only),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.textMuted,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
             }
         }
 
         AnimatedCheckmark(selected = selected)
+    }
+}
+
+@Composable
+private fun StateCodeBadge(
+    code: String,
+    selected: Boolean
+) {
+    val colors = HonqTheme.colors
+    Box(
+        modifier = Modifier
+            .sizeIn(minWidth = 52.dp, minHeight = 44.dp)
+            .clip(RoundedCornerShape(HonqSizing.cornerRadiusSmall))
+            .background(if (selected) colors.primary else colors.surfaceVariant),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = code.uppercase(),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = if (selected) colors.onPrimary else colors.textSecondary
+        )
     }
 }
 
@@ -583,6 +700,7 @@ private fun LicenseTypeCard(
     modifier: Modifier = Modifier
 ) {
     val colors = HonqTheme.colors
+    val shape = RoundedCornerShape(HonqSizing.cornerRadiusSmall)
 
     val backgroundColor by animateColorAsState(
         targetValue = if (selected) colors.primarySurface else colors.surface,
@@ -608,22 +726,35 @@ private fun LicenseTypeCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(HonqSizing.cornerRadius))
+            .sizeIn(minHeight = 84.dp)
+            .clip(shape)
             .background(backgroundColor)
             .border(
                 width = borderWidth,
                 color = borderColor,
-                shape = RoundedCornerShape(HonqSizing.cornerRadius)
+                shape = shape
             )
-            .clickable(onClick = onClick)
-            .padding(HonqSpacing.md),
+            .selectable(
+                selected = selected,
+                role = Role.RadioButton,
+                onClick = onClick
+            )
+            .padding(horizontal = HonqSpacing.md, vertical = HonqSpacing.sm),
         horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LicenseTypeIcon(
-            typeId = type.typeId,
-            tint = iconTint
-        )
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(HonqSizing.cornerRadiusSmall))
+                .background(if (selected) colors.primarySurface else colors.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            LicenseTypeIcon(
+                typeId = type.typeId,
+                tint = iconTint
+            )
+        }
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -633,9 +764,17 @@ private fun LicenseTypeCard(
                 color = textColor
             )
             Text(
+                text = type.shortName.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = iconTint
+            )
+            Text(
                 text = getLicenseTypeDescription(type.typeId),
                 style = MaterialTheme.typography.bodySmall,
-                color = colors.textMuted
+                color = colors.textMuted,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -646,12 +785,12 @@ private fun LicenseTypeCard(
 @Composable
 private fun getLicenseTypeDescription(typeId: LicenseTypeId?): String = when (typeId) {
     LicenseTypeId.CAR -> stringResource(Res.string.onboarding_car_license)
-    LicenseTypeId.RIDER,
-    LicenseTypeId.RIDER_SPECIAL_MOBILITY_VEHICLE -> stringResource(Res.string.onboarding_rider_license)
+    LicenseTypeId.RIDER -> stringResource(Res.string.onboarding_rider_license)
+    LicenseTypeId.RIDER_SPECIAL_MOBILITY_VEHICLE -> stringResource(Res.string.onboarding_rsmv_license)
     LicenseTypeId.LIGHT_RIGID,
     LicenseTypeId.MEDIUM_RIGID,
-    LicenseTypeId.HEAVY_RIGID,
-    LicenseTypeId.HEAVY_COMBINATION,
+    LicenseTypeId.HEAVY_RIGID -> stringResource(Res.string.onboarding_rigid_license)
+    LicenseTypeId.HEAVY_COMBINATION -> stringResource(Res.string.onboarding_combination_license)
     LicenseTypeId.MULTI_COMBINATION -> ""
     null -> ""
 }
@@ -670,12 +809,12 @@ private fun AnimatedCheckmark(selected: Boolean) {
             Box(
                 modifier = Modifier
                     .size(HonqSizing.checkmarkSize)
-                    .background(colors.primary, RoundedCornerShape(HonqSizing.cornerRadiusSmall)),
+                    .background(colors.primary, androidx.compose.foundation.shape.CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Check,
-                    contentDescription = "Selected",
+                    contentDescription = stringResource(Res.string.onboarding_selected),
                     tint = colors.onPrimary,
                     modifier = Modifier.size(HonqSizing.iconSize16)
                 )
@@ -684,9 +823,8 @@ private fun AnimatedCheckmark(selected: Boolean) {
             Box(
                 modifier = Modifier
                     .size(HonqSizing.checkmarkSize)
-                    .border(1.dp, colors.border, RoundedCornerShape(HonqSizing.cornerRadiusSmall))
+                    .border(1.dp, colors.border, androidx.compose.foundation.shape.CircleShape)
             )
         }
     }
 }
-

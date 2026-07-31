@@ -38,6 +38,7 @@ sealed interface HomeIntent : MVIIntent {
     data class SelectLicenseType(val typeId: String) : HomeIntent
     data class OpenExternalLink(val linkType: String, val url: String) : HomeIntent
     data object Retry : HomeIntent
+    data object RetrySync : HomeIntent
 }
 
 sealed interface HomeAction : MVIAction {

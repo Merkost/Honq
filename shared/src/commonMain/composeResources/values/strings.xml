@@ -19,6 +19,16 @@
 
     <string name="home_about">About</string>
     <string name="home_state">State</string>
+    <string name="home_setup_title">Choose your study setup</string>
+    <string name="home_setup_subtitle">Pick a state and licence type to personalise your question bank.</string>
+    <string name="home_selection_updating">Updating question bank…</string>
+    <string name="home_license_not_available">Not available for this state</string>
+    <string name="home_change_setup">Change setup</string>
+    <string name="home_sync_error_title">Question bank update failed</string>
+    <string name="home_sync_error_subtitle">Your setup is saved. Retry the update when you’re ready.</string>
+    <string name="home_sync_error_retry">Retry update</string>
+    <string name="home_available_licenses">Available to study</string>
+    <string name="home_unavailable_licenses">Not available yet</string>
 
     <string name="home_readiness_title">Test readiness</string>
     <string name="home_readiness_status_ready">READY</string>
@@ -29,7 +39,7 @@
     <string name="home_readiness_caption">%1$d questions answered · %2$d% accuracy</string>
 
 
-    <string name="home_license_type">License Type</string>
+    <string name="home_license_type">Licence type</string>
     <string name="home_no_questions_available">No questions available for this selection</string>
     <string name="home_question_bank">Question Bank</string>
     <string name="home_questions_count">%1$d questions</string>
@@ -55,8 +65,17 @@
     <string name="onboarding_get_started">Get Started</string>
     <string name="onboarding_select_state_title">Select your state</string>
     <string name="onboarding_select_state_subtitle">Choose the state where you'll be taking your test</string>
-    <string name="onboarding_select_license_title">Select license type</string>
-    <string name="onboarding_select_license_subtitle">What type of vehicle license are you studying for?</string>
+    <string name="onboarding_select_license_title">Choose your licence type</string>
+    <string name="onboarding_select_license_subtitle">Pick the vehicle category you’re studying for.</string>
+    <string name="onboarding_setup_title">Your study setup</string>
+    <string name="onboarding_setup_summary_state">State</string>
+    <string name="onboarding_setup_summary_license">Licence</string>
+    <string name="onboarding_completion_error_title">Couldn’t finish setting up</string>
+    <string name="onboarding_completion_error_subtitle">Your choices are saved. Check your connection and try again.</string>
+    <string name="onboarding_completion_retry">Try again</string>
+    <string name="onboarding_back">Back</string>
+    <string name="onboarding_selected">Selected</string>
+    <string name="onboarding_step">STEP %1$d OF %2$d</string>
     <string name="onboarding_continue">Continue</string>
     <string name="onboarding_start_learning">Start Learning</string>
     <string name="onboarding_coming_soon">%1$s (Coming Soon)</string>
@@ -64,4 +83,7 @@
     <string name="onboarding_loading_content">Loading question banks…</string>
     <string name="onboarding_car_license">Car (Class C) license</string>
     <string name="onboarding_rider_license">Motorcycle (Class R) license</string>
+    <string name="onboarding_rsmv_license">Rider licence with Special Mobility Vehicle (SMV) endorsement</string>
+    <string name="onboarding_rigid_license">Rigid heavy vehicle (LR, MR or HR) licence</string>
+    <string name="onboarding_combination_license">Heavy combination vehicle (HC or MC) licence</string>
 </resources>
