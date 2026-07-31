@@ -20,5 +20,7 @@ data class QuestionDto(
     @SerialName("is_active") val isActive: Boolean = true,
     val version: Int = 1,
     val source: String = "manual",
-    @SerialName("created_at") val createdAt: String = ""
+    @SerialName("created_at") val createdAt: String = "",
+    @SerialName("license_tags") val licenseTags: List<String> = emptyList(),
+    @SerialName("source_question_id") val sourceQuestionId: String? = null
 )

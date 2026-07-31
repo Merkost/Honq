@@ -74,8 +74,7 @@ class QuestionRepositoryImpl(
             }
 
             if (questions.isEmpty()) {
-                Cedar.tag("QuestionRepo").w("getRandomQuestions: no questions for questionSet=$questionSetId, falling back to all")
-                questions = localDataSource.getRandomQuestions(count)
+                Cedar.tag("QuestionRepo").w("getRandomQuestions: no questions for questionSet=$questionSetId")
             }
 
             Result.Success(questions)
@@ -106,8 +105,7 @@ class QuestionRepositoryImpl(
                 var questions = localDataSource.getMockTestQuestionsByQuestionSet(questionSetId, questionCount)
 
                 if (questions.isEmpty()) {
-                    Cedar.tag("QuestionRepo").w("getMockTestQuestions: no questions for questionSet=$questionSetId, falling back to all")
-                    questions = localDataSource.getMockTestQuestions(questionCount)
+                    Cedar.tag("QuestionRepo").w("getMockTestQuestions: no questions for questionSet=$questionSetId")
                 }
 
                 Result.Success(questions)

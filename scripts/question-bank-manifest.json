@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "banks": [
+    {
+      "bank_key": "rigid",
+      "state_id": "nsw",
+      "question_set_id": "nsw_hr",
+      "license_type_id": "heavy_rigid",
+      "source_url": "https://www.nsw.gov.au/sites/default/files/2021-09/driver-knowledge-test-questions-heavy-rigid.pdf",
+      "source_pdf": "/Users/merkost/Downloads/driver-knowledge-test-questions-heavy-rigid.pdf",
+      "source_sha256": "3de9398991c973def924bf4ab0a208389d84bf11755ed6192d2a396b39e3cafa",
+      "expected_count": 343,
+      "hosting_relative_dir": "questions/nsw/rigid",
+      "status": "ready"
+    },
+    {
+      "bank_key": "combination",
+      "state_id": "nsw",
+      "question_set_id": "nsw_hc",
+      "license_type_id": "heavy_combination",
+      "source_url": "https://www.nsw.gov.au/sites/default/files/2021-09/driver-knowledge-test-questions-heavy-combination.pdf",
+      "source_pdf": "/Users/merkost/Downloads/driver-knowledge-test-questions-heavy-combination.pdf",
+      "source_sha256": "7431162173ed7bfafff0813fc1d1b8544d59aa488edb73561b127457736e7766",
+      "expected_count": 348,
+      "hosting_relative_dir": "questions/nsw/combination",
+      "status": "ready"
+    },
+    {
+      "bank_key": "rider_smv",
+      "state_id": "nsw",
+      "question_set_id": "nsw_rsmv",
+      "license_type_id": "rider_special_mobility_vehicle",
+      "source_url": "https://www.nsw.gov.au/sites/default/files/2021-09/driver-knowledge-test-questions-rider-smv.pdf",
+      "source_pdf": "/Users/merkost/Downloads/driver-knowledge-test-questions-rider-smv.pdf",
+      "source_sha256": "ef6d100373150419482e9ce27c19fc2382ddf5be9d57d0b2572bdff9bf72877d",
+      "expected_count": 275,
+      "hosting_relative_dir": "questions/nsw/rsmv",
+      "status": "ready"
+    },
+    {
+      "bank_key": "nt_car",
+      "state_id": "nt",
+      "question_set_id": "nt_car",
+      "license_type_id": "car",
+      "source_url": "https://nt.gov.au/_media/docs/driving,-transport-and-marine/driver_licenses/class-c-knowledge-test.pdf",
+      "source_pdf": "/private/tmp/honq-nt-banks/class-c-knowledge-test.pdf",
+      "source_sha256": "6e558873ce1aa53d9c9fb33aa39d21f38d0b3362eec43318f3fdf719d56deb73",
+      "expected_count": 358,
+      "hosting_relative_dir": "questions/nt/car",
+      "status": "ready"
+    },
+    {
+      "bank_key": "nt_rider",
+      "state_id": "nt",
+      "question_set_id": "nt_rider",
+      "license_type_id": "rider",
+      "source_url": "https://nt.gov.au/_media/docs/driving,-transport-and-marine/driver_licenses/class-r-knowledge-test.pdf",
+      "source_pdf": "/private/tmp/honq-nt-banks/class-r-knowledge-test.pdf",
+      "source_sha256": "c3103dee52530c33676f10059e9c99d8b7e4496803d71f009dbb270e71cc6390",
+      "expected_count": 350,
+      "hosting_relative_dir": "questions/nt/rider",
+      "status": "ready"
+    },
+    {
+      "bank_key": "nt_rigid",
+      "state_id": "nt",
+      "question_set_id": "nt_hr",
+      "license_type_id": "heavy_rigid",
+      "source_url": "https://nt.gov.au/_media/docs/driving,-transport-and-marine/heavy_vehicles/get-your-heavy-vehicle-licence/heavy-vehicle-knowledge-test-rigid.pdf",
+      "source_pdf": "/private/tmp/honq-nt-banks/heavy-vehicle-knowledge-test-rigid.pdf",
+      "source_sha256": "6d84572ae3f6181da2bc72f7afd00f8f31415bd5bf6fa50df2a07afb1e0ee22b",
+      "expected_count": 289,
+      "hosting_relative_dir": "questions/nt/rigid",
+      "status": "ready"
+    },
+    {
+      "bank_key": "nt_articulated",
+      "state_id": "nt",
+      "question_set_id": "nt_hc",
+      "license_type_id": "heavy_combination",
+      "source_url": "https://nt.gov.au/_media/docs/driving,-transport-and-marine/heavy_vehicles/get-your-heavy-vehicle-licence/heavy-vehicle-knowledge-test-articulated.pdf",
+      "source_pdf": "/private/tmp/honq-nt-banks/heavy-vehicle-knowledge-test-articulated.pdf",
+      "source_sha256": "1963ec156bf3d0579ea545850fceb3daa072412ce4c9c0e329bc83638ff7479b",
+      "expected_count": 298,
+      "hosting_relative_dir": "questions/nt/articulated",
+      "status": "ready"
+    },
+    {
+      "bank_key": "qld_car",
+      "state_id": "qld",
+      "license_type_id": "car",
+      "status": "source_required",
+      "source_type": "official_dynamic_practice"
+    },
+    {
+      "bank_key": "qld_rider",
+      "state_id": "qld",
+      "license_type_id": "rider",
+      "status": "source_required",
+      "source_type": "official_dynamic_practice"
+    },
+    {
+      "bank_key": "qld_heavy",
+      "state_id": "qld",
+      "license_type_id": "heavy_combination",
+      "status": "source_required",
+      "source_type": "official_dynamic_practice"
+    },
+    {
+      "bank_key": "vic_car",
+      "state_id": "vic",
+      "license_type_id": "car",
+      "status": "source_required",
+      "source_type": "official_dynamic_practice"
+    },
+    {
+      "bank_key": "wa_car",
+      "state_id": "wa",
+      "license_type_id": "car",
+      "status": "source_required",
+      "source_type": "official_dynamic_practice"
+    },
+    {
+      "bank_key": "sa_car",
+      "state_id": "sa",
+      "license_type_id": "car",
+      "status": "source_required",
+      "source_type": "official_dynamic_practice"
+    },
+    {
+      "bank_key": "tas_car",
+      "state_id": "tas",
+      "license_type_id": "car",
+      "status": "source_required",
+      "source_type": "official_handbook_or_practice"
+    },
+    {
+      "bank_key": "act_car",
+      "state_id": "act",
+      "license_type_id": "car",
+      "status": "source_required",
+      "source_type": "official_legislation_or_handbook"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ import org.kimplify.cedar.logging.LogTree
 class CrashReportingTree : LogTree {
     override fun log(
         priority: LogPriority,
-        tag: String,
+        tag: String?,
         message: String,
         throwable: Throwable?
     ) {
@@ -28,4 +28,5 @@ class CrashReportingTree : LogTree {
             else -> Unit // VERBOSE/DEBUG already returned above
         }
     }
+
 }
