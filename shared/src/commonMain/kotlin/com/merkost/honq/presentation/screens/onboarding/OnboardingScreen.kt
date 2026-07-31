@@ -124,7 +124,7 @@ fun OnboardingScreen(
 
     OnboardingContent(
         state = state,
-        onIntent = container.store::intent
+        onIntent = container::onIntent
     )
 }
 

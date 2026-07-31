@@ -5,6 +5,7 @@ import com.merkost.honq.core.analytics.Analytics
 import com.merkost.honq.core.analytics.AnalyticsEvent
 import com.merkost.honq.core.util.Result
 import com.merkost.honq.core.util.getOrNull
+import com.merkost.honq.core.util.map
 import com.merkost.honq.core.util.onError
 import com.merkost.honq.core.util.onSuccess
 import com.merkost.honq.data.local.OnboardingPreferences
@@ -15,6 +16,7 @@ import com.merkost.honq.domain.usecase.GetStatesUseCase
 import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
 import com.merkost.honq.domain.usecase.GetQuestionSetsByStateUseCase
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.Mutex
 import kotlin.time.TimeSource
 import org.kimplify.cedar.logging.Cedar
 import pro.respawn.flowmvi.api.Container
@@ -43,6 +45,26 @@ class OnboardingContainer(
     private val repository: QuestionRepository,
     scope: CoroutineScope
 ) : Container<OnboardingState, OnboardingIntent, OnboardingAction>, ViewModel() {
+
+    private val completionAdmission = OnboardingCompletionAdmission()
+    private val completionHandler = OnboardingCompletionHandler(
+        getQuestionSetsByState = getQuestionSetsByState,
+        setSelectedQuestionSet = setSelectedQuestionSet,
+        onboardingPreferences = onboardingPreferences,
+        analytics = analytics,
+    )
+
+    fun onIntent(intent: OnboardingIntent) {
+        when (intent) {
+            OnboardingIntent.CompleteOnboarding,
+            OnboardingIntent.RetryCompletion -> {
+                if (completionAdmission.tryAdmit()) {
+                    store.intent(intent)
+                }
+            }
+            else -> store.intent(intent)
+        }
+    }
 
     override val store = store(OnboardingState(), scope) {
         init {
@@ -76,12 +98,8 @@ class OnboardingContainer(
                 is OnboardingIntent.SelectLicenseType -> {
                     updateState { copy(selectedLicenseTypeId = intent.typeId) }
                 }
-                OnboardingIntent.CompleteOnboarding -> {
-                    completeOnboarding()
-                }
-                OnboardingIntent.RetryCompletion -> {
-                    completeOnboarding()
-                }
+                OnboardingIntent.CompleteOnboarding,
+                OnboardingIntent.RetryCompletion -> completeAdmittedOnboarding()
                 OnboardingIntent.GoBack -> {
                     goBack()
                 }
@@ -173,6 +191,18 @@ class OnboardingContainer(
             }
     }
 
+    private suspend fun PipelineContext<
+        OnboardingState,
+        OnboardingIntent,
+        OnboardingAction,
+    >.completeAdmittedOnboarding() {
+        try {
+            completeOnboarding()
+        } finally {
+            completionAdmission.release()
+        }
+    }
+
     private suspend fun PipelineContext<OnboardingState, OnboardingIntent, OnboardingAction>.completeOnboarding() {
         var isCompleting = false
         var selectedStateId: String? = null
@@ -193,27 +223,12 @@ class OnboardingContainer(
         val licenseTypeId = checkNotNull(selectedLicenseTypeId)
         updateState { copy(isCompleting = true, completionError = null) }
 
-        onboardingPreferences.setSelectedStateId(stateId)
-        onboardingPreferences.setSelectedLicenseTypeId(licenseTypeId)
-
-        analytics.track(
-            AnalyticsEvent.OnboardingCompleted(
-                stateId = stateId,
-                licenseTypeId = licenseTypeId
-            )
-        )
-
         Cedar.tag("Onboarding").d("completeOnboarding: state=$stateId, type=$licenseTypeId")
-        getQuestionSetsByState(stateId)
-            .onSuccess { questionSets ->
-                val matchingSet = questionSets.firstOrNull {
-                    it.isActive && it.licenseTypeId == licenseTypeId
-                } ?: questionSets.firstOrNull { it.isActive }
-
-                Cedar.tag("Onboarding").d("completeOnboarding: selected questionSet=${matchingSet?.id}")
-                matchingSet?.let { setSelectedQuestionSet(it.id) }
-
-                onboardingPreferences.setOnboardingCompleted(true)
+        completionHandler.complete(stateId, licenseTypeId)
+            .onSuccess { selectedQuestionSetId ->
+                Cedar.tag("Onboarding").d(
+                    "completeOnboarding: selected questionSet=$selectedQuestionSetId"
+                )
                 action(OnboardingAction.NavigateToHome)
             }
             .onError { e ->
@@ -234,5 +249,46 @@ class OnboardingContainer(
             }
             updateState { copy(currentStep = previousStep) }
         }
+    }
+}
+
+internal class OnboardingCompletionHandler(
+    private val getQuestionSetsByState: GetQuestionSetsByStateUseCase,
+    private val setSelectedQuestionSet: SetSelectedQuestionSetUseCase,
+    private val onboardingPreferences: OnboardingPreferences,
+    private val analytics: Analytics,
+) {
+    suspend fun complete(
+        stateId: String,
+        licenseTypeId: String,
+    ): Result<String?> {
+        onboardingPreferences.setSelectedStateId(stateId)
+        onboardingPreferences.setSelectedLicenseTypeId(licenseTypeId)
+
+        return getQuestionSetsByState(stateId).map { questionSets ->
+            val matchingSet = questionSets.firstOrNull {
+                it.isActive && it.licenseTypeId == licenseTypeId
+            } ?: questionSets.firstOrNull { it.isActive }
+
+            matchingSet?.let { setSelectedQuestionSet(it.id) }
+            analytics.track(
+                AnalyticsEvent.OnboardingCompleted(
+                    stateId = stateId,
+                    licenseTypeId = licenseTypeId,
+                )
+            )
+            onboardingPreferences.setOnboardingCompleted(true)
+            matchingSet?.id
+        }
+    }
+}
+
+internal class OnboardingCompletionAdmission {
+    private val mutex = Mutex()
+
+    fun tryAdmit(): Boolean = mutex.tryLock()
+
+    fun release() {
+        mutex.unlock()
     }
 }
