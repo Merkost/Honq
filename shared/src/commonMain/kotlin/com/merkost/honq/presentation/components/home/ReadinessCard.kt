@@ -89,44 +89,32 @@ fun ReadinessCard(
 
         Spacer(Modifier.height(HonqSpacing.md))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
-        ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = score.toString(),
-                    style = TextStyle(
-                        brush = numberBrush,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 64.sp,
-                        letterSpacing = (-2.5).sp,
-                        lineHeight = 64.sp
-                    ),
-                    modifier = Modifier.alignByBaseline()
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            when (readinessMetricLayout(maxWidth)) {
+                ReadinessMetricLayout.Inline -> ReadinessMetricRow(
+                    score = score,
+                    passMark = passMark,
+                    numberBrush = numberBrush
                 )
-                Text(
-                    text = "/100",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = (-0.4).sp
-                    ),
-                    color = colors.textMuted,
-                    modifier = Modifier.alignByBaseline()
-                )
-            }
 
-            ReadinessGauge(
-                score = score,
-                passMark = passMark,
-                modifier = Modifier.width(GAUGE_WIDTH)
-            )
+                ReadinessMetricLayout.Stacked -> Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(HonqSpacing.sm)
+                ) {
+                    ReadinessScore(
+                        score = score,
+                        numberBrush = numberBrush
+                    )
+                    ReadinessGauge(
+                        score = score,
+                        passMark = passMark,
+                        modifier = Modifier
+                            .width(GAUGE_WIDTH)
+                            .align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
         }
 
         Spacer(Modifier.height(HonqSpacing.md))
@@ -160,8 +148,14 @@ fun ReadinessCard(
 private const val HERO_GRADIENT_RADIUS = 1200f
 private val GAUGE_WIDTH = 132.dp
 private val READINESS_HEADER_STACK_BREAKPOINT = 288.dp
+private val READINESS_METRIC_STACK_BREAKPOINT = 320.dp
 
 internal enum class ReadinessHeaderLayout {
+    Inline,
+    Stacked
+}
+
+internal enum class ReadinessMetricLayout {
     Inline,
     Stacked
 }
@@ -172,6 +166,79 @@ internal fun readinessHeaderLayout(contentWidth: androidx.compose.ui.unit.Dp): R
     } else {
         ReadinessHeaderLayout.Inline
     }
+
+internal fun readinessMetricLayout(contentWidth: androidx.compose.ui.unit.Dp): ReadinessMetricLayout =
+    if (contentWidth < READINESS_METRIC_STACK_BREAKPOINT) {
+        ReadinessMetricLayout.Stacked
+    } else {
+        ReadinessMetricLayout.Inline
+    }
+
+@Composable
+private fun ReadinessMetricRow(
+    score: Int,
+    passMark: Int,
+    numberBrush: Brush
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(HonqSpacing.md)
+    ) {
+        ReadinessScore(
+            score = score,
+            numberBrush = numberBrush,
+            modifier = Modifier.weight(1f)
+        )
+        ReadinessGauge(
+            score = score,
+            passMark = passMark,
+            modifier = Modifier.width(GAUGE_WIDTH)
+        )
+    }
+}
+
+@Composable
+private fun ReadinessScore(
+    score: Int,
+    numberBrush: Brush,
+    modifier: Modifier = Modifier
+) {
+    val colors = HonqTheme.colors
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = score.toString(),
+            style = TextStyle(
+                brush = numberBrush,
+                fontWeight = FontWeight.Bold,
+                fontSize = 64.sp,
+                letterSpacing = (-2.5).sp,
+                lineHeight = 64.sp
+            ),
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            modifier = Modifier.alignByBaseline()
+        )
+        Text(
+            text = "/100",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = (-0.4).sp
+            ),
+            color = colors.textMuted,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            modifier = Modifier.alignByBaseline()
+        )
+    }
+}
 
 @Composable
 private fun ReadinessCardHeader(
