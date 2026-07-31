@@ -57,6 +57,9 @@
     <string name="onboarding_select_state_subtitle">Choose the state where you'll be taking your test</string>
     <string name="onboarding_select_license_title">Select license type</string>
     <string name="onboarding_select_license_subtitle">What type of vehicle license are you studying for?</string>
+    <string name="onboarding_setup_summary_title">Your study setup</string>
+    <string name="onboarding_setup_summary_state">State</string>
+    <string name="onboarding_setup_summary_license">Licence</string>
     <string name="onboarding_continue">Continue</string>
     <string name="onboarding_start_learning">Start Learning</string>
     <string name="onboarding_coming_soon">%1$s (Coming Soon)</string>
