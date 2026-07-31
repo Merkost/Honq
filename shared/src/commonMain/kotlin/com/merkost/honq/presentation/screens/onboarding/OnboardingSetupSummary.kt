@@ -24,7 +24,7 @@ import com.merkost.honq.presentation.theme.HonqTheme
 import honq.shared.generated.resources.Res
 import honq.shared.generated.resources.onboarding_setup_summary_license
 import honq.shared.generated.resources.onboarding_setup_summary_state
-import honq.shared.generated.resources.onboarding_setup_summary_title
+import honq.shared.generated.resources.onboarding_setup_title
 import org.jetbrains.compose.resources.stringResource
 
 internal data class SetupSummary(
@@ -61,7 +61,7 @@ internal fun OnboardingSetupSummaryCard(
             verticalArrangement = Arrangement.spacedBy(HonqSpacing.md),
         ) {
             Text(
-                text = stringResource(Res.string.onboarding_setup_summary_title),
+                text = stringResource(Res.string.onboarding_setup_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = colors.textPrimary,
             )

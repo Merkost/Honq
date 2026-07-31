@@ -174,12 +174,15 @@ class OnboardingContainer(
     }
 
     private suspend fun PipelineContext<OnboardingState, OnboardingIntent, OnboardingAction>.completeOnboarding() {
+        var isCompleting = false
         var selectedStateId: String? = null
         var selectedLicenseTypeId: String? = null
         withState {
+            isCompleting = this.isCompleting
             selectedStateId = this.selectedStateId
             selectedLicenseTypeId = this.selectedLicenseTypeId
         }
+        if (isCompleting) return
         if (selectedStateId == null || selectedLicenseTypeId == null) {
             Cedar.tag("Onboarding").w(
                 "completeOnboarding: missing selection (state=$selectedStateId, type=$selectedLicenseTypeId)"
