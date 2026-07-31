@@ -73,6 +73,7 @@ class HomeContainer(
                     Cedar.tag("Home").i("Retry triggered by user")
                     loadInitialData()
                 }
+                HomeIntent.RetrySync -> retrySync()
             }
         }
     }
@@ -213,7 +214,16 @@ class HomeContainer(
 
         analytics.track(AnalyticsEvent.StateSelected(stateId))
         onboardingPreferences.setSelectedStateId(stateId)
-        updateState { copy(selectedStateId = stateId, isSyncing = true) }
+        updateState {
+            copy(
+                selectedStateId = stateId,
+                questionSets = emptyList(),
+                selectedQuestionSet = null,
+                stateResources = emptyList(),
+                isSyncing = true,
+                syncError = null
+            )
+        }
         loadQuestionSetsAndSync(stateId, currentTypeId)
     }
 
@@ -276,6 +286,14 @@ class HomeContainer(
                 Cedar.tag("Home").e("syncInBackground: sync failed: ${e.message}", e)
                 updateState { copy(isSyncing = false, syncError = e.message) }
             }
+    }
+
+    private suspend fun PipelineContext<HomeState, HomeIntent, HomeAction>.retrySync() {
+        var canRetry = false
+        withState {
+            canRetry = selectedQuestionSet != null && !isSyncing
+        }
+        if (canRetry) syncInBackground()
     }
 
     private suspend fun PipelineContext<HomeState, HomeIntent, HomeAction>.trackExternalLink(

@@ -75,6 +75,7 @@ import com.merkost.honq.presentation.components.home.ModeList
 import com.merkost.honq.presentation.components.home.ModeListEntry
 import com.merkost.honq.presentation.components.home.PrimaryPracticeCta
 import com.merkost.honq.presentation.components.home.ReadinessCard
+import com.merkost.honq.presentation.components.home.SetupSyncFeedback
 import com.merkost.honq.presentation.components.home.StateLicenseSheet
 import com.merkost.honq.core.REVENUECAT_ENTITLEMENT_ID
 import com.merkost.honq.core.analytics.Analytics
@@ -196,6 +197,7 @@ fun HomeScreen(
         onSelectState = { stateId -> container.intent(HomeIntent.SelectState(stateId)) },
         onSelectLicenseType = { typeId -> container.intent(HomeIntent.SelectLicenseType(typeId)) },
         onRetry = { container.intent(HomeIntent.Retry) },
+        onRetrySync = { container.intent(HomeIntent.RetrySync) },
         onOpenExternalLink = { linkType, url ->
             container.intent(HomeIntent.OpenExternalLink(linkType, url))
         }
@@ -295,6 +297,7 @@ private fun HomeContent(
     onSelectState: (String) -> Unit,
     onSelectLicenseType: (String) -> Unit,
     onRetry: () -> Unit,
+    onRetrySync: () -> Unit,
     onOpenExternalLink: (linkType: String, url: String) -> Unit
 ) {
     val colors = HonqTheme.colors
@@ -376,6 +379,10 @@ private fun HomeContent(
                             .padding(HonqSizing.screenPadding),
                         verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
                     ) {
+                        if (state.syncError != null) {
+                            SetupSyncFeedback(onRetry = onRetrySync)
+                        }
+
                         if (selectedState != null && isExternalOnly) {
                             Box(modifier = Modifier.staggeredEntrance(0)) {
                                 HomeContextChipRow(
@@ -483,7 +490,7 @@ private fun HomeContextChipRow(
             licenseCode = licenseCode
         )
         Text(
-            text = "Tap to change",
+            text = stringResource(Res.string.home_change_setup),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium,
                 fontSize = 11.sp
@@ -841,4 +848,3 @@ private fun ResourceItem(
         )
     }
 }
-

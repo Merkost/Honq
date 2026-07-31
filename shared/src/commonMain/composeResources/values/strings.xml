@@ -23,6 +23,12 @@
     <string name="home_setup_subtitle">Pick a state and licence type to personalise your question bank.</string>
     <string name="home_selection_updating">Updating question bank…</string>
     <string name="home_license_not_available">Not available for this state</string>
+    <string name="home_change_setup">Change setup</string>
+    <string name="home_sync_error_title">Question bank update failed</string>
+    <string name="home_sync_error_subtitle">Your setup is saved. Retry the update when you’re ready.</string>
+    <string name="home_sync_error_retry">Retry update</string>
+    <string name="home_available_licenses">Available to study</string>
+    <string name="home_unavailable_licenses">Not available yet</string>
 
     <string name="home_readiness_title">Test readiness</string>
     <string name="home_readiness_status_ready">READY</string>
