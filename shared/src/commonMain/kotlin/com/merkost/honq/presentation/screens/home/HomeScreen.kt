@@ -197,7 +197,7 @@ fun HomeScreen(
         onSelectState = { stateId -> container.intent(HomeIntent.SelectState(stateId)) },
         onSelectLicenseType = { typeId -> container.intent(HomeIntent.SelectLicenseType(typeId)) },
         onRetry = { container.intent(HomeIntent.Retry) },
-        onRetrySync = { container.intent(HomeIntent.RetrySync) },
+        onRetrySync = { container.requestRetrySync() },
         onOpenExternalLink = { linkType, url ->
             container.intent(HomeIntent.OpenExternalLink(linkType, url))
         }
@@ -380,7 +380,10 @@ private fun HomeContent(
                         verticalArrangement = Arrangement.spacedBy(HonqSpacing.md)
                     ) {
                         if (state.syncError != null) {
-                            SetupSyncFeedback(onRetry = onRetrySync)
+                            SetupSyncFeedback(
+                                onRetry = onRetrySync,
+                                enabled = !state.isSyncing
+                            )
                         }
 
                         if (selectedState != null && isExternalOnly) {

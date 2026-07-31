@@ -26,6 +26,7 @@ import org.jetbrains.compose.resources.stringResource
 fun SetupSyncFeedback(
     modifier: Modifier = Modifier,
     onRetry: () -> Unit,
+    enabled: Boolean = true,
 ) {
     val colors = HonqTheme.colors
 
@@ -47,7 +48,10 @@ fun SetupSyncFeedback(
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.textSecondary,
             )
-            TextButton(onClick = onRetry) {
+            TextButton(
+                enabled = enabled,
+                onClick = onRetry,
+            ) {
                 Text(text = stringResource(Res.string.home_sync_error_retry))
             }
         }

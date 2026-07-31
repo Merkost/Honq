@@ -20,6 +20,7 @@ import com.merkost.honq.domain.usecase.ObserveFavoriteQuestionsUseCase
 import com.merkost.honq.domain.usecase.SetSelectedQuestionSetUseCase
 import com.merkost.honq.domain.usecase.SyncQuestionsUseCase
 import com.merkost.honq.domain.repository.QuestionRepository
+import kotlinx.coroutines.sync.Mutex
 import org.kimplify.cedar.logging.Cedar
 import pro.respawn.flowmvi.api.Container
 import pro.respawn.flowmvi.api.PipelineContext
@@ -44,6 +45,13 @@ class HomeContainer(
 ) : Container<HomeState, HomeIntent, HomeAction>, ViewModel() {
 
     private var pendingSyncVersion: Int? = null
+    private val retrySyncAdmission = RetrySyncAdmission()
+
+    fun requestRetrySync() {
+        if (retrySyncAdmission.tryAdmit()) {
+            store.intent(HomeIntent.RetrySync)
+        }
+    }
 
     override val store = store(HomeState(), viewModelScope) {
         init {
@@ -289,11 +297,15 @@ class HomeContainer(
     }
 
     private suspend fun PipelineContext<HomeState, HomeIntent, HomeAction>.retrySync() {
-        var canRetry = false
-        withState {
-            canRetry = selectedQuestionSet != null && !isSyncing
+        try {
+            var canRetry = false
+            withState {
+                canRetry = selectedQuestionSet != null && !isSyncing
+            }
+            if (canRetry) syncInBackground()
+        } finally {
+            retrySyncAdmission.release()
         }
-        if (canRetry) syncInBackground()
     }
 
     private suspend fun PipelineContext<HomeState, HomeIntent, HomeAction>.trackExternalLink(
@@ -309,5 +321,15 @@ class HomeContainer(
     companion object {
         private const val DEFAULT_STATE_ID = "nsw"
         private const val DEFAULT_TYPE_ID = "car"
+    }
+}
+
+internal class RetrySyncAdmission {
+    private val mutex = Mutex()
+
+    fun tryAdmit(): Boolean = mutex.tryLock()
+
+    fun release() {
+        mutex.unlock()
     }
 }
