@@ -79,6 +79,9 @@ class OnboardingContainer(
                 OnboardingIntent.CompleteOnboarding -> {
                     completeOnboarding()
                 }
+                OnboardingIntent.RetryCompletion -> {
+                    completeOnboarding()
+                }
                 OnboardingIntent.GoBack -> {
                     goBack()
                 }
@@ -171,43 +174,49 @@ class OnboardingContainer(
     }
 
     private suspend fun PipelineContext<OnboardingState, OnboardingIntent, OnboardingAction>.completeOnboarding() {
+        var selectedStateId: String? = null
+        var selectedLicenseTypeId: String? = null
         withState {
-            val stateId = selectedStateId
-            val typeId = selectedLicenseTypeId
-            if (stateId == null || typeId == null) {
-                Cedar.tag("Onboarding").w("completeOnboarding: missing selection (state=$stateId, type=$typeId)")
-                return@withState
-            }
-
-            onboardingPreferences.setSelectedStateId(stateId)
-            onboardingPreferences.setSelectedLicenseTypeId(typeId)
-
-            analytics.track(
-                AnalyticsEvent.OnboardingCompleted(
-                    stateId = stateId,
-                    licenseTypeId = typeId
-                )
-            )
-
-            Cedar.tag("Onboarding").d("completeOnboarding: state=$stateId, type=$typeId")
-            getQuestionSetsByState(stateId)
-                .onSuccess { questionSets ->
-                    val matchingSet = questionSets.firstOrNull {
-                        it.isActive && it.licenseTypeId == typeId
-                    } ?: questionSets.firstOrNull { it.isActive }
-
-                    Cedar.tag("Onboarding").d("completeOnboarding: selected questionSet=${matchingSet?.id}")
-                    matchingSet?.let { setSelectedQuestionSet(it.id) }
-
-                    onboardingPreferences.setOnboardingCompleted(true)
-                    action(OnboardingAction.NavigateToHome)
-                }
-                .onError { e ->
-                    Cedar.tag("Onboarding").e("completeOnboarding: failed to load question sets, proceeding anyway: ${e.message}", e)
-                    onboardingPreferences.setOnboardingCompleted(true)
-                    action(OnboardingAction.NavigateToHome)
-                }
+            selectedStateId = this.selectedStateId
+            selectedLicenseTypeId = this.selectedLicenseTypeId
         }
+        if (selectedStateId == null || selectedLicenseTypeId == null) {
+            Cedar.tag("Onboarding").w(
+                "completeOnboarding: missing selection (state=$selectedStateId, type=$selectedLicenseTypeId)"
+            )
+            return
+        }
+        val stateId = checkNotNull(selectedStateId)
+        val licenseTypeId = checkNotNull(selectedLicenseTypeId)
+        updateState { copy(isCompleting = true, completionError = null) }
+
+        onboardingPreferences.setSelectedStateId(stateId)
+        onboardingPreferences.setSelectedLicenseTypeId(licenseTypeId)
+
+        analytics.track(
+            AnalyticsEvent.OnboardingCompleted(
+                stateId = stateId,
+                licenseTypeId = licenseTypeId
+            )
+        )
+
+        Cedar.tag("Onboarding").d("completeOnboarding: state=$stateId, type=$licenseTypeId")
+        getQuestionSetsByState(stateId)
+            .onSuccess { questionSets ->
+                val matchingSet = questionSets.firstOrNull {
+                    it.isActive && it.licenseTypeId == licenseTypeId
+                } ?: questionSets.firstOrNull { it.isActive }
+
+                Cedar.tag("Onboarding").d("completeOnboarding: selected questionSet=${matchingSet?.id}")
+                matchingSet?.let { setSelectedQuestionSet(it.id) }
+
+                onboardingPreferences.setOnboardingCompleted(true)
+                action(OnboardingAction.NavigateToHome)
+            }
+            .onError { e ->
+                Cedar.tag("Onboarding").e("completeOnboarding: failed to load question sets: ${e.message}", e)
+                updateState { copy(isCompleting = false, completionError = SYNC_ERROR_MESSAGE) }
+            }
     }
 
     private suspend fun PipelineContext<OnboardingState, OnboardingIntent, OnboardingAction>.goBack() {

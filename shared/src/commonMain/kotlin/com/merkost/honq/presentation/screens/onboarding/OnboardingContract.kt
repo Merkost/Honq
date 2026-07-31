@@ -15,7 +15,9 @@ data class OnboardingState(
     val licenseTypes: List<LicenseType> = emptyList(),
     val selectedLicenseTypeId: String? = null,
     val isLoading: Boolean = true,
-    val error: String? = null
+    val error: String? = null,
+    val isCompleting: Boolean = false,
+    val completionError: String? = null,
 ) : MVIState {
     val selectedState: State?
         get() = states.firstOrNull { it.id == selectedStateId }
@@ -42,6 +44,7 @@ sealed interface OnboardingIntent : MVIIntent {
     data object ConfirmStateSelection : OnboardingIntent
     data class SelectLicenseType(val typeId: String) : OnboardingIntent
     data object CompleteOnboarding : OnboardingIntent
+    data object RetryCompletion : OnboardingIntent
     data object GoBack : OnboardingIntent
     data object Retry : OnboardingIntent
 }
