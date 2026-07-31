@@ -705,6 +705,7 @@ def make_question_docs(
     existing_questions: dict[str, dict[str, Any]],
     active: bool,
     timestamp: str,
+    preserve_existing_active: bool = False,
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     docs: list[dict[str, Any]] = []
     counts = {"safe_overlap": 0, "conflict": 0, "new": 0, "images": 0}
@@ -720,7 +721,7 @@ def make_question_docs(
             fields["id"] = existing.get("id") if same_set else f"{QUESTION_SET_ID}__{record.code}"
             fields["question_set_id"] = QUESTION_SET_ID
             fields["state_id"] = STATE_ID
-            fields["is_active"] = active
+            fields["is_active"] = existing.get("is_active", False) if preserve_existing_active and same_set else active
             fields["updated_at"] = timestamp
             fields["text"] = record.text
             fields["options"], fields["correct_index"] = stable_shuffle(record.options, record.correct_index, record.code)
@@ -756,7 +757,7 @@ def make_question_docs(
                 "updated_at": timestamp,
                 "state_id": STATE_ID,
                 "difficulty": 2,
-                "is_active": active,
+                "is_active": existing.get("is_active", False) if preserve_existing_active and same_set else active,
                 "version": 1,
                 "source": SOURCE_URL,
                 "created_at": timestamp,
@@ -796,6 +797,11 @@ def main() -> None:
     parser.add_argument("--mode", choices=["dry-run", "stage", "activate"], default="dry-run")
     parser.add_argument("--skip-images", action="store_true")
     parser.add_argument("--offline", action="store_true", help="Parse and render without reading Firebase (dry-run only)")
+    parser.add_argument(
+        "--preserve-existing-active",
+        action="store_true",
+        help="During staging, keep existing target-qset documents active (zero-downtime refresh)",
+    )
     args_local = parser.parse_args()
     bank = configure_bank(args_local.bank)
     pdf_path = args_local.pdf or bank["pdf"]
@@ -833,7 +839,13 @@ def main() -> None:
                 existing_questions[code] = plain
                 existing_document_ids[code] = document["name"].rsplit("/", 1)[-1]
     timestamp = now_iso()
-    question_docs, counts = make_question_docs(records, existing_questions, active=args_local.mode == "activate", timestamp=timestamp)
+    question_docs, counts = make_question_docs(
+        records,
+        existing_questions,
+        active=args_local.mode == "activate",
+        timestamp=timestamp,
+        preserve_existing_active=args_local.preserve_existing_active,
+    )
     pdf_sha256 = hashlib.sha256(pdf_path.read_bytes()).hexdigest()
     expected_sha256 = bank.get("source_sha256")
     if expected_sha256 and pdf_sha256 != expected_sha256:
@@ -857,10 +869,16 @@ def main() -> None:
         "created_at": timestamp,
         "display_order": 4,
     }
+    keep_license_active = bool(
+        existing_license
+        and args_local.preserve_existing_active
+        and not active
+        and doc_plain(existing_license).get("is_active", False)
+    )
     license_fields.update({
         "name": bank["display_name"],
         "short_name": bank["short_name"],
-        "is_active": active,
+        "is_active": keep_license_active or active,
         "updated_at": timestamp,
     })
     set_fields = doc_plain(existing_set) if existing_set else {
@@ -873,7 +891,13 @@ def main() -> None:
         "mock_test_pass_percentage": 75,
         "created_at": timestamp,
     }
-    set_fields.update({"state_id": STATE_ID, "license_type_id": LICENSE_TYPE_ID, "is_active": active, "updated_at": timestamp})
+    keep_set_active = bool(existing_set and args_local.preserve_existing_active and not active and doc_plain(existing_set).get("is_active", False))
+    set_fields.update({
+        "state_id": STATE_ID,
+        "license_type_id": LICENSE_TYPE_ID,
+        "is_active": keep_set_active or active,
+        "updated_at": timestamp,
+    })
 
     category_ids = sorted({record.category for record in records})
     category_documents = {document["name"].rsplit("/", 1)[-1]: doc_plain(document) for document in firestore.list_collection("categories")}
